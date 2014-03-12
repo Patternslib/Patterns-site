@@ -136,6 +136,8 @@ The available actions are:
    dependencies are not met. Input elements are disabled by setting
    their disabled property. Links are disabled by registered a
    temporary event handler that blocks their default behaviour.
+-  `both`: both the `enable` and `show` actions will be applied. Conversely, an
+   element will be both hidden and disabled when the condition is not met.
 
 ### Transitions
 
@@ -179,7 +181,7 @@ The available options are:
 | Field | Default | Description |
 | ----- | ------- | ----------- | 
 | `condition` | | The dependency condition. |
-| `action` | `show` | Action to perform. One of `show` or `enable`. |
+| `action` | `show` | Action to perform. One of `show`, `enable` or `both`. |
 | `transition` | `show` | Transition effect to use if the action is `show`. Must be one of `none`, `css`, `fade` or `slide`. |
 | `effect-duration` | `fast` | Duration of transition. This is ignored if the transition is `none` or `css`. 
 | `effect-easing`  | `swing` | Easing to use for the transition. This must be a known jQuery easing method. jQuery includes `swing` and `linear`, but more can be included via jQuery UI. |
