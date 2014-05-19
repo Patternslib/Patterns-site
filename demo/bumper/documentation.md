@@ -29,10 +29,11 @@ contents do not fit in the available space the browser will automatically
 add scrollbars. The bumper pattern will detect this and *stick* the bumped
 element so it is always visible in its container.
 
-To implement this the bumper pattern will set the ``position`` of both the
-bumper and its scrolling container to ``relative``. In addition it is required
-that the scrolling container is the first positioned parent of the bumper
-(i.e. its *offset parent*).
+To implement this the bumper pattern will set the ``position`` of the bumper
+``relative``. If the scrolling container is currently not positioned its
+``position`` will also be set to ``relative``.  In addition it is required that
+the scrolling container is the first positioned parent of the bumper (i.e. its
+*offset parent*).
 
 ### Class specification
 
