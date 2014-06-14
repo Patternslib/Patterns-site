@@ -41,6 +41,13 @@ button {
   background-color: #FFF;
 }
 
+#content {
+  width: 80%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-top: 3%;
+}
+
 html {
   width: 100%;
   padding: 0;
@@ -86,17 +93,27 @@ a {
 }
 
 /* @end */
-.pattern-tile {
+.pattern-tile, .cat-form, .cat-layout {
   width: 150px;
-  display: inline-block;
   color: white;
   text-decoration: none;
+  float: left;
+  margin-right: 20px;
+  padding-bottom: 15px;
 }
-.pattern-tile figure img {
+.pattern-tile figure img, .cat-form figure img, .cat-layout figure img {
   width: 100%;
 }
-.pattern-tile figure figcaption {
+.pattern-tile figure figcaption, .cat-form figure figcaption, .cat-layout figure figcaption {
   text-align: center;
+}
+
+.cat-form {
+  background-color: #be9ac1;
+}
+
+.cat-layout {
+  background-color: #a1ced2;
 }
 
 #site-header {
