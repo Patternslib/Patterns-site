@@ -1,0 +1,169 @@
+title: Ons water en grote overstromingen
+author: Cornelis G. A. Kolbach
+baseurl: http://hieris.groteoverstromingen.onswater.nl
+domain: informaat.com
+media: /media
+markdown: kramdown
+permalink: /:title
+exclude: 
+  - Bronbestanden
+  - Gemfile
+  - Gemfile.lock
+  - work
+  - config.codekit
+prose:
+  rooturl: '_posts'
+  siteurl: 'http://hieris.groteoverstromingen.onswater.nl/'
+  relativeLinks: 'http://hieris.groteoverstromingen.onswater.nl/links.jsonp'
+  media: 'media'
+  ignore:
+    - index.html
+    - _config.yml
+    - /_layouts
+    - /_includes
+    - /media
+    - /lib
+    - /work
+    - /Bronbestanden
+    - /style
+  metadata:
+    _posts:
+      - name: "layout"
+        field:
+          element: "hidden"
+          value: "generic"
+          options:
+            - name: 'Generic'
+              value: 'generic'
+      - name: "category"
+        field:
+          element: "select"
+          label: "Categorie"
+          value: "generic"
+          options:
+            - name: 'Evacuatieverhalen'
+              value: 'evacuatieverhalen'
+            - name: 'Overstroming in beeld'
+              value: 'overstroming-in-beeld'
+            - name: 'Extreme omstandigheden'
+              value: 'extreme-omstandigheden'
+            - name: 'Tips voor weggaan'
+              value: 'tips-voor-weggaan'
+            - name: 'Tips voor blijven'
+              value: 'tips-voor-blijven'
+      - name: "region"
+        field:
+          element: "select"
+          label: "Regio"
+          value: "nederland"
+          options:
+            - name: 'nederland'
+              value: 'Nederland'
+      - name: "title"
+        field:
+          element: "text"
+          placeholder: "Title"
+          label: "Documenttitel"
+      - name: "summary"
+        field:
+          element: "text"
+          placeholder: "Samenvatting"
+          label: "Samenvatting"
+      - name: "image"
+        field:
+          element: "text"
+          label: "Afbeelding"
+      - name: "video_url_mp4"
+        field:
+          element: "text"
+          placeholder: "*.mp4"
+          label: "Video URL (mp4)"
+      - name: "video_size_mp4"
+        field:
+          element: "text"
+          placeholder: "8.7 MB"
+          label: "Videobestandsgrootte (mp4)"
+      - name: "video_url_webm"
+        field:
+          element: "text"
+          placeholder: "*.webm"
+          label: "Video URL (webm)"
+      - name: "video_size_webm"
+        field:
+          element: "text"
+          placeholder: "0.0 MB"
+          label: "Videobestandsgrootte (webm)"
+      - name: "video_url_ogg"
+        field:
+          element: "text"
+          placeholder: "*.ogv"
+          label: "Video URL (ogg)"
+      - name: "video_size_ogg"
+        field:
+          element: "text"
+          placeholder: "0.0 MB"
+          label: "Videobestandsgrootte (ogg)"
+      - name: "video_url_wmv"
+        field:
+          element: "text"
+          placeholder: "*.wmv"
+          label: "Video URL (wmv)"
+      - name: "video_size_wmv"
+        field:
+          element: "text"
+          placeholder: "0.0 MB"
+          label: "Videobestandsgrootte (wmv)"
+      - name: "video_url_hd"
+        field:
+          element: "text"
+          placeholder: "*.mp4"
+          label: "Video URL (hd)"
+      - name: "video_size_hd"
+        field:
+          element: "text"
+          placeholder: "0.0 MB"
+          label: "Videobestandsgrootte (hd)"
+      - name: "video_url_3gp"
+        field:
+          element: "text"
+          placeholder: "*.3gp"
+          label: "Video mobile URL (3gp)"
+      - name: "video_size_3gp"
+        field:
+          element: "text"
+          placeholder: "0.0 MB"
+          label: "Videobestandsgrootte (3gp)"
+      - name: "video_url_mp3"
+        field:
+          element: "text"
+          placeholder: "*.mp3"
+          label: "Audiospoor URL (mp3)"
+      - name: "video_size_mp3"
+        field:
+          element: "text"
+          placeholder: "8.7 MB"
+          label: "Audiospoor bestandsgrootte (mp3)"
+      - name: "subtitles_url"
+        field:
+          element: "text"
+          placeholder: "*.srt"
+          label: "Ondertitelingsbestand URL (srt)"
+      - name: "subtitles_size"
+        field:
+          element: "text"
+          placeholder: "8.7 MB"
+          label: "Ondertitelingsbestandgrootte (srt)"
+      - name: "video_voice_over"
+        field:
+          element: "text"
+          label: "Voice over-tekst"
+    _posts/static:
+      - name: "layout"
+        field:
+          element: "hidden"
+          value: "page"
+      - name: "permalink"
+        field:
+          element: "text"
+          label: "Permalink"
+          value: ""

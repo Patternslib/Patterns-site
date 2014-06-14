@@ -1,0 +1,33 @@
+#site-header {
+	display: block;
+	text-align: center;
+	padding-top: 4%;
+	padding-bottom: 4%;
+	border-bottom: 1px solid white;
+}
+
+#site-header nav a {
+	display: inline-block;
+	text-decoration: none;
+	width: 17%;
+}
+
+#site-header nav a:before {
+	display: block;
+	text-align: center;
+	font: 4em fontello;
+}
+
+#site-header nav a.patterns:before {
+	content: "\e800";
+	font-size: 5em;
+}
+
+#site-header nav a.download:before {
+	content: "\e805";
+	
+}
+
+#site-header nav a.documentation:before {
+	content: "\e802";
+}
