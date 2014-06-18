@@ -6,7 +6,7 @@ state: home
 <section class="patterns tiles">
 	{% for post in site.posts %}
 		{% if post.layout == 'demo' %}
-		    <a href="demo/{{ post.id }}/" title="{{ post.description }}" class="pattern-tile cat-{{ post.category }}">
+		    <a href="{{ post.url }}" title="{{ post.description }}" class="pattern-tile cat-{{ post.category }}">
 				<figure>
 					<img src="demo/{{ post.id }}/icon.svg" alt="" />
 					<figcaption>{{ post.title }}</figcaption>
