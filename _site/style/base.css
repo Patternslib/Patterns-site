@@ -121,30 +121,34 @@ a {
   text-align: center;
   padding-top: 4%;
   padding-bottom: 4%;
-  border-bottom: 1px solid white;
-  background: url(blackboard.svg) top center no-repeat;
-  background-size: 80% auto;
+  /*	border-bottom: 1px solid white;*/
+  background: url(blackboard.svg) bottom center no-repeat;
+  background-size: 90% auto;
 }
 
 .state-home #site-header {
-  padding-top: 35%;
+  padding-bottom: 34%;
 }
 
 #site-header nav a {
   display: inline-block;
   text-decoration: none;
   width: 17%;
+  position: relative;
+}
+
+#site-header nav a.patterns {
+  transform: scale(1.5);
 }
 
 #site-header nav a:before {
   display: block;
   text-align: center;
-  font: 5em fontello;
+  font: 4em fontello;
 }
 
 #site-header nav a.patterns:before {
   content: "\e800";
-  font-size: 7em;
 }
 
 #site-header nav a.download:before {
