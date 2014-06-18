@@ -46,6 +46,15 @@ button {
   margin-right: auto;
   margin-left: auto;
   padding-top: 3%;
+  padding-bottom: 3%;
+}
+#content:after {
+  content: " ";
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  display: block;
+  clear: left;
 }
 
 html {
