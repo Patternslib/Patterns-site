@@ -122,6 +122,12 @@ a {
   padding-top: 4%;
   padding-bottom: 4%;
   border-bottom: 1px solid white;
+  background: url(blackboard.svg) top center no-repeat;
+  background-size: 80% auto;
+}
+
+.state-home #site-header {
+  padding-top: 35%;
 }
 
 #site-header nav a {
@@ -133,12 +139,12 @@ a {
 #site-header nav a:before {
   display: block;
   text-align: center;
-  font: 4em fontello;
+  font: 5em fontello;
 }
 
 #site-header nav a.patterns:before {
   content: "\e800";
-  font-size: 5em;
+  font-size: 7em;
 }
 
 #site-header nav a.download:before {
