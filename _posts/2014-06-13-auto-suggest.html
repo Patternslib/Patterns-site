@@ -1,0 +1,29 @@
+<hr />
+
+<p>layout: demo
+title: Auto suggest
+category: form</p>
+
+<h2>description: &ldquo;Auto suggest completes a user&rsquo;s input as he types, providing hints of possible input values in a dropdown list underneath the input field.&rdquo;</h2>
+
+<h2>Documentation</h2>
+
+<p>This pattern takes three arguments:</p>
+
+<ul>
+<li><code>words</code>: a list of words which will be automatically suggested when they match what the user types</li>
+<li><code>pre-fill</code>: the default values with which the input must be pre-filled</li>
+<li><code>placeholder</code>: text to be displayed in the input if no values are present</li>
+</ul>
+
+
+<p>The values inside the input can be cleared by means of a button
+of type reset inside the same form as the input.</p>
+
+<pre><code>&lt;button type="reset"&gt;Reset&lt;/button&gt;
+</code></pre>
+
+<h2>Example</h2>
+
+<pre><code>&lt;input type="text" class="pat-autosuggest" data-pat-autosuggest="words: Apple, Pear, Banana; pre-fill: Apple; placeholder: Search by tag…" /&gt;
+</code></pre>
