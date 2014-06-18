@@ -10,6 +10,7 @@
 
 .state-home #site-header {
 	padding-bottom: 34%;
+	margin-top: 2%;
 }
 
 #site-header nav a {
@@ -19,7 +20,7 @@
 	position: relative;
 }
 
-#site-header nav a.patterns {
+.state-home #site-header nav a.patterns {
 	transform: scale(1.5);
 }
 
