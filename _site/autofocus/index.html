@@ -33,7 +33,20 @@
 			</nav>
 		</header>
 		<div id="content">
-			
+			<p>Patterns augments the standard HTML5 autofocus behaviour, and implements it for browsers that do not support it natively.</p>
+
+<p>On initial page load or when new content is injected it is scanned for input elements with an <code>autofocus</code> attribute or <code>pat-autofocus</code> class.</p>
+
+<p>The first such element that has no current value will be given the focus.</p>
+
+<pre><code>&lt;form&gt;
+  &lt;label&gt;Title &lt;input type="text" autofocus="autofocus" name="title" value="My document"/&gt;&lt;/label&gt;
+  &lt;label&gt;Keywords &lt;input type="text" autofocus="autofocus" name="keywords"/&gt;&lt;/label&gt;
+&lt;/form&gt;
+</code></pre>
+
+<p>In this example the keywords input field would be given the focus since the title field already has a value.</p>
+
 		</div>
 	</body>
 </html>
