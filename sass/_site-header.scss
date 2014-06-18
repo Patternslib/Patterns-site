@@ -5,12 +5,13 @@
 	padding-bottom: 4%;
 /*	border-bottom: 1px solid white;*/
 	background: url(blackboard.svg) bottom center no-repeat;
-	background-size: 90% auto;
+	background-size: 0% auto;
 }
 
 .state-home #site-header {
 	padding-bottom: 34%;
 	margin-top: 2%;
+	background-size: 90% auto;
 }
 
 #site-header nav a {

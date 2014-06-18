@@ -1,17 +1,40 @@
 <!DOCTYPE html>
 <html>
 	<head>
-
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>Demo page</title>
-		<link rel="stylesheet" href="../../style/common.css" type="text/css">
-		<link rel="stylesheet" href="select2.css" type="text/css">
+		<title>Patterns library</title>
+		<link rel="stylesheet" href="/style/base.css" type="text/css">
 
-		<script src="../../bundles/patterns.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/bundles/patterns.min.js" type="text/javascript"></script>
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-37987884-1']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+
+		</script>
+
+		<link rel="icon" type="image/png" href="/media/favicon.png" />
+		<!--[if IE]>
+				<link rel="shortcut icon" type="image/x-icon" href="media/favicon.ico" />
+		<![endif]-->
 	</head>
-	<body>
-	
-		<p>Try the auto suggest pattern below with the terms 'Apples', 'Oranges', 'Pears' and 'Bananas'.</p>
-		<input class="pat-autosuggest" placeholder="Pick some fruit" data-pat-autosuggest="words: Apples, Oranges, Pears, Bananas" type="text"></input>
+	<body class="state-">
+		<header id="site-header">
+			<nav class="global-nav navigation">
+				<a class="download" href="/download.html">Download</a>
+				<a class="patterns" href="/index.html">Patterns</a>
+				<a class="documentation" href="/documentation.html">Documentation</a>
+			</nav>
+		</header>
+		<div id="content">
+			<p>Try the auto suggest pattern below with the terms 'Apples', 'Oranges', 'Pears' and 'Bananas'.</p>
+<input class="pat-autosuggest" placeholder="Pick some fruit" data-pat-autosuggest="words: Apples, Oranges, Pears, Bananas" type="text"></input>
+		</div>
 	</body>
-</script>
+</html>
