@@ -107,7 +107,7 @@ a {
   color: white;
   text-decoration: none;
   float: left;
-  margin-right: 20px;
+  margin: 0 10px 20px;
   padding-bottom: 15px;
 }
 .pattern-tile figure img, .cat-form figure img, .cat-layout figure img {
