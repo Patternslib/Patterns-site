@@ -1,3 +1,9 @@
+---
+layout: generic
+title: Creating a new pattern
+section: dev
+---
+
 Creating a new pattern
 ======================
 

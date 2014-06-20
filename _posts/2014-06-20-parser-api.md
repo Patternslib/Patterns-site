@@ -1,3 +1,9 @@
+---
+layout: generic
+title: "Building a Pattern: Argument parser"
+section: dev
+---
+
 Argument parser
 ===============
 
