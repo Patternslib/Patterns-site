@@ -14,3 +14,11 @@ $pad-fontsize:18 !default;
 h1, h2, h3 {
 	margin: 0 0 1em 0;
 }
+
+pre {
+	background: rgba(0,0,0,0.2);
+	padding: 2%;
+	margin: 0 auto 1em;
+	width: 90%;
+
+}
