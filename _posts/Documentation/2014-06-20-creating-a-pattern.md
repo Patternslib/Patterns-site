@@ -1,5 +1,5 @@
 ---
-layout: generic
+layout: documentation
 title: Creating a new pattern
 section: dev
 ---

@@ -1,0 +1,99 @@
+<hr />
+
+<p>layout: documentation
+title: &ldquo;Building a Pattern: Storage utility&rdquo;</p>
+
+<h2>section: dev</h2>
+
+<h1>Storage utility</h1>
+
+<p>Patterns include a simple storage utility which you can use to store
+data for a pattern. The implementation is similar to the <code>Web storage
+&lt;http://www.whatwg.org/specs/web-apps/current-work/multipage/webstorage.html&gt;</code>_
+mechanism introduces in HTML5 (and in fact uses that as the underlying
+storage), but offers multiple named storages and a few extensions that make
+it easier to use in patterns.</p>
+
+<h2>Store API</h2>
+
+<p>.. js:attribute:: store.supported</p>
+
+<p>   A boolean flag indicating if the browser supports web storage.</p>
+
+<p>.. js:function:: store.local(name)</p>
+
+<p>   :param string name: identifier for the storage section. This should
+     almost always be the name of the pattern.
+   :returns: storage instance</p>
+
+<p>   Return a local storage instance. Local storage is persistant accross
+   multiple browser sessions and tabs, and will survive a browser restart.</p>
+
+<p>.. js:function:: store.session(name)</p>
+
+<p>   :param string name: identifier for the storage section. This should
+     almost always be the name of the pattern.
+   :returns: storage instance</p>
+
+<p>   Return a session storage instance. Session storage is tied to a single
+   browser session. If a browser has multiple tabs open on the same website
+   each tab will be seen as a different session. Session storage is not
+   guaranteed to survive a browser restart.</p>
+
+<h2>Storage instance</h2>
+
+<p>The API for a storage instance mimicks the <code>HTML5 Storage interface
+&lt;http://www.whatwg.org/specs/web-apps/current-work/multipage/webstorage.html#the-storage-interface&gt;</code>_.
+It differs in that it adds a method to remove all data for a pattern, can
+return all data as a single javascript object and can store all values that can
+be JSON serialized instead of only strings.</p>
+
+<p>.. js:function:: storage.get(name)</p>
+
+<p>   :param string name: name of the stored variable to retrieve
+   :returns: stored variable</p>
+
+<p>   Retrieve (a copy of) a stored value from the storage. If no value for the
+   given name was stored, <code>null</code> will be returned.</p>
+
+<p>.. js:function:: storage.set(name, value)</p>
+
+<p>   :param string name: name of the variable to store
+   :param object value: value to store. Can be any type that is JSON serializable.
+   :throws QuoteExceededError: This exception is thrown if the browser can
+      not store this value.</p>
+
+<p>   Store a variable. This will replace an existing value if already present.</p>
+
+<p>.. js:function:: storage.remove(name)</p>
+
+<p>   :param string name: name of the variable to remove</p>
+
+<p>   Remove a variable from the storage. Unknown names are silently ignored.</p>
+
+<p>.. js:function:: storage.clear()</p>
+
+<p>   This method removes all variables stored for the pattern.</p>
+
+<p>.. js:function:: storage.all()</p>
+
+<p>   :returns: object with all stored data</p>
+
+<p>   This method returns an object containing a copy of all stored data. Please
+   note that this is only a copy: modifications made to the returned object
+   will <em>not</em> be stored.</p>
+
+<h2>Example</h2>
+
+<p>.. code-block:: javascript
+   :linenos:</p>
+
+<p>   var store = require(&ldquo;../core/store&rdquo;);</p>
+
+<p>   if (store.supported)
+       alert(&ldquo;Your browser does not support storage.&rdquo;);
+   else {
+       var storage = store.local(&ldquo;mypattern&rdquo;);
+       storage.set(&ldquo;key&rdquo;, true);
+       alert(&ldquo;The stored value is: &rdquo; + storage.get(&ldquo;key&rdquo;));
+   }</p>

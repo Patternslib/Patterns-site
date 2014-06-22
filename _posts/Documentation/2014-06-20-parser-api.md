@@ -1,5 +1,5 @@
 ---
-layout: generic
+layout: documentation
 title: "Building a Pattern: Argument parser"
 section: dev
 ---

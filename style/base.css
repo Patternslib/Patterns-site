@@ -76,6 +76,16 @@ a {
   color: white;
 }
 
+#content p,
+#content ul,
+#content ol {
+  margin: 0 0 1em 0;
+}
+
+h1, h2, h3 {
+  margin: 0 0 1em 0;
+}
+
 /* @group Throbber */
 .injecting * {
   opacity: 0.19;
@@ -168,4 +178,19 @@ a {
 
 #site-header nav a.documentation:before {
   content: "\e802";
+}
+
+.sub-nav {
+  text-align: center;
+  display: block;
+  margin-bottom: 3em;
+}
+.sub-nav a {
+  display: inline-block;
+  margin-right: 10px;
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 25px;
+  padding: 4px 20px 0;
+  line-height: 1.6em;
 }
