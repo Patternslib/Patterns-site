@@ -1,11 +1,12 @@
 #site-header {
 	display: block;
 	text-align: center;
-	padding-top: 4%;
-	padding-bottom: 4%;
+	padding-top: 2%;
+	padding-bottom: 2%;
 /*	border-bottom: 1px solid white;*/
 	background: url(blackboard.svg) bottom center no-repeat;
 	background-size: 0% auto;
+	transition: all 0.5s;
 }
 
 .state-home #site-header {
@@ -19,6 +20,19 @@
 	text-decoration: none;
 	width: 17%;
 	position: relative;
+	transition: all 0.5s;
+	position: relative;
+}
+
+#site-header nav a.current:after {
+	position: absolute;
+	bottom: -10px;
+	left: 25%;
+	width: 50%;
+	height: 2px;
+	background-color: white;
+	content: " ";
+	display: block;
 }
 
 .state-home #site-header nav a.patterns {
