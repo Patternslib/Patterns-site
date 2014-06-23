@@ -168,7 +168,9 @@ pre {
   position: relative;
 }
 
-#site-header nav a.current:after {
+.state-download #site-header nav a.download:after,
+.state-home #site-header nav a.patterns:after,
+.state-documentation #site-header nav a.documentation:after {
   position: absolute;
   bottom: -10px;
   left: 25%;
