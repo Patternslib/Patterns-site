@@ -250,13 +250,14 @@ form.download .bundle-type {
 .pat-checklist label {
   display: block;
   padding-left: 1.5em;
+  position: relative;
 }
 .pat-checklist label input[type="checkbox"],
 .pat-checklist label input[type="radio"] {
   position: absolute;
   left: 0;
   top: 0;
-  opacity: 0.1;
+  opacity: 0;
 }
 .pat-checklist label:before {
   font-family: "fontello";
