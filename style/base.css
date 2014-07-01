@@ -250,7 +250,8 @@ form.download .bundle-type {
   display: block;
   padding-left: 1.5em;
 }
-.pat-checklist label input[type="checkbox"] {
+.pat-checklist label input[type="checkbox"],
+.pat-checklist label input[type="radio"] {
   position: absolute;
   left: 0;
   top: 0;
@@ -267,4 +268,10 @@ form.download .bundle-type {
 }
 .pat-checklist label.checked:before {
   content: "\e809";
+}
+.pat-checklist.radio label:before {
+  content: "\e807";
+}
+.pat-checklist.radio label.checked:before {
+  content: "\e806";
 }

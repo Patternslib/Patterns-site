@@ -4,7 +4,8 @@
 		display: block;
 		padding-left: 1.5em;
 
-		input[type="checkbox"] {
+		input[type="checkbox"],
+		input[type="radio"] {
 			position: absolute;
 			left: 0;
 			top: 0;
@@ -23,6 +24,16 @@
 
 		&.checked:before {
 			content: "\e809"
+		}
+	}
+
+	&.radio label {
+		&:before {
+			content: "\e807";
+		}
+
+		&.checked:before {
+			content: "\e806";
 		}
 	}
 }
