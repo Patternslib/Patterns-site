@@ -227,3 +227,21 @@ button {
   background: rgba(0, 0, 0, 0.2);
   color: white;
 }
+
+.component-index {
+  margin-bottom: 1em;
+}
+.component-index .functions {
+  display: block;
+  margin-bottom: 1em;
+}
+.component-index .listing {
+  column-count: 5;
+}
+.component-index label {
+  display: block;
+}
+
+form.download .bundle-type {
+  margin-bottom: 1em;
+}

@@ -33,14 +33,14 @@
 			</nav>
 		</header>
 		<div id="content">
-			<form action="getBundle" id="download">
+			<form action="getBundle" id="download" class="download">
 
-	<fieldset class="checklist pat-checklist component-index" id="component-index">				    	
-			<div class="functions">
-				<button class="select-all" type="button">Select all</button>
-				<button class="deselect-all" type="button">Deselect all</button>
-			</div>
-
+	<fieldset class="checklist pat-checklist component-index" id="component-index">
+		<div class="functions">
+			<button class="select-all" type="button">Select all</button>
+			<button class="deselect-all" type="button">Deselect all</button>
+		</div>
+		<fieldset class="listing">
 			
 				
 			
@@ -53,43 +53,42 @@
 				
 				    <label class="/bumper">
 		   			    <input type="checkbox" name="/bumper" checked/>
-		   			    <a class="navigation /bumper">Bumper</a>
+		   			    Bumper
 		   			</label>
 				
 			
 				
 				    <label class="/autofocus">
 		   			    <input type="checkbox" name="/autofocus" checked/>
-		   			    <a class="navigation /autofocus">Autofocus</a>
+		   			    Autofocus
 		   			</label>
 				
 			
 				
 				    <label class="/auto-suggest">
 		   			    <input type="checkbox" name="/auto-suggest" checked/>
-		   			    <a class="navigation /auto-suggest">Auto suggest</a>
+		   			    Auto suggest
 		   			</label>
 				
 			
 				
 				    <label class="/auto-submit">
 		   			    <input type="checkbox" name="/auto-submit" checked/>
-		   			    <a class="navigation /auto-submit">Auto submit</a>
+		   			    Auto submit
 		   			</label>
 				
 			
 				
 				    <label class="/auto-scale">
 		   			    <input type="checkbox" name="/auto-scale" checked/>
-		   			    <a class="navigation /auto-scale">Auto scale</a>
+		   			    Auto scale
 		   			</label>
 				
 			
-
+		</fieldset>
 	</fieldset>
 
     <fieldset class="button-bar">
-    	<button type="submit">Download bundle</button>
 		<fieldset class="bundle-type">       
 	       Bundle type:  
 	        <label>
@@ -99,6 +98,7 @@
 	            <input type="radio" name="minify" value="minify"> Minified</input>
 	        </label>
 	    </fieldset>
+    	<button type="submit">Download bundle</button>
 	</fieldset>
 
 </form>
