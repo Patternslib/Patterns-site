@@ -13,7 +13,7 @@ state: download
 		<fieldset class="listing">
 			{% for post in site.posts %}
 				{% if post.layout == 'demo' %}
-				    <label class="{{ post.id }}">
+				    <label class="{{ post.id }}" title="{{ post.description }}">
 		   			    <input type="checkbox" name="{{ post.id }}" checked/>
 		   			    {{ post.title }}
 		   			</label>
@@ -24,7 +24,7 @@ state: download
 
     <fieldset class="button-bar">
 		<fieldset class="bundle-type pat-checklist radio">       
-	       Bundle type:  
+	       <h4>Bundle type</h4>  
 	        <label>
 	            <input type="radio" name="minify" value="" checked> Regular</input>
 	        </label>

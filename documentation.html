@@ -2,3 +2,9 @@
 layout: documentation
 state: documentation
 ---
+
+{% for post in site.posts  %}
+	{% if post.layout == documentation and post.section == dev %}
+		<a href="{{ post.url }}#main-content" class="pat-inject" data-pat-inject="source: #main-content; target: self::element; trigger: autoload">{{ post.title }}</a>
+	{% endif %}
+{% endfor %}

@@ -1,6 +1,6 @@
 ---
 layout: documentation
-title: "Building a Pattern: Argument parser"
+title: "Argument parser"
 section: dev
 ---
 
