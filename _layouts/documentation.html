@@ -3,7 +3,7 @@ layout: shell
 state: documentation
 ---
 
-<nav class="sub-nav">
+<!-- <nav class="sub-nav">
 	{% for post in site.posts %}
 		{% if post.layout == 'documentation' %}
 		    <a href="{{ post.url }}" title="{{ post.description }}">
@@ -11,8 +11,11 @@ state: documentation
 		    </a>
 		{% endif %}
 	{% endfor %}
-</nav>
+</nav> -->
 
 <article id="main-content">
+	<h1>
+		{{ page.title }} <a href="/documentation.html">(Back)</a>
+	</h1>
 	{{ content }}
 </article>

@@ -1,10 +1,30 @@
 ---
-layout: documentation
+layout: shell
 state: documentation
 ---
 
-{% for post in site.posts  %}
+<!-- {% for post in site.posts  %}
 	{% if post.layout == documentation and post.section == dev %}
 		<a href="{{ post.url }}#main-content" class="pat-inject" data-pat-inject="source: #main-content; target: self::element; trigger: autoload">{{ post.title }}</a>
 	{% endif %}
-{% endfor %}
+{% endfor %} -->
+
+<ul>
+	{% for post in site.posts  %}
+		{% if post.layout == "documentation" post.sub == "developer" %}
+			<li>
+				<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+			</li>
+		{% endif %}
+	{% endfor %}
+</ul>
+
+<ul>
+	{% for post in site.posts  %}
+		{% if post.layout == "documentation" and post.sub == "designer" %}
+			<li>
+				<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+			</li>
+		{% endif %}
+	{% endfor %}
+</ul>
