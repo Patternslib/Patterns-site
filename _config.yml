@@ -12,8 +12,8 @@ exclude:
   - config.codekit
 prose:
   rooturl: '_posts'
-  siteurl: 'http://patternslib.github.io/Patterns-site/'
-  relativeLinks: 'http://patternslib.github.io/Patterns-site/links.jsonp'
+  siteurl: 'http://patterns.cornae.com/'
+  relativeLinks: 'http://patterns.cornae.com/links.jsonp'
   media: 'media'
   ignore:
     - index.html
