@@ -9,22 +9,30 @@ state: documentation
 	{% endif %}
 {% endfor %} -->
 
-<ul>
-	{% for post in site.posts  %}
-		{% if post.layout == "documentation" post.sub == "developer" %}
-			<li>
-				<a href="{{ post.url }}#main-content">{{ post.title }}</a>
-			</li>
-		{% endif %}
-	{% endfor %}
-</ul>
+<div class="pat-equaliser row">
+	<section class="documentation nav-tile">
+		<h3>For developers</h3>
+		<ul>
+			{% for post in site.posts  %}
+				{% if post.layout == "documentation" and post.sub == "developer" %}
+					<li>
+						<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+					</li>
+				{% endif %}
+			{% endfor %}
+		</ul>
+	</section>
 
-<ul>
-	{% for post in site.posts  %}
-		{% if post.layout == "documentation" and post.sub == "designer" %}
-			<li>
-				<a href="{{ post.url }}#main-content">{{ post.title }}</a>
-			</li>
-		{% endif %}
-	{% endfor %}
-</ul>
+	<section class="documentation nav-tile">
+		<h3>For designers</h3>
+		<ul>
+			{% for post in site.posts  %}
+				{% if post.layout == "documentation" and post.sub == "designer" %}
+					<li>
+						<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+					</li>
+				{% endif %}
+			{% endfor %}
+		</ul>
+	</section>
+</div>

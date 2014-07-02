@@ -1,0 +1,9 @@
+.nav-tile {
+	float: left;
+	width: 34%;
+	margin: 0 8%;
+	padding: 5%;
+	@include box-sizing(border-box);
+	background-color: rgba(0,0,0,0.2);
+	@include clearfix();
+}
