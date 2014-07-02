@@ -286,7 +286,7 @@ form.download .bundle-type {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.15);
   overflow: hidden;
   *zoom: 1;
 }
