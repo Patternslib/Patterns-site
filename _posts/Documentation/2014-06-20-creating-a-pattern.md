@@ -1,10 +1,8 @@
 ---
 layout: documentation
 title: "Creating a new pattern"
-section: dev
+sub: developer
 ---
-
-# Creating a new pattern
 
 Patterns are implemented as javascript objects that are registered with the
 patterns library. Below is a minimal skeleton for a pattern.

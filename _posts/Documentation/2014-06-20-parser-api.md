@@ -1,11 +1,8 @@
 ---
 layout: documentation
 title: "Argument parser"
-section: dev
+sub: developer
 ---
-
-Argument parser
-===============
 
 Many patterns can be configured to change their behaviour. This is done by
 passing arguments to the parser in data-pat-* attributes or by using an
