@@ -6,7 +6,6 @@
 	@include box-sizing(border-box);
 	background-color: rgba(0,0,0,0.15);
 
-
 	h3 {
 		padding-top: 3em
 	}
@@ -15,5 +14,11 @@
 		content: " ";
 		display: block;
 		height: 4em
+	}
+
+	@include respond-max($mobile) {
+		float: none;
+		width: auto;
+		margin-bottom: 2em;
 	}
 }
