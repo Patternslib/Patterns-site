@@ -1,12 +1,13 @@
 // first we set the variables:
 //
 // Libs/tools
-@import "general/mixins";
-@import "general/web-fonts.css";
+@import "libraries/mixins";
+@import "../general/web-fonts.css";
 @import "fontello/css/fontello.css";
 
 // Primary colours
 $felt:#89AA74;
+$colour-alert: red;
 
 // Secondary colours
 

@@ -1,26 +1,26 @@
 // enable sass compass
 @import "compass";
-@import "settings";
-
-// general
-@import "general/reset";
-@import "general/web-fonts";
 
 // meta
-@import "layout";
-@import "elements";
-@import "typography";
+@import "meta/settings";
+@import "meta/layout";
+@import "meta/elements";
+@import "meta/typography";
 
+// general
+@import "libraries/reset";
+@import "libraries/web-fonts";
+@import "libraries/animation";
 
 // components
-@import "injection";
-@import "pattern-tile";
-@import "site-header";
-@import "sub-nav";
-@import "button-bar";
-@import "button";
-@import "component-index";
-@import "download-form";
-@import "checklist";
-@import "nav-tile";
-@import "grid";
+@import "components/injection";
+@import "components/pattern-tile";
+@import "components/site-header";
+@import "components/sub-nav";
+@import "components/button-bar";
+@import "components/button";
+@import "components/component-index";
+@import "components/download-form";
+@import "components/checklist";
+@import "components/nav-tile";
+@import "components/grid";
