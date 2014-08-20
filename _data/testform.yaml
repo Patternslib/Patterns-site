@@ -31,3 +31,8 @@
 - label: A lot of text
   type: textarea
   rows: 5;
+
+- label: Upload a file!
+  type: file
+
+

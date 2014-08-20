@@ -40,5 +40,11 @@
 			</label>
 			<br/>
 		{% endif %}
+		{% if item.type == "file" %}
+			<label>
+				{{ item.label }} <input type="file" />
+			</label>
+			<br/>
+		{% endif %}
 	{% endfor %}
 </form>
