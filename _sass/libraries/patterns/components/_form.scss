@@ -142,7 +142,8 @@ select {
       }
     }
 
-    fieldset {
+    fieldset,
+    div.group {
       &.group {
         width: 65%;
         clear: left;

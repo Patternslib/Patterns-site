@@ -44,3 +44,12 @@
       selected: unselected
     - label: Choose me!
       selected: selected
+
+- type: button-bar
+  class: group
+  items: 
+    - label: Send
+      type: submit
+    - label: cancel
+      type: reset
+
