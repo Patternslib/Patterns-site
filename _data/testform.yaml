@@ -35,4 +35,12 @@
 - label: Upload a file!
   type: file
 
-
+- label: Take your pick
+  type: select
+  items: 
+    - label: Either this
+      selected: unselected
+    - label: Or that
+      selected: unselected
+    - label: Choose me!
+      selected: selected

@@ -46,5 +46,18 @@
 			</label>
 			<br/>
 		{% endif %}
+		{% if item.type == "select" %}
+			<label>
+				{{ item.label }}
+				<select name="{{ item.name }}">
+					{% for subitem in item.items %}
+						<option value="{{ subitem.value }}" {% if subitem.selected == 'selected' %}selected{% endif %}> 
+							{{ subitem.label }}
+						</option>
+					{% endfor %}
+				</select>
+			</label>
+			<br/>
+		{% endif %}
 	{% endfor %}
 </form>
