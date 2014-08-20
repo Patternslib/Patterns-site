@@ -24,13 +24,19 @@
 		{% endif %}	
 		{% if item.type == "text" %}
 			<label>
-				<input type="text" value="{{ item.value }}" /> {{ item.label }}
+				{{ item.label }} <input type="text" value="{{ item.value }}" /> 
 			</label>
 			<br/>
 		{% endif %}	
 		{% if item.type == "password" %}
 			<label>
-				<input type="password" value="{{ item.value }}" /> {{ item.label }}
+				{{ item.label }} <input type="password" value="{{ item.value }}" />
+			</label>
+			<br/>
+		{% endif %}
+		{% if item.type == "textarea" %}
+			<label>
+				{{ item.label }} <textarea rows="{{item.rows}}">{{ item.value }}</textarea>
 			</label>
 			<br/>
 		{% endif %}

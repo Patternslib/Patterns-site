@@ -27,3 +27,7 @@
 
 - label: Password
   type: password
+
+- label: A lot of text
+  type: textarea
+  rows: 5;

@@ -1,15 +1,8 @@
 @import "../components/checklist";
 
-input {
-  &[type="text"], 
-  &[type="password"], 
-  &[type="search"], 
-  &[type="email"],
-  &[type="file"], 
-  &[type="date"], 
-  &[type="month"], 
-  &[type="time"], 
-  &[type="color"] {
+input,
+textarea {
+  &:not([type="file"]), {
     font-family: $body-font-family;
     -webkit-appearance: none;
     appearance: none;
@@ -48,38 +41,6 @@ input {
     background-color: transparent;
     border-style: none;
   }
-  &:disabled {
-    border: transparent;
-    opacity: 1;
-    padding: 0;
-    background-color: transparent;
-  }
-}
-
-textarea {
-  font-family: $body-font-family;
-  -webkit-appearance: none;
-  appearance: none;
-  padding-left: 4px;
-  display: inline-block;
-  cursor: text;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-right: 0;
-  margin-left: 0;
-  user-select: text;
-  max-width: 100%;
-  background-color: rgba(0, 0, 0, 0.05);
-  border: 1px solid silver;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  color: inherit;
-  vertical-align: baseline;
-  font-size: 100%;
-  line-height: 150%;
-
   &:disabled {
     border: transparent;
     opacity: 1;
