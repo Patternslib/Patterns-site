@@ -1,40 +1,45 @@
 .pat-checklist {
-
 	label {
-		display: block;
 		padding-left: 1.5em;
-		position: relative;
 
-		input[type="checkbox"],
-		input[type="radio"] {
+		&.checked:before,
+		&.unchecked:before {
+			font-family: fontello;
+			content: "\e808";
+			float: left;
 			position: absolute;
 			left: 0;
-			top: 0;
-			opacity: 0;
-		}
-
-		&:before {
-			font-family: "fontello";
-			font-size: 0.8em;
-			content: "\e808";
-			margin-left: -1.75em;
-			position: relative;
-			top: 0.25em;
-			float: left;
 		}
 
 		&.checked:before {
-			content: "\e809"
+			content: "\e809";
+		}
+
+		input[type="checkbox"],
+		input[type="radio"] {
+			opacity: 0;
+			position: absolute;
 		}
 	}
 
 	&.radio label {
 		&:before {
-			content: "\e807";
+			content: '\e807';
 		}
-
 		&.checked:before {
-			content: "\e806";
+			content: '\e806';
+		}
+	}
+
+	fieldset.composed {
+		padding-left: 0 !important;
+		margin-bottom: 0;
+		position: relative;
+		&.disabled {
+			opacity: 0.2;
+			* {
+			user-select: none;
+			}
 		}
 	}
 }

@@ -1,15 +1,25 @@
 {% capture src %}{{ include.src }}{% endcapture %}
 
-<form action="" class="horizontal">
+<form action="{{ include.action }}" class="{{ include.layout }}">
 	{% for item in site.data.[src] %}
-		{% if item.type == "checkbox" %}
-			<fieldset class="group checklist {{ include.mode }}">
+		{% if item.type == "checklist" %}
+			<fieldset class="group pat-checklist {{ item.variation }}">
 				<legend>{{ item.label }}</legend>
-				{% for subitem in item.items %}
-					<label>
-						<input type="checkbox"> {{ subitem.label }}
-					</label>
-				{% endfor %}
+				{% if item.variation == 'checkbox' %}
+					{% for subitem in item.items %}
+						<label>
+							<input name="subitem.name" type="checkbox"> {{ subitem.label }}
+						</label>
+						<br/>
+					{% endfor %}
+				{% else %}
+					{% for subitem in item.items %}
+						<label>
+							<input name="item.name" type="radio"> {{ subitem.label }}
+						</label>
+						<br/>
+					{% endfor %}
+				{% endif %}
 			</fieldset>	
 		{% endif %}	
 		{% if item.type == "text" %}
@@ -23,6 +33,6 @@
 				<input type="password" value="{{ item.value }}" /> {{ item.label }}
 			</label>
 			<br/>
-		{% endif %}	
+		{% endif %}
 	{% endfor %}
 </form>

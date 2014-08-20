@@ -1,11 +1,24 @@
-- label: My label
-  type: checkbox
+- label: Checkboxes
+  type: checklist
+  variation: checkbox
   items: 
-    - label: bla
+    - label: Select me
       checked: checked
-    - label: boe
+      name: selectme
+    - label: 'And/or me'
       checked: unchecked
-    - label: bie
+      name: orme
+
+- label: Radio buttons
+  name: my-checklist
+  type: checklist
+  variation: radio
+  items: 
+    - label: Either this
+      checked: checked
+    - label: Or that
+      checked: unchecked
+    - label: Or this one
       checked: unchecked
 
 - label: Text input

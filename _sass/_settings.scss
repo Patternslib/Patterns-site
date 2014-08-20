@@ -1,7 +1,6 @@
 // Assets
 @import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700);
 @import url(http://fonts.googleapis.com/css?family=Sorts+Mill+Goudy:400,400italic);
-@import "fontello/css/fontello.css";
 
 // Colours
 $felt: #89AA74;
@@ -34,15 +33,14 @@ $mobile: 768px;
 @import "components/anchor";
 @import "components/body";
 @import "components/button";
+@import "components/button-bar";
 @import "components/content";
 @import "components/html";
-@import "components/injection";
 @import "components/pattern-tile";
 @import "components/site-header";
 @import "components/sub-nav";
-@import "components/button-bar";
+@import "components/typography";
 @import "components/component-index";
 @import "components/download-form";
-@import "components/checklist";
 @import "components/nav-tile";
 @import "components/grid";
