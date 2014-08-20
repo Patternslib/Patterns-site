@@ -1,0 +1,26 @@
+#content {
+	width: 80%;
+	margin-right: auto;
+	margin-left: auto;
+	padding-top: 3%;
+	padding-bottom: 3%;
+	clear: left;
+
+	p,
+	ul,
+	ol {
+		margin: 0 0 1em 0;
+	}
+
+	h1, h2, h3 {
+		margin: 0 0 1em 0;
+	}
+
+	pre {
+		background: rgba(0,0,0,0.2);
+		padding: 2%;
+		margin: 0 auto 1em;
+		width: 90%;
+
+	}
+}

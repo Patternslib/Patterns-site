@@ -1,5 +1,6 @@
 // Assets
 @import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700);
+@import url(http://fonts.googleapis.com/css?family=Sorts+Mill+Goudy:400,400italic);
 @import "fontello/css/fontello.css";
 
 // Colours
@@ -13,7 +14,7 @@ $font-weight-normal: normal;
 $font-weight-bold: bold;
 
 // We use these to control various global styles
-$body-font-family: 'Source Sans Pro', sans-serif;
+$body-font-family: 'Sorts Mill Goudy', serif;
 $body-font-weight: $font-weight-normal;
 $body-font-style: normal;
 
@@ -30,13 +31,16 @@ $mobile: 768px;
 @import "libraries/patterns/patterns";
 
 // Project components
+@import "components/anchor";
 @import "components/body";
+@import "components/button";
+@import "components/content";
+@import "components/html";
 @import "components/injection";
 @import "components/pattern-tile";
 @import "components/site-header";
 @import "components/sub-nav";
 @import "components/button-bar";
-@import "components/button";
 @import "components/component-index";
 @import "components/download-form";
 @import "components/checklist";
