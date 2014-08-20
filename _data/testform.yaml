@@ -1,0 +1,16 @@
+- label: My label
+  type: checkbox
+  items: 
+    - label: bla
+      checked: checked
+    - label: boe
+      checked: unchecked
+    - label: bie
+      checked: unchecked
+
+- label: Text input
+  type: text
+  value: My value
+
+- label: Password
+  type: password

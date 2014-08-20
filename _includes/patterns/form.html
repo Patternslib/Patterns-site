@@ -1,0 +1,28 @@
+{% capture src %}{{ include.src }}{% endcapture %}
+
+<form action="" class="horizontal">
+	{% for item in site.data.[src] %}
+		{% if item.type == "checkbox" %}
+			<fieldset class="group checklist {{ include.mode }}">
+				<legend>{{ item.label }}</legend>
+				{% for subitem in item.items %}
+					<label>
+						<input type="checkbox"> {{ subitem.label }}
+					</label>
+				{% endfor %}
+			</fieldset>	
+		{% endif %}	
+		{% if item.type == "text" %}
+			<label>
+				<input type="text" value="{{ item.value }}" /> {{ item.label }}
+			</label>
+			<br/>
+		{% endif %}	
+		{% if item.type == "password" %}
+			<label>
+				<input type="password" value="{{ item.value }}" /> {{ item.label }}
+			</label>
+			<br/>
+		{% endif %}	
+	{% endfor %}
+</form>
