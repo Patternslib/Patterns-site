@@ -1,46 +1,25 @@
 @import "../components/checklist";
 
 input,
-textarea {
-  &:not([type="file"]), {
-    font-family: $body-font-family;
-    -webkit-appearance: none;
-    appearance: none;
-    display: inline-block;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    padding: 0 0.5em;
-    margin: 0;
-    box-sizing: border-box;
-    background-color: rgba(0, 0, 0, 0.2);
-    border: none;
-    color: inherit;
-    font-size: 100%;
-  }
-  &[type="file"] {
-    -webkit-appearance: none;
-    appearance: none;
-    padding-left: 4px;
-    display: inline-block;
-    cursor: text;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-right: 0;
-    margin-left: 0;
-    user-select: text;
-    max-width: 100%;
-    color: inherit;
-    vertical-align: baseline;
-    font-size: 100%;
-    line-height: 150%;
-    margin-left: 0px !important;
-    background-image: none;
-    background-color: transparent;
-    border-style: none;
-  }
+textarea,
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: $body-font-family;
+  display: inline-block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0.2em 0.5em;
+  margin: -0.2em 0;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: none;
+  color: inherit;
+  font-size: 100%;
+  border-radius: 0;
+
   &:disabled {
     border: transparent;
     opacity: 1;
@@ -50,36 +29,24 @@ textarea {
 }
 
 select {
-  -webkit-appearance: none;
-  appearance: none;
-  -moz-appearance: none;
   /*Next 2 lines is a bizarre patch to make misbehaving FF hide the original dropdown button*/
   text-indent: 0.01px;
   text-overflow: '';
-  height: 24;
-  margin: 0 5px 0 0;
-  border: 1px solid rgba(0, 0, 0, 0.32);
-  color: rgba(0, 0, 0, 0.6);
-  border-radius: 4px;
-  text-decoration: none !important;
-  line-height: 1.5;
-  display: inline-block;
-  padding-top: 0;
-  padding-left: 1em;
-  padding-right: 2em;
-  font-size: 0.9em;
-  background-color: #fafafa;
+  
+  border-right: 0.35em solid rgba(0, 0, 0, 0);
+  padding-right: 1em;
   background-repeat: no-repeat;
   background-position: right center;
   background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNS4xLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAgLS0+DQo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiIFsNCgk8IUVOVElUWSBuc19mbG93cyAiaHR0cDovL25zLmFkb2JlLmNvbS9GbG93cy8xLjAvIj4NCl0+DQo8c3ZnIHZlcnNpb249IjEuMSINCgkgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeG1sbnM6YT0iaHR0cDovL25zLmFkb2JlLmNvbS9BZG9iZVNWR1ZpZXdlckV4dGVuc2lvbnMvMy4wLyINCgkgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIxMnB4IiBoZWlnaHQ9IjEwcHgiIHZpZXdCb3g9IjAgLTEuNDk2IDEyIDEwIiBvdmVyZmxvdz0idmlzaWJsZSIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIC0xLjQ5NiAxMiAxMCINCgkgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8ZGVmcz4NCjwvZGVmcz4NCjxwb2x5Z29uIHBvaW50cz0iMCwwIDQuMjA1LDcuMDA5IDguNDEsMCAiLz4NCjwvc3ZnPg0K);
-  &:active option {
-    color: black;
-  }
 }
 
-@media only screen and (min-width: 768px) {
-  /* @group Fieldset horizontal */
-  .horizontal {
+fieldset {
+  border-style: none;
+  margin: 0 0 1em;
+  min-width: inherit;
+ 
+    &.horizontal {
+      @media only screen and (min-width: 768px) { 
     width: 100%;
     .legend {
       width: auto;
@@ -88,15 +55,21 @@ select {
       font-weight: bold;
       letter-spacing: 0;
       text-transform: none;
+      float: left;
     }
     > label {
       position: relative;
-      float: left;
+      display: block;
       padding-right: 65%;
       width: 35%;
       left: 0;
-      padding-top: 1px;
-      margin-bottom: 1em;
+
+      &:after {
+        content: " ";
+        height: 0;
+        display: block;
+        clear: both;
+      }
       > {
         *, select {
           position: relative;
@@ -118,6 +91,7 @@ select {
         float: left;
       }
     }
+
     label {
       .iconified {
         float: none;
@@ -130,11 +104,9 @@ select {
       sup.required {
         float: none;
         position: static;
-        line-height: 10px;
         margin-top: 0;
         vertical-align: baseline;
         filter: none;
-        line-height: 20px;
         margin: 0;
       }
       textarea {
@@ -160,142 +132,63 @@ select {
           font-style: normal;
           top: 0;
         }
-        label {
-          font-weight: normal;
-          font-style: normal;
-          position: relative;
-          border-style: none;
-          width: auto;
-          float: none;
-        }
         .legend {
-          width: 48% !important;
+          width: 48%;
           display: inline;
           text-align: left;
           padding: 0;
           position: relative;
-          float: left;
+          display: block;
           font-weight: normal;
           font-style: normal;
           margin: 0 0 0 -54%;
           text-transform: none;
           letter-spacing: 0;
         }
+        label {
+          font-weight: normal;
+          font-style: normal;
+          position: relative;
+          border-style: none;
+          width: auto;
+        }
       }
     }
   }
 }
 
-/* @group Fieldset vertical */
-
-fieldset.vertical {
-  width: 100%;
-}
-
-.vertical {
-  fieldset .legend {
-    font-weight: normal;
-    font-style: normal;
-  }
+@mixin form-vertical () {
   label {
+    position: relative;
+  }
+
+  input,
+  textarea,
+  select {
+    display: block;
+    margin-top: 0.5em;
+    width: 100%;
+  }
+
+  .legend,
+  > label {
     font-weight: bold;
     display: block;
-    font-size: 12px;
-    margin-bottom: 0;
   }
-  fieldset {
-    .legend, legend {
-      font-weight: bold;
-      display: block;
-      font-size: 12px;
-      margin-bottom: 0;
-    }
-  }
-  .group label {
-    font-weight: normal;
-    font-style: normal;
-  }
-  label {
-    margin-bottom: 1em;
-  }
-  > br {
-    display: none;
-  }
-  input, select {
-    clear: both;
-    display: block;
+
+  .legend {
+    margin-bottom: 0.5em;
   }
 }
 
-.select2-container {
-  clear: both;
-  display: block;
-}
 
-.vertical {
-  input[type="checkbox"] {
-    clear: none;
-    display: inline;
-  }
-  fieldset.group {
-    input, select {
-      clear: none;
-      display: inline;
+  @media only screen and (max-width: 767px) {
+    &.horizontal {
+      @include form-vertical();
     }
   }
-  p {
-    margin-bottom: 0;
-    font-weight: normal;
-    font-style: normal;
+
+  &.vertical {
+    @include form-vertical();
   }
-}
-
-@media only screen and (max-width: 767px) {
-  .horizontal {
-    fieldset .legend {
-      font-weight: normal;
-      font-style: normal;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      font-size: 12px;
-      color: rgba(0, 0, 0, 0.5);
-      margin-bottom: 0;
-    }
-    fieldset {
-      .legend, legend {
-        font-weight: bold;
-        display: block;
-        font-size: 12px;
-        color: rgba(0, 0, 0, 0.5);
-        margin-bottom: 0;
-      }
-    }
-
-    label {
-      margin-bottom: 1em;
-    }
-
-    input, select {
-      clear: both;
-      display: block;
-    }
-
-    fieldset.group {
-      input, select {
-        clear: none;
-        display: inline;
-      }
-    }
-
-    p {
-      margin-bottom: 0;
-    }
-  }
-}
-
-fieldset {
-  border-style: none;
-  margin: 0 0 1em;
 }
