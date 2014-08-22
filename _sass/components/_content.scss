@@ -1,8 +1,11 @@
 #content {
-	width: 80%;
-	margin-right: auto;
-	margin-left: auto;
+	@media only screen and (min-width: 768px) {
+		width: 80%;
+	}
+	padding: 0 5%;
 	padding-top: 3%;
 	padding-bottom: 3%;
+	margin-right: auto;
+	margin-left: auto;
 	clear: left;
 }
