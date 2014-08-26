@@ -1,8 +1,11 @@
 {% capture src %}{{ include.src }}{% endcapture %}
 
 <form action="{{ include.action }}">
-	<fieldset class="{% if include.layout == 'horizontal' %}horizontal{% else %}vertical{% endif %}">
+	<fieldset class="section {% if include.layout == 'horizontal' %}horizontal{% else %}vertical{% endif %}">
 		{% for item in site.data.[src] %}
+			{% if item.type == "title" %}
+				<h3>{{item.label}}</h3>
+			{% endif %}	
 			{% if item.type == "checklist" %}
 				<fieldset class="group pat-checklist {{ item.variation }}">
 					<legend>{{ item.label }}</legend>
@@ -25,13 +28,25 @@
 			{% endif %}	
 			{% if item.type == "text" %}
 				<label>
-					{{ item.label }} <input type="text" value="{{ item.value }}" /> 
+					{{ item.label }} <input type="text" size="{{ item.chars }}" placeholder="{{ item.placeholder }}" value="{{ item.value }}" /> 
 				</label>
 				<br/>
 			{% endif %}	
+			{% if item.type == "date" %}
+				<label>
+					{{ item.label }} <input type="date" size="{{ item.chars }}" value="{{ item.value }}" />
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "email" %}
+				<label>
+					{{ item.label }} <input type="email" size="{{ item.chars }}" value="{{ item.value }}" />
+				</label>
+				<br/>
+			{% endif %}
 			{% if item.type == "password" %}
 				<label>
-					{{ item.label }} <input type="password" value="{{ item.value }}" />
+					{{ item.label }} <input type="password" size="{{ item.chars }}" value="{{ item.value }}" />
 				</label>
 				<br/>
 			{% endif %}
@@ -41,12 +56,42 @@
 				</label>
 				<br/>
 			{% endif %}
+
+			{% if item.type == "multi" %}
+				<fieldset class="group layout-{{item.layout}}">
+					<legend>{{ item.label }}</legend>
+					{% for subitem in item.items %}
+						{% if subitem.type == 'text' %}
+							<label>
+								{{ subitem.label }}
+								<input type="text" {% if subitem.chars %}size="{{ subitem.chars }}"{% endif %} placeholder="{{ subitem.placeholder }}" value="{{ subitem.value }}" />  
+							</label>
+						{% endif %}
+						{% if subitem.type == 'date' %}
+							<label>
+								{{ subitem.label }}
+								<input type="date" {% if subitem.chars %}size="{{ subitem.chars }}"{% endif %} placeholder="{{ subitem.placeholder }}" value="{{ subitem.value }}" />  
+							</label>
+						{% endif %}
+						{% if subitem.type == 'number' %}
+							<label>
+								{{ subitem.label }}
+								<input type="number" {% if subitem.chars %}size="{{ subitem.chars }}"{% endif %} placeholder="{{ subitem.placeholder }}" value="{{ subitem.value }}" />  
+							</label>
+						{% endif %}
+						{% if subitem.type == 'label' %}
+							{{subitem.label}}
+						{% endif %}
+					{% endfor %}
+				</fieldset>
+			{% endif %}
+
 			{% if item.type == "separator" %}
 				{% if item.variation == "visible" %}
 				    <hr class="pat-separator" />
 				{% else %}
 					</fieldset>
-					<fieldset class="{% if item.layout == 'horizontal' %}horizontal{% else %}vertical{% endif %}">
+					<fieldset class="section {% if item.layout == 'horizontal' %}horizontal{% else %}vertical{% endif %}">
 				{% endif %}
 			{% endif %}
 			{% if item.type == "file" %}
