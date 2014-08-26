@@ -28,6 +28,25 @@ select {
   }
 }
 
+.currency-field {
+  position: relative;
+  &:after {
+    content: " ";
+    display: block;
+    height: 1px;
+    width: 1px;
+  }
+
+  abbr {
+    position: absolute;
+    left: 0.5em;
+  }
+
+  input {
+    padding-left: 1.5em;
+  } 
+}
+
 select {
   /*Next 2 lines is a bizarre patch to make misbehaving FF hide the original dropdown button*/
   text-indent: 0.01px;
@@ -180,6 +199,12 @@ fieldset {
 
   .legend {
     margin-bottom: 0.5em;
+  }
+
+  .currency-field {
+    display: block;
+
+    abbr {font-weight: normal; top: 0.2em}
   }
 }
 

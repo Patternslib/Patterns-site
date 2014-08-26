@@ -12,14 +12,14 @@
 					{% if item.variation == 'checkbox' %}
 						{% for subitem in item.items %}
 							<label>
-								<input name="subitem.name" type="checkbox"> {{ subitem.label }}
+								<input name="{{subitem.name}}" type="checkbox"> {{ subitem.label }}
 							</label>
 							<br/>
 						{% endfor %}
 					{% else %}
 						{% for subitem in item.items %}
 							<label>
-								<input name="item.name" type="radio"> {{ subitem.label }}
+								<input name="{{item.name}}" type="radio"> {{ subitem.label }}
 							</label>
 							<br/>
 						{% endfor %}
@@ -41,6 +41,16 @@
 			{% if item.type == "email" %}
 				<label>
 					{{ item.label }} <input type="email" size="{{ item.chars }}" value="{{ item.value }}" />
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "currency" %}
+				<label>
+					{{ item.label }} 
+					<span class="currency-field">
+						<abbr title="Euro" class="currency">{{item.symbol}}</abbr>
+						<input type="number" class="currency" size="{{ item.chars }}" value="{{ item.value }}" />
+					</span>
 				</label>
 				<br/>
 			{% endif %}
