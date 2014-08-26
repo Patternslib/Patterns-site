@@ -14,7 +14,7 @@ select {
   padding: 0.2em 0.5em;
   margin: -0.2em 0;
   box-sizing: border-box;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: #efefef;
   border: none;
   color: inherit;
   font-size: 100%;
@@ -44,6 +44,10 @@ fieldset {
   border-style: none;
   margin: 0 0 1em;
   min-width: inherit;
+
+    &.section {
+      margin: 0 0 2em;
+    }
  
     &.horizontal {
       @media only screen and (min-width: 768px) { 
@@ -114,44 +118,42 @@ fieldset {
       }
     }
 
-    fieldset,
+    fieldset.group,
     div.group {
-      &.group {
-        width: 65%;
-        clear: left;
-        border-style: none;
-        margin: 0 0 1em;
-        padding-left: 35%;
+      width: 65%;
+      clear: left;
+      border-style: none;
+      margin: 0 0 1.3em;
+      padding-left: 35%;
+      position: relative;
+      padding-bottom: 0;
+      padding-top: 0;
+      legend {
+        position: absolute;
+        left: 0;
+        font-weight: normal;
+        font-style: normal;
+        top: 0;
+      }
+      .legend {
+        width: 48%;
+        display: inline;
+        text-align: left;
+        padding: 0;
         position: relative;
-        padding-bottom: 0;
-        padding-top: 0;
-        legend {
-          position: absolute;
-          left: 0;
-          font-weight: normal;
-          font-style: normal;
-          top: 0;
-        }
-        .legend {
-          width: 48%;
-          display: inline;
-          text-align: left;
-          padding: 0;
-          position: relative;
-          display: block;
-          font-weight: normal;
-          font-style: normal;
-          margin: 0 0 0 -54%;
-          text-transform: none;
-          letter-spacing: 0;
-        }
-        label {
-          font-weight: normal;
-          font-style: normal;
-          position: relative;
-          border-style: none;
-          width: auto;
-        }
+        display: block;
+        font-weight: normal;
+        font-style: normal;
+        margin: 0 0 0 -54%;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      label {
+        font-weight: normal;
+        font-style: normal;
+        position: relative;
+        border-style: none;
+        width: auto;
       }
     }
   }
