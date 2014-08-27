@@ -16,7 +16,7 @@ A tag should always start with a certain 'trigger character'. A typical trigger 
 
     <textarea class="pat-comment-box" data-pat-comment-box="trigger-character: @"></textarea>
 
-The next thing the pattern needs to know is the location of the feedback list. This location is also the posting address at the same time. This address may or may not be the same as the address of the form action the text area is placed in. Feedback for the list is accepted in json format.
+The next thing the pattern needs to know is the location of the feedback list. This location is also the posting address at the same time. This address may or may not be the same as the address of the form action the text area is placed in. Feedback for the list is accepted in JSON format.
 
 Consider the following example markup:
 
@@ -37,19 +37,34 @@ The markup of the text area is automatically converted into a container element 
         </p>
     </div>
 
-Every text mutation is in realtime copied over to `<p class="pat-comment-box-shadow-content">`. The boilerplate CSS displays this content behind the transparent text area and uses the same font treatment for both elements. This way the illusion is created that one can type and select any text in the text area, without the problems that would come with a rich editor such as less clean markup after pasting rich text. 
+Every text mutation is in realtime copied over to `<p class="pat-comment-box-shadow-content">`. The boilerplate CSS displays this content behind the transparent text area and uses the same font treatment for both elements. This way the illusion is created that one can type and select any text in the text area, without the problems that would come with a rich editor such as dirty markup with inline styles after pasting rich text. 
 
 Any text string that starts with a trigger character is spanned in the shadow content (not in the text area content). For example: 
 
     <p class="pat-comment-box-shadow-content">
-        I'm so happy to use <span class="tag">#patternslib</span>!
+        I'm so happy to use <span" class="tag">#patternslib<spana>!
     </p>
     
-The span is closed before the next space or interpunction character. 
+The span closed before the next space or interpunction character. The span is immediately created at entering a trigger character that has a space in front of it, or a trigger character that is the first character of paragraph. 
 
-These spans are used for colour coding the tags in the content.
+The spans are used for colour coding the tags in the content.
 
+### Contextual menu
 
+A contextual menu is inserted by the script when a trigger character plus extra characters is entered. The focus is moved to the first item in the list of tags and the user may either click on of the items, or use the keyboard to move the selection up and down and enter a tag.
 
+Right now I can see two technical solutions to be considered.
 
+#### Solution 1: Barebones solution with simple markup, integral to the pattern
+We could consider to insert the contextual menu inside the span, as a another span containing anchors with the individual suggestions. 
 
+Pros: No positioning headaches. The menu box appears always in the right place as it can be positioned with css with absolute positioning with the span as its relative positioned parent. 
+Cons: No search box available.
+
+#### Solution 2: Dependency on pat-tooltip
+Use pat-tooltip to create a tooltip and inject a fully fledged item-selector component in there. So with search and (multi) select. 
+
+Pros: Search available
+Cons: Much more complex, dependencies
+
+I would opt for solution 1, as my gut feeling says we will have quicker results and search is only important for tags added with the tags button of update-social. Inline tags require more of an auto complete pattern, than a search pattern and solution 1 provides just that.
