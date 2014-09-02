@@ -26,18 +26,18 @@ Prerequisites:
 
 - node.js >0.10 install from nodejs.org
 
-You can check node is present via::
+You can check node is present via:
 
     nodejs -v
 
 - jekyll > 1.5 install following the instructions on https://help.github.com/articles/using-jekyll-with-pages
 
-On ubuntu::
+On ubuntu:
 
     sudo apt-get install ruby1.9.3
     sudo gem install bundler
 
-Now install jekyll itself.
+Now install jekyll itself:
 
     git clone git@github.com:Patternslib/Patterns-site.git
     cd Patterns-site
