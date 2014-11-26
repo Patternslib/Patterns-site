@@ -3,7 +3,7 @@ layout: shell
 state: home
 ---
 
-<section class="patterns tiles">
+<section class="container patterns tiles">
 	{% for post in site.posts %}
 		{% if post.layout == 'demo' %}
 		    <a href="{{ post.url }}" title="{{ post.description }}" class="pattern-tile cat-{{ post.category }}">
