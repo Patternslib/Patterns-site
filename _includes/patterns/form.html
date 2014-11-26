@@ -1,0 +1,135 @@
+{% capture src %}{{ include.src }}{% endcapture %}
+
+<form action="{{ include.action }}">
+	<fieldset class="section {% if include.layout == 'horizontal' %}horizontal{% else %}vertical{% endif %}">
+		{% for item in site.data.[src] %}
+			{% if item.type == "title" %}
+				<h3>{{item.label}}</h3>
+			{% endif %}	
+			{% if item.type == "checklist" %}
+				<fieldset class="group pat-checklist {{ item.variation }}">
+					<legend>{{ item.label }}</legend>
+					{% if item.variation == 'checkbox' %}
+						{% for subitem in item.items %}
+							<label>
+								<input name="{{subitem.name}}" type="checkbox"> {{ subitem.label }}
+							</label>
+							<br/>
+						{% endfor %}
+					{% else %}
+						{% for subitem in item.items %}
+							<label>
+								<input name="{{item.name}}" type="radio"> {{ subitem.label }}
+							</label>
+							<br/>
+						{% endfor %}
+					{% endif %}
+				</fieldset>	
+			{% endif %}	
+			{% if item.type == "text" %}
+				<label>
+					{{ item.label }} <input type="text" size="{{ item.chars }}" placeholder="{{ item.placeholder }}" value="{{ item.value }}" /> 
+				</label>
+				<br/>
+			{% endif %}	
+			{% if item.type == "date" %}
+				<label>
+					{{ item.label }} <input type="date" size="{{ item.chars }}" value="{{ item.value }}" />
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "email" %}
+				<label>
+					{{ item.label }} <input type="email" size="{{ item.chars }}" value="{{ item.value }}" />
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "currency" %}
+				<label>
+					{{ item.label }} 
+					<span class="currency-field">
+						<abbr title="Euro" class="currency">{{item.symbol}}</abbr>
+						<input type="number" class="currency" size="{{ item.chars }}" value="{{ item.value }}" />
+					</span>
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "password" %}
+				<label>
+					{{ item.label }} <input type="password" size="{{ item.chars }}" value="{{ item.value }}" />
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "textarea" %}
+				<label>
+					{{ item.label }} <textarea rows="{{item.rows}}">{{ item.value }}</textarea>
+				</label>
+				<br/>
+			{% endif %}
+
+			{% if item.type == "multi" %}
+				<fieldset class="group layout-{{item.layout}}">
+					<legend>{{ item.label }}</legend>
+					{% for subitem in item.items %}
+						{% if subitem.type == 'text' %}
+							<label>
+								{{ subitem.label }}
+								<input type="text" {% if subitem.chars %}size="{{ subitem.chars }}"{% endif %} placeholder="{{ subitem.placeholder }}" value="{{ subitem.value }}" />  
+							</label>
+						{% endif %}
+						{% if subitem.type == 'date' %}
+							<label>
+								{{ subitem.label }}
+								<input type="date" {% if subitem.chars %}size="{{ subitem.chars }}"{% endif %} placeholder="{{ subitem.placeholder }}" value="{{ subitem.value }}" />  
+							</label>
+						{% endif %}
+						{% if subitem.type == 'number' %}
+							<label>
+								{{ subitem.label }}
+								<input type="number" {% if subitem.chars %}size="{{ subitem.chars }}"{% endif %} placeholder="{{ subitem.placeholder }}" value="{{ subitem.value }}" />  
+							</label>
+						{% endif %}
+						{% if subitem.type == 'label' %}
+							{{subitem.label}}
+						{% endif %}
+					{% endfor %}
+				</fieldset>
+			{% endif %}
+
+			{% if item.type == "separator" %}
+				{% if item.variation == "visible" %}
+				    <hr class="pat-separator" />
+				{% else %}
+					</fieldset>
+					<fieldset class="section {% if item.layout == 'horizontal' %}horizontal{% else %}vertical{% endif %}">
+				{% endif %}
+			{% endif %}
+			{% if item.type == "file" %}
+				<label>
+					{{ item.label }} <input type="file" />
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "select" %}
+				<label>
+					{{ item.label }}
+					<select name="{{ item.name }}">
+						{% for subitem in item.items %}
+							<option value="{{ subitem.value }}" {% if subitem.selected == 'selected' %}selected{% endif %}> 
+								{{ subitem.label }}
+							</option>
+						{% endfor %}
+					</select>
+				</label>
+				<br/>
+			{% endif %}
+			{% if item.type == "button-bar" %}
+				<div class="group button-bar {{ item.class }}">
+					{% for subitem in item.items %}
+						<button type="{{ subitem.type }}">{{ subitem.label }}</button>
+					{% endfor %}
+				</div>
+			{% endif %}
+		{% endfor %}
+	</fieldset>
+</form>

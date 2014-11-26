@@ -1,0 +1,45 @@
+.pattern-tile {
+	@media only screen and (min-width: 768px) {
+		float: left;
+		width: 150px;
+	}
+	overflow: hidden;
+	display: block;
+	color: white;
+	text-decoration: none;
+	@media only screen and (min-width: 768px) {
+		margin: 0 10px 20px;
+	}
+	@media only screen and (max-width: 767px) {
+		margin: 0 0 20px;
+	}
+	margin: 0 10px 20px;
+	padding-bottom: 15px;
+	
+	figure {
+		
+		img {
+			@media only screen and (min-width: 768px) {
+				width: 100%
+			}
+			@media only screen and (max-width: 767px) {
+				width: 50%;
+				display: block;
+				margin: 0 auto;
+			}
+	}
+		figcaption {
+			text-align: center;
+		}
+	}
+}
+
+.cat-form {
+	@extend .pattern-tile;
+	background-color: $cat-form;
+}
+
+.cat-layout {
+	@extend .pattern-tile;
+	background-color: $cat-layout;
+}

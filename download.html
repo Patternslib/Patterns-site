@@ -1,0 +1,38 @@
+---
+layout: shell
+state: download
+---
+
+<form action="getBundle" id="download" class="download">
+
+	<fieldset class="checklist pat-checklist component-index" id="component-index">
+		<div class="functions">
+			<button class="select-all" type="button">Select all</button>
+			<button class="deselect-all" type="button">Deselect all</button>
+		</div>
+		<fieldset class="listing">
+			{% for post in site.posts %}
+				{% if post.layout == 'demo' %}
+				    <label class="{{ post.id }}" title="{{ post.description }}">
+		   			    <input type="checkbox" name="{{ post.id }}" checked/>
+		   			    {{ post.title }}
+		   			</label>
+				{% endif %}
+			{% endfor %}
+		</fieldset>
+	</fieldset>
+
+    <fieldset class="button-bar">
+		<fieldset class="bundle-type pat-checklist radio">       
+	       <h4>Bundle type</h4>  
+	        <label>
+	            <input type="radio" name="minify" value="" checked> Regular</input>
+	        </label>
+	        <label>
+	            <input type="radio" name="minify" value="minify"> Minified</input>
+	        </label>
+	    </fieldset>
+    	<button type="submit">Download bundle</button>
+	</fieldset>
+
+</form>
