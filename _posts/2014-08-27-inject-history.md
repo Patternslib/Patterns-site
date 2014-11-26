@@ -1,0 +1,8 @@
+---
+layout: demo
+title: Inject history
+category: form
+description: "The equaliser pattern makes sure elements in a row have the same height."
+---
+
+# Documentation 
