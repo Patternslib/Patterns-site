@@ -1,6 +1,6 @@
 ---
 layout: demo
-title: navigation
+title: Navigation
 category: form
 description: ""
 ---
