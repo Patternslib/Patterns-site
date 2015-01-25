@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Laag_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="388.48px" height="356.982px" viewBox="0 0 388.48 356.982" enable-background="new 0 0 388.48 356.982"
-	 xml:space="preserve">
-<path d="M357.409,90.891l-43.513-20.987v-8.542H76.152v237.746h237.744V136.349l42.735-44.646L357.409,90.891z M303.195,288.406
-	H86.854V72.062h205.663l-102.456,130.36l-46.563-46.563l-27.978,50.495l77.804,55.662l0.042-0.042l0.142,0.142l6.365-6.646
-	l21.619-21.617l-0.473-0.474l82.176-85.851V288.406z"/>
+	 viewBox="-256 536 512 512" enable-background="new -256 536 512 512" xml:space="preserve">
+<g id="check-circle-outline">
+	<path fill="#FFFFFF" d="M-47.5,769.5l-16.6,16.6l53.3,53.2L107.5,721l-16.6-16.6L-10.8,806.2L-47.5,769.5z M95.7,792
+		c0,52.1-42.6,94.7-94.7,94.7s-94.7-42.6-94.7-94.7s42.6-94.7,94.7-94.7c9.5,0,17.8,1.2,26,3.6L46,682c-14.2-4.7-29.6-8.3-45-8.3
+		c-65.1,0-118.3,53.2-118.3,118.3S-64.1,910.3,1,910.3S119.3,857.1,119.3,792H95.7z"/>
+</g>
 </svg>
