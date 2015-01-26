@@ -1,9 +1,9 @@
 ---
 layout: demo
 title: Slideshow builder
-category: form
+category: fancy-stuff
 description: "This patterns provides a simple method to create custom slideshows."
-------
+---
 
 ## Documentation
 

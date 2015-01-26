@@ -1,7 +1,7 @@
 ---
 layout: demo
 title: Collapsible
-category: form
+category: fancy-stuff
 description: ""
 ---
 

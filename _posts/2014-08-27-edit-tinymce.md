@@ -1,7 +1,7 @@
 ---
 layout: demo
 title: Edit Tinymce
-category: form
+category: fancy-stuff
 description: ""
 ---
 

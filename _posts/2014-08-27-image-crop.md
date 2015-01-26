@@ -1,9 +1,10 @@
 ---
 layout: demo
 title: Image Crop
-category: form
+category: fancy-stuff
 description: ""
-------
+---
+
 # Documentation
 
 For a very basic usage of this pattern:

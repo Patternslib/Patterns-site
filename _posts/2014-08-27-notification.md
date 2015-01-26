@@ -1,7 +1,7 @@
 ---
 layout: demo
 title: Notification
-category: form
+category: fancy-stuff
 description: "Notifications are used in applications to notify the user of status changes that happen within the application. Notifications could appear as inline messages, or projected (temporarily) as an overlay not he screen."
 ---
 
