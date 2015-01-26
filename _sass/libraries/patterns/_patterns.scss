@@ -4,6 +4,18 @@
 
 @import "fontello/css/fontello.css";
 
+// Colours
+
+$colour-alert: red !default;
+$colour-success: green !default;
+$colour-notice: #FFFFD6 !default;
+$colour-warning: orange !default;
+
+// Responsive variables
+
+$break-small: 768px !default;
+$break-large: 769px !default;
+
 // Each pattern comes with a mixin. They may also be included seperately
 // in a project and applied on custom markup.
 

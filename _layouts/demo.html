@@ -5,11 +5,9 @@ layout: shell
 <article>
 	<h1>{{ page.title }}</h1>
 
-	<h2>Demo</h2>
-
-	<a href="/demo/{{ page.id }}/index.html#content" class="pat-inject" data-pat-inject="target: self; trigger: autoload">Load demo</a>
-
-	<h2>Documentation</h2>
+	<div id="demo">
+		<a href="/demo/{{ page.id }}/index.html#content" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>	
+	</div>
 
 	{{ content }}
 </article>

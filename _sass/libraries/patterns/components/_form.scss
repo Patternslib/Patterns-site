@@ -1,5 +1,13 @@
 @import "../components/checklist";
 
+form section.help .panel-content {  
+  padding-bottom: 2em;
+}
+
+form p.instruction .pat-message {  
+  margin: 1em 0 0;
+}
+
 input,
 textarea,
 select {
@@ -28,6 +36,30 @@ select {
   }
 }
 
+input[type="range"] {
+  border-radius: 1em;
+  padding: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb{
+   -webkit-appearance:none !important;  
+   width:2em;
+   height:0.8em;
+   -webkit-appearance: none;
+    border-radius: 0.4em;
+    -moz-border-radius: 0.4em;
+    -wekkit-border-radius: 0.4em;
+    border: none;
+    background: silver;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a90329', endColorstr='#6d0019',GradientType=1 );
+      
+    @media only screen and (max-width: 768px) { 
+      height: 2em;
+      border-radius: 50%;
+    }
+ }
+
+
 .currency-field {
   position: relative;
   &:after {
@@ -42,7 +74,8 @@ select {
     left: 0.5em;
   }
 
-  input {
+  input,
+  output {
     padding-left: 1.5em;
   } 
 }
@@ -84,6 +117,7 @@ fieldset {
       position: relative;
       display: block;
       padding-right: 65%;
+      margin-bottom: 1em;
       width: 35%;
       left: 0;
 
@@ -94,7 +128,7 @@ fieldset {
         clear: both;
       }
       > {
-        *, select {
+        input, textarea, select, .composed {
           position: relative;
           vertical-align: top;
           max-width: 170%;
@@ -138,11 +172,13 @@ fieldset {
     }
 
     fieldset.group,
-    div.group {
+    div.group,
+    .help,
+    .instruction {
       width: 65%;
       clear: left;
       border-style: none;
-      margin: 0 0 1.3em;
+      margin: 0 0 1em 0;
       padding-left: 35%;
       position: relative;
       padding-bottom: 0;
@@ -173,6 +209,7 @@ fieldset {
         position: relative;
         border-style: none;
         width: auto;
+        margin: 0;
       }
     }
   }
