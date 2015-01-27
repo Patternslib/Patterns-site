@@ -1,12 +1,9 @@
-
 ---
 layout: demo
 title: Equaliser
 category: layout
 description: "The equaliser pattern makes sure elements in a row have the same height."
 ---
-
-## Documentation
 
 A common layout problem is creating a group of columns that are visually
 outlined to be of equal height, regardless the content in the columns. In CSS
