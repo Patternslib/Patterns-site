@@ -5,8 +5,6 @@ category: fancy-stuff
 description: ""
 ---
 
-# Documentation
-
 A *collapsible* is an element where content is can be shown or visible
 by clicking on a triggering element. One way to use this is to implement
 a very minimal accordeon.
