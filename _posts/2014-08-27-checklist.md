@@ -2,13 +2,11 @@
 layout: demo
 title: Checklist
 category: form
-description: ""
+description: "The checklist pattern provides a convenient method to add options to
+select and deselect all checkboxes in a block. "
 ---
 
-## Documentation
-The checklist pattern provides a convenient method to add options to
-select and deselect all checkboxes in a block. This requires two changes
-in your markup:
+Patterns checklists require the following from your markup:
 
 1.  add a `pat-checklist` class to the containing element
 2.  add a select and deselect buttons

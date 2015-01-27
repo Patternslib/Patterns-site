@@ -2,10 +2,8 @@
 layout: demo
 title: Checked Flag
 category: form
-description: ""
+description: "Checked flag dynamically puts a class 'checked on the label of any checkbox or radio button that is checked for rich styling purposes."
 ---
-
-# Documentation
 
 You may want to form components differently depending on the state of
 their checkbox or radio button. Patterns supports this by automatically

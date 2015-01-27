@@ -2,12 +2,11 @@
 layout: demo
 title: Collapsible
 category: fancy-stuff
-description: ""
+description: "A *collapsible* is an element where content is can be shown or visible
+by clicking on a triggering element."
 ---
 
-A *collapsible* is an element where content is can be shown or visible
-by clicking on a triggering element. One way to use this is to implement
-a very minimal accordeon.
+ One way to use collapsible is to implement a very minimal accordeon.
 
     <section class="pat-collapsible">
       <h3>About us</h3>
