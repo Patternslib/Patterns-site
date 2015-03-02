@@ -5,8 +5,6 @@ category: form
 description: "Auto suggest completes a user's input as he types, providing hints of possible input values in a dropdown list underneath the input field."
 ---
 
-## Documentation
-
 This pattern takes three arguments:
 
 - `words`: a list of words which will be automatically suggested when they match what the user types
@@ -18,6 +16,6 @@ of type reset inside the same form as the input.
 
     <button type="reset">Reset</button>
 
-## Example
+# Example markup
 
     <input type="text" class="pat-autosuggest" data-pat-autosuggest="words: Apple, Pear, Banana; pre-fill: Apple; placeholder: Search by tag…" />
