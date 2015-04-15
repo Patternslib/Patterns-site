@@ -1,0 +1,20 @@
+{
+  "name": "Patterns-site",
+  "version": "0.0.1",
+  "homepage": "https://github.com/Patternslib/Patterns-site",
+  "authors": [
+    "JC Brand <jc@opkode.com>"
+  ],
+  "description": "The patternslib.com website",
+  "keywords": [
+    "Patterns",
+    "Patternslib"
+  ],
+  "license": "BSD",
+  "resolutions": {
+    "jquery": "1.11.1"
+  },
+  "dependencies": {
+    "patternslib": "~2.0.9"
+  }
+}

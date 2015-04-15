@@ -1,0 +1,31 @@
+{
+  "name": "Patterns-site",
+  "version": "0.0.1",
+  "title": "The patternslib.com website",
+  "description": "Patterns is a JavaScript library that enables designers to build rich interactive prototypes without the need for writing any Javascript. All events are triggered by classes and other attributes in the HTML, without abusing the HTML as a programming language. Accessibility, SEO and well structured HTML are core values of Patterns.",
+  "author": {
+    "name": "Patterns developers"
+  },
+  "licenses": [
+    {
+      "type": "BSD",
+      "URL": "LICENSE.txt"
+    }
+  ],
+  "devDependencies": {
+    "http-server": "^0.7.5",
+    "bower": "latest"
+  },
+  "homepage": "http://patternslib.com",
+  "docs": "https://gitub.com/Patternslib/Patterns-site",
+  "maintainers": [
+    {
+      "name": "Cornelis Kolbach",
+      "url": "http://cornae.com"
+    },
+    {
+      "name": "JC Brand",
+      "email": "jc@opkode.com"
+    }
+  ]
+}
