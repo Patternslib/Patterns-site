@@ -1,4 +1,4 @@
---- 
+---
 layout: shell
 ---
 
@@ -7,9 +7,11 @@ layout: shell
 </h1>
 
 <div id="demo">
-	<a href="/demo/{{ page.id }}/index.html#content" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>	
+	<a href="/src/bower_components/patternslib/demo/{{page.id}}/index.html#content"
+        class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
 </div>
 
 <article>
-	{{ content }}
+    <a href="/src/bower_components/patternslib/demo/{{page.id}}/documentation.md"
+        class="pat-inject" data-pat-inject="data-type: markdown; source: ::element; target: self::element; trigger: autoload">Documentation</a>
 </article>

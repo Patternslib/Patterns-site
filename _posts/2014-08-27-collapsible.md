@@ -6,7 +6,7 @@ description: "A *collapsible* is an element where content is can be shown or vis
 by clicking on a triggering element."
 ---
 
- One way to use collapsible is to implement a very minimal accordeon.
+One way to use collapsible is to implement a very minimal accordeon.
 
     <section class="pat-collapsible">
       <h3>About us</h3>
