@@ -13,7 +13,6 @@
     }
   ],
   "devDependencies": {
-    "http-server": "^0.7.5",
     "bower": "latest"
   },
   "homepage": "http://patternslib.com",
