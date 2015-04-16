@@ -10,32 +10,30 @@ module Jekyll
   # The Site class is a built-in Jekyll class with access to global site config information.
   class Site
 
-    DEMO_FOLDER = 'src/bower_components/patternslib/demo/'
+    DEMO_FOLDER = 'src/bower_components/patternslib/demo'
     
-    def generate_docs 
+    def generate_docs(site)
+      FileUtils.cp_r(DEMO_FOLDER, "./")
+
       folders = Pathname.new(DEMO_FOLDER).children.select { |c| c.directory? }
       folders.each() do |path|
         pattern_name = path.sub(/^#{DEMO_FOLDER}/, '') 
-        # name = File.basename('filename', '.doc')[0,4]
-        dest_folder = "_site/demo/#{pattern_name}/"
-        ["documentation.md", "index.html"].each() do |file|
-          begin  
-            FileUtils.cp("#{path}/#{file}", dest_folder)
-          rescue Exception => e  
-              puts e.message  
-          end  
+        ["documentation.md", "index.html", "#{pattern_name}.css"].each() do |file|
+          if File.exist?("#{DEMO_FOLDER}/#{pattern_name}/#{file}")
+            site.static_files << Jekyll::StaticFile.new(site, site.source, "./demo/#{pattern_name}", file)
+          end
         end
       end
-      puts "Copied over the documentation files from Patternslib into _site/demo"
+      puts "Copied over the documentation files from Patternslib into _site/${pattern}"
     end
   end
 
   # Jekyll hook - the generate method is called by jekyll, and generates all the project pages.
-  class GenerateProjects < Generator
+  class GenerateDocs < Generator
     safe true
     priority :low
     def generate(site)
-      site.generate_docs
+      site.generate_docs site
     end
   end
 end
