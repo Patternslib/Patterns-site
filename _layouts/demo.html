@@ -7,10 +7,9 @@ layout: shell
 </h1>
 
 <div id="demo">
-    <!-- <a href="/demo/{{page.id}}/index.html#content" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a> -->
-	<a href="/demo/{{ page.id }}/index.html#content" class="pat-inject" data-pat-inject="target: self; trigger: autoload">Load demo</a>
+    <a href="/demo/{{ page.id }}/index.html#content" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
 </div>
 
 <article>
-    hello world
+	{{ content }}
 </article>
