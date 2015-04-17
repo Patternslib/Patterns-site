@@ -8,6 +8,7 @@ require 'diffy'
 
 module Jekyll
   PATTERNSLIB_DOCS_PATH = 'src/bower_components/patternslib/docs'
+  PATTERNSLIB_PAT_PATH = 'src/bower_components/patternslib/docs/patterns'
   COPIED_DOCS_PATH = 'docs'
 
   # The Site class is a built-in Jekyll class with access to global site config information.
@@ -18,14 +19,17 @@ module Jekyll
       # copied to Patterns-site and if there is, copy the canonical docs over.
       dirty = false
       if Dir.exist?(COPIED_DOCS_PATH)
-        folders = Pathname.new(PATTERNSLIB_DOCS_PATH).children.select { |c| c.directory? }
+        folders = Pathname.new(PATTERNSLIB_PAT_PATH).children.select { |c| c.directory? }
         folders.each() do |path|
-          pattern = path.sub(/^#{PATTERNSLIB_DOCS_PATH}\//, '')
+          pattern = path.sub(/^#{PATTERNSLIB_PAT_PATH}\//, '')
 
           Dir.foreach(path) do |item|
             next if item == '.' or item == '..'
             original = "#{path}/#{item}"
-            next if not File.file? original
+            if not File.file? original
+              puts ">> #{original}"
+              next
+            end
             basename = File.basename item
             if basename.end_with?(".sw?") or basename.end_with?("~") or basename.start_with?(".")
               next
@@ -50,15 +54,15 @@ module Jekyll
       # in the _site directory.
       patterns = []
       self.copy_docs_if_necessary()
-      folders = Pathname.new(PATTERNSLIB_DOCS_PATH).children.select { |c| c.directory? }
+      folders = Pathname.new(PATTERNSLIB_PAT_PATH).children.select { |c| c.directory? }
       folders.each() do |path|
-        pattern_name = path.sub(/^#{PATTERNSLIB_DOCS_PATH}/, '')
+        pattern_name = path.sub(/^#{PATTERNSLIB_PAT_PATH}/, '')
         patterns << pattern_name
 
         Dir.foreach(path) do |item|
           next if item == '.' or item == '..'
           next if not File.file?(item)
-          site.static_files << Jekyll::StaticFile.new(site, site.source, "#{COPIED_DOCS_PATH}/#{pattern_name}", item)
+          site.static_files << Jekyll::StaticFile.new(site, site.source, "#{COPIED_DOCS_PATH}/patterns#{pattern_name}", item)
         end
       end
     patterns
