@@ -15,6 +15,6 @@
     "jquery": "1.11.1"
   },
   "dependencies": {
-    "patternslib": "~2.0.9"
+    "patternslib": "https://github.com/Patternslib/Patterns.git#docs-refactor"
   }
 }
