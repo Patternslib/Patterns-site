@@ -27,7 +27,6 @@ module Jekyll
             next if item == '.' or item == '..'
             original = "#{path}/#{item}"
             if not File.file? original
-              puts ">> #{original}"
               next
             end
             basename = File.basename item
@@ -44,6 +43,7 @@ module Jekyll
         end
       end
       if (not Dir.exist?(COPIED_DOCS_PATH)) or dirty
+        FileUtils.rm_rf(COPIED_DOCS_PATH)
         FileUtils.cp_r(PATTERNSLIB_DOCS_PATH, COPIED_DOCS_PATH)
         puts "Copying over the documentation files from Patternslib"
       end
@@ -62,7 +62,7 @@ module Jekyll
         Dir.foreach(path) do |item|
           next if item == '.' or item == '..'
           next if not File.file?(item)
-          site.static_files << Jekyll::StaticFile.new(site, site.source, "#{COPIED_DOCS_PATH}/patterns#{pattern_name}", item)
+          site.static_files << Jekyll::StaticFile.new(site, site.source, "#{COPIED_DOCS_PATH}/patterns/#{pattern_name}", item)
         end
       end
     patterns
