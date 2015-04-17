@@ -9,47 +9,32 @@ require 'diffy'
 module Jekyll
   DEMO_FOLDER = 'src/bower_components/patternslib/demo'
 
-  class PatternPage < Page
-    def initialize(site, base, dir, pattern)
-      @site = site
-      @base = base
-      @dir = dir
-      @name = 'index.html'
-
-      self.process(@name)
-      self.read_yaml(File.join(base, '_layouts'), 'demo.html')
-      self.data['title'] = pattern.capitalize
-      self.data['layout'] = 'demo'
-      self.data['pattern'] = pattern
-      # FIXME
-      self.data['category'] = 'layout'
-      self.data['description'] = 'This is a very nice pattern'
-
-      begin
-        self.data['contents'] = File.open("#{DEMO_FOLDER}/#{pattern}/documentation.md", "rb").read
-      rescue Exception
-      end
-    end
-  end
-
   # The Site class is a built-in Jekyll class with access to global site config information.
   class Site
 
-
-    def generate_docs(site)
-
-      patterns = []
+    def copy_docs_if_necessary
+      # See if there is a difference between the canonical docs and the ones
+      # copied to Patterns-site and if there is, copy the canonical docs over.
       dirty = false
       if Dir.exist?('demo')
         folders = Pathname.new(DEMO_FOLDER).children.select { |c| c.directory? }
         folders.each() do |path|
-          pattern_name = path.sub(/^#{DEMO_FOLDER}\//, '') 
-          patterns << pattern_name
-          file1 = "demo/#{pattern_name}/index.html"
-          file2 = "#{DEMO_FOLDER}/#{pattern_name}/index.html"
-          diff = Diffy::Diff.new(file1, file2, :source => 'files').to_s(:text)
-          if not diff.empty?
-            dirty = true
+          pattern = path.sub(/^#{DEMO_FOLDER}\//, '')
+
+          Dir.foreach(path) do |item|
+            next if item == '.' or item == '..'
+            original = "#{path}/#{item}"
+            next if not File.file? original
+            basename = File.basename item
+            if basename.end_with?(".sw?") or basename.end_with?("~") or basename.start_with?(".")
+              next
+            end
+            new = "demo/#{pattern}/#{basename}"
+            diff = Diffy::Diff.new(new, original, :source => 'files').to_s(:text)
+            if not diff.empty?
+              dirty = true
+              puts "\nFile #{new} is out of sync, will be fixed now."
+            end
           end
         end
       end
@@ -57,14 +42,22 @@ module Jekyll
         FileUtils.cp_r(DEMO_FOLDER, "./")
         puts "Copying over the documentation files from Patternslib"
       end
+    end
 
+    def generate_docs(site)
+      # Make sure that the canonical docs (e.g. from Patternslib) are available
+      # in the _site directory.
+      patterns = []
+      self.copy_docs_if_necessary()
       folders = Pathname.new(DEMO_FOLDER).children.select { |c| c.directory? }
       folders.each() do |path|
-        pattern_name = path.sub(/^#{DEMO_FOLDER}/, '') 
-        ["documentation.md", "index.html", "#{pattern_name}.css", "icon.svg"].each() do |file|
-          if File.exist?("#{DEMO_FOLDER}/#{pattern_name}/#{file}")
-            site.static_files << Jekyll::StaticFile.new(site, site.source, "./demo/#{pattern_name}", file)
-          end
+        pattern_name = path.sub(/^#{DEMO_FOLDER}/, '')
+        patterns << pattern_name
+
+        Dir.foreach(path) do |item|
+          next if item == '.' or item == '..'
+          next if not File.file?(item)
+          site.static_files << Jekyll::StaticFile.new(site, site.source, "./demo/#{pattern_name}", item)
         end
       end
     patterns
@@ -77,12 +70,7 @@ module Jekyll
     priority :low
 
     def generate(site)
-      patterns = site.generate_docs site
-      # if site.layouts.key? 'demo'
-      #   patterns.each do |pattern|
-      #     site.pages << PatternPage.new(site, site.source, File.join(pattern), pattern.to_s)
-      #   end
-      # end
+      site.generate_docs site
     end
   end
 
