@@ -7,9 +7,10 @@ layout: shell
 </h1>
 
 <div id="demo">
-    <a href="/demo/{{ page.id }}/index.html#content" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
+    <a href="/demo/{{ page.id }}/index.html#demo" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
 </div>
 
 <article>
-	{{ content }}
+    <a href="/demo/{{page.id}}/documentation.md"
+        class="pat-inject" data-pat-inject="data-type: markdown; source: ::element; target: self::element; trigger: autoload">Documentation</a>
 </article>
