@@ -7,7 +7,7 @@ require 'pathname'
 require 'diffy'
 
 module Jekyll
-  PATTERNSLIB_DOCS_PATH = 'src/bower_components/patternslib/docs/patterns'
+  PATTERNSLIB_DOCS_PATH = 'src/bower_components/patternslib/docs'
   COPIED_DOCS_PATH = 'docs'
 
   # The Site class is a built-in Jekyll class with access to global site config information.
@@ -30,7 +30,7 @@ module Jekyll
             if basename.end_with?(".sw?") or basename.end_with?("~") or basename.start_with?(".")
               next
             end
-            new = "#{COPIED_DOCS_PATH}/#{pattern}/#{basename}"
+            new = "#{COPIED_DOCS_PATH}/patterns/#{pattern}/#{basename}"
             diff = Diffy::Diff.new(new, original, :source => 'files').to_s(:text)
             if not diff.empty?
               dirty = true
