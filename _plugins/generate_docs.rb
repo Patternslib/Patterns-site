@@ -7,7 +7,7 @@ require 'pathname'
 require 'diffy'
 
 module Jekyll
-  PATTERNSLIB_DOCS_PATH = 'src/bower_components/patternslib/demo'
+  PATTERNSLIB_DOCS_PATH = 'src/bower_components/patternslib/docs/patterns'
   COPIED_DOCS_PATH = 'docs'
 
   # The Site class is a built-in Jekyll class with access to global site config information.
