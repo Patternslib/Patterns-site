@@ -5,7 +5,8 @@ state: home
 
 <section class="container patterns tiles">
 	<div class="tile-cloud row">
-		{% for post in site.posts %}
+		{% assign sortedposts = site.posts | sort: 'title' %}
+		{% for post in sortedposts %}
 			{% if post.layout == 'demo' %}
 			    <a href="{{ post.url }}" title="{{ post.description }}" class="two columns pattern-tile cat-{{ post.category }}">
 					<figure>
