@@ -6,8 +6,9 @@ serve::
 patternslib::
 	@if [ ! -d "patternslib" ]; then \
 		git clone https://github.com/Patternslib/Patterns.git patternslib; \
+		cd patternslib && npm install && ./node_modules/.bin/bower update && cd ..; \
 	 fi;
-	@echo "The patternslib checkout is there. You can run jekyll now."
+	bundle exec jekyll serve
 
 designerhappy:: patternslib
 
