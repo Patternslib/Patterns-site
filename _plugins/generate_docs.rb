@@ -6,9 +6,7 @@ require 'find'
 require 'pathname'
 
 module Jekyll
-  PATTERNSLIB_DOCS_PATH = 'patternslib/docs'
-  PATTERNSLIB_PAT_PATH = 'patternslib/docs/patterns'
-  COPIED_DOCS_PATH = 'docs'
+  PATTERNSLIB_PAT_PATH = 'patternslib/src/pat'
 
   # The Site class is a built-in Jekyll class with access to global site config information.
   class Site
@@ -22,7 +20,7 @@ module Jekyll
         if File.directory?(item_path)
           self.create_static_files(site, item_path, pattern_name)
         else
-          rel_path = item_path.sub(PATTERNSLIB_PAT_PATH, "#{COPIED_DOCS_PATH}/patterns")
+          rel_path = item_path.sub(PATTERNSLIB_PAT_PATH, "src/pat")
           rel_path = rel_path.sub(item, '')
           site.static_files << Jekyll::StaticFile.new(site, "#{site.source}/patternslib", rel_path, item)
         end
