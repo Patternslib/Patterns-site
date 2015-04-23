@@ -9,8 +9,8 @@ sass:
   style: :compressed
   load_paths:
     - "_sass"
-    - "src/bower_components/patternslib/"
-    - "src/bower_components/patternslib/_sass"
+    - "patternslib"
+    - "patternslib/_sass"
 exclude: 
   - Gemfile
   - Gemfile.lock
