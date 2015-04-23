@@ -6,10 +6,9 @@ serve::
 patternslib::
 	@if [ ! -d "patternslib" ]; then \
 		git clone https://github.com/Patternslib/Patterns.git patternslib; \
-		git checkout docs-refactor; \
-	 else \
-		cd patternslib && git checkout docs-refactor; git pull origin docs-refactor && cd ..; fi;
+	 fi;
+	@echo "The patternslib checkout is there. You can run jekyll now."
 
-designerhappy:: patternslib serve
+designerhappy:: patternslib
 
 .PHONY: serve designerhappy checkout
