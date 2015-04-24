@@ -15,6 +15,6 @@ serve-designer::
 serve::
 	bundle exec jekyll serve  --baseurl "" --host "0.0.0.0"
 
-designerhappy:: patternslib serve-designer
+designerhappy:: patternslib bundle serve-designer
 
 .PHONY: serve designerhappy clean
