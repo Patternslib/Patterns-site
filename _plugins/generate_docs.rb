@@ -14,6 +14,9 @@ module Jekyll
     def create_static_files(site, path, pattern_name)
       # Create Jekyll:StaticFile instances for all files that need to be copied
       # into the _site directory.
+      #
+      # The files in ./patternslib/src/pat/${pattern-name}/ will be placed in
+      # ./_etc/src/pat
       Dir.foreach(path) do |item|
         next if item == '.' or item == '..'
         item_path = "#{path}/#{item}"
