@@ -1,6 +1,6 @@
 ---
 layout: documentation
-title: "Creating a new pattern"
+title: "How to create a new pattern"
 sub: developer
 file: create-a-pattern.md
 ---
