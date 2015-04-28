@@ -3,10 +3,10 @@ layout: shell
 state: download
 ---
 
-<section class="patterns tiles">
+<section class="patterns tiles row">
 	{% for post in site.posts %}
 		{% if post.layout == 'demo' %}
-		    <a href="demo/{{ post.id }}/" title="{{ post.description }}" class="pattern-tile cat-{{ post.category }}">
+		    <a href="demo/{{ post.id }}/" title="{{ post.description }}" class="two columns pattern-tile cat-{{ post.category }}">
 				<figure>
 					<img src="demo/{{ post.id }}/icon.svg" alt="" />
 					<figcaption>{{ post.title }}</figcaption>

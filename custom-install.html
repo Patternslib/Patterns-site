@@ -1,0 +1,76 @@
+---
+layout: shell
+state: download
+---
+
+<div class="pat-well">
+	<article>
+		<h1>Getting Started With a Patterns Project</h1>
+
+		<p>This is the easiest way to set up a maintainable project with patterns.</p>
+
+		<p>
+		Using the make commands described here will make updating a patterns project really easy and will tightly integrate into your workflow. You can update patternslib in your project without affecting your custom styles.
+		</p>
+
+		<h3>Prerequisites</h3>
+		<p>You need to have the following dependencies on your system before you proceed:</p>
+		<p>GIT: <a href="http://git-scm.com/">Download Git</a></p>
+		<p>NodeJS: <a href="http://nodejs.org/">Download NodeJS</a></p>
+		<p>Ruby 1.9+: <a href="https://www.ruby-lang.org/en/">Download Ruby</a></p>
+
+		<h2>Create a new project</h2>
+
+		<h3>Compass project</h3>
+
+		<ul>
+			<li> Install compass: gem install compass</li>
+			<li> Clone compass project template</li>
+			<li> run npm install && bower install</li>
+			<li> grunt</li>
+		</ul>
+
+		<h3>LibSass project</h3>
+
+		<ul>
+			<li> Install grund: sudo npm install -g grunt-cli</li>
+			<li> Clone libsass project template</li>
+			<li> run bower install</li>
+			<li> bundle exec jekyll serve --watch</li>
+		</ul>
+
+		<h3>Jekyll project</h3>
+
+		<ul>
+			<li> bundle install to install jekyll</li>
+			<li> Clone jekyll project template</li>
+			<li> run bower install</li>
+			<li> bundle exec jekyll serve --watch</li>
+		</ul>
+
+
+
+		<h2>Update your project</h2>
+
+		<p>There comes the point in time where you want to update the patterns version in your project. This is done in two simple steps:</p>
+		
+		<ol>
+			<li>Specify the version you want to update to in your bower.json file.</li>
+			<li>In your project folder, run 'bower update'</li>
+		</ol>
+
+		<p>This will fetch the specified version of patterns from bower and install it into your project. The position will be the same as the earlier version you had so that all your includes should continue to work.</p>
+		<p>Now check if you need to update your custom styling and get going with the new patterns!</p>
+
+
+		<h2>Use a Development Version of Patterns</h2>
+
+		<p>Say you want to work on your project and on patterns at the same time and always have the latest checkout of patterns available. Then you don't want to wait for new releases but actually use the checkout of patterns directly in your project.</p>
+
+		<p>You can do that with a simple trick. By linking a checkout of patterns into your project. We use a bower mechanism for that.</p>
+
+		<p>In your project, do 'make link'. It will checkout a Patterns repository into your home directory parallel to your project directory and link that into your project where the patterns library would be fetched to. If there already is a Patterns repository, it will reuse that.</p>
+		<p>Now you can work within the patterns repository and all changes will be immediately available to your project site. Actually, the patterns website is built with this.</p>
+
+	</article>
+</div>

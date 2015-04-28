@@ -1,8 +1,7 @@
 ---
 layout: demo
-title: navigation
-category: form
+title: Navigation
+category: navigation
 description: ""
 ---
-# Documentation
-…
+

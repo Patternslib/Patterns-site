@@ -2,6 +2,7 @@
 layout: documentation
 title: "Creating a new pattern"
 sub: developer
+file: create-a-pattern.md
 ---
 
 Patterns are implemented as javascript objects that are registered with the

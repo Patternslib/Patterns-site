@@ -3,36 +3,51 @@ layout: shell
 state: download
 ---
 
-<form action="getBundle" id="download" class="download">
+<div class="pat-well">
+	<article>
+		<p>
+			The most straight forward way to use Patterns is to download the complete bundle and include it in your website. If you need only a handful of patterns for your project, then it's recommended to <a href="#bundler">download a tailored bundle</a>.
+		</p>
+		<p>
+			<a href="#" class="pat-button">Download full Patterns bundle</a> (214kb)
+		</p>
+	</article>
+</div>
 
-	<fieldset class="checklist pat-checklist component-index" id="component-index">
-		<div class="functions">
-			<button class="select-all" type="button">Select all</button>
-			<button class="deselect-all" type="button">Deselect all</button>
-		</div>
-		<fieldset class="listing">
-			{% for post in site.posts %}
-				{% if post.layout == 'demo' %}
-				    <label class="{{ post.id }}" title="{{ post.description }}">
-		   			    <input type="checkbox" name="{{ post.id }}" checked/>
-		   			    {{ post.title }}
-		   			</label>
-				{% endif %}
-			{% endfor %}
+<form action="getBundle" id="download" class="download pat-collapsible closed">
+	<h4>Tailored bundle</h4>
+	<fieldset class="vertical">
+		<fieldset class="pat-checklist component-index" id="component-index">
+			<p class="functions pat-button-bar">
+				<button class="pat-button select-all" type="button">Select all</button>
+				<button class="pat-button deselect-all" type="button">Deselect all</button>
+
+				<button type="submit" class="pat-button float-after">Download bundle</button>
+			</p>
+			<fieldset class="listing pat-checklist">
+				{% for post in site.posts %}
+					{% if post.layout == 'demo' %}
+					    <label class="{{ post.id }}" title="{{ post.description }}">
+			   			    <input type="checkbox" name="{{ post.id }}" checked/>
+			   			    {{ post.title }}
+			   			</label>
+					{% endif %}
+				{% endfor %}
+			</fieldset>
 		</fieldset>
-	</fieldset>
 
-    <fieldset class="button-bar">
-		<fieldset class="bundle-type pat-checklist radio">       
-	       <h4>Bundle type</h4>  
-	        <label>
-	            <input type="radio" name="minify" value="" checked> Regular</input>
-	        </label>
-	        <label>
-	            <input type="radio" name="minify" value="minify"> Minified</input>
-	        </label>
-	    </fieldset>
-    	<button type="submit">Download bundle</button>
+	    <fieldset class="button-bar">
+			<fieldset class="bundle-type pat-checklist radio">       
+		       <h4>Bundle type</h4>  
+		        <label>
+		            <input type="radio" name="minify" value="" checked> Regular</input>
+		        </label>
+		        <label>
+		            <input type="radio" name="minify" value="minify"> Minified</input>
+		        </label>
+		    </fieldset>
+		</fieldset>
+		
 	</fieldset>
 
 </form>

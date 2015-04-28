@@ -7,6 +7,10 @@ markdown: kramdown
 permalink: /:title
 sass:
   style: :compressed
+  load_paths:
+    - "_sass"
+    - "patternslib"
+    - "patternslib/_sass"
 exclude: 
   - Gemfile
   - Gemfile.lock

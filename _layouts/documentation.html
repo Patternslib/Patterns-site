@@ -14,8 +14,7 @@ state: documentation
 </nav> -->
 
 <article id="main-content">
-	<h1>
-		{{ page.title }} <a href="/documentation.html">(Back)</a>
-	</h1>
-	{{ content }}
+    <section id="docs">
+        <a href="/patternslib/docs/{{ page.sub }}/{{ page.file }}" class="pat-inject" data-pat-inject="target: #docs; trigger: autoload; data-type: markdown">Load documentation</a>
+    </section>
 </article>
