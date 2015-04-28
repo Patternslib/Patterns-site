@@ -45,7 +45,27 @@ Now install jekyll itself:
 
 [Bourbon](http://bourbon.io) and [compass](http://compass-style.org) will be installed as part of `bundle install` .
 
+
+## Integration with the Patterns repo
+
+The website includes demos and documentation from the [Patterns repo](https://github.com/Patternslib/Patterns.git)
+which means that we need to have a git checkout of it in Patterns-site.
+
+To automatically have this repo checked out and updated, simply run:
+
+    make designerhappy
+
+Patterns will then be checked out into ./patternslib and the files for the
+individual patterns (index.html, scss, documentation.md etc.) are located in ./patternslib/src/pat/${pattern name}/
+
+Jekyll will pick up modifications to these files and because this is a git
+checkout, you can also commit and push your changes to Patterns.
+
 ### Generating the site
+
+Running ``make designerhappy`` will generate and serve the site.
+
+Otherwise you can also run:
 
     bundle exec jekyll serve --watch --baseurl ""
 
