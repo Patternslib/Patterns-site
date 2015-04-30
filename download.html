@@ -25,6 +25,8 @@ state: download
 				<button type="submit" class="pat-button float-after">Download bundle</button>
 			</p>
 			<fieldset class="listing pat-checklist">
+              {% comment %}
+                 <!-- Hardcoding for launch -->
 				{% for post in site.posts %}
 					{% if post.layout == 'demo' %}
 					    <label class="{{ post.id }}" title="{{ post.description }}">
@@ -32,8 +34,223 @@ state: download
 			   			    {{ post.title }}
 			   			</label>
 					{% endif %}
-				{% endfor %}
-			</fieldset>
+				  {% endfor %}
+               {% endcomment %}
+
+
+			  <h2>Core</h2>
+              
+              <fieldset class="checklist core">
+                <label class="modernizr">
+                  <input type="checkbox" name="modernizr" unchecked/>
+                  <a class="navigation modernizr">Modernizr</a>
+                </label>
+                <label class="prefixfree">
+                  <input type="checkbox" name="prefixfree" unchecked/>
+                  <a class="navigation prefixfree">Prefixfree</a>
+                </label>
+              </fieldset>
+              
+              <h2>Behavioural</h2>
+              
+              <fieldset class="checklist behavioural">
+                <label class="clone">
+                  <input type="checkbox" name="pat/clone" unchecked/>
+                  <a class="navigation depends" href="demo/clone/index.html" title="">Clone</a>
+                </label>
+                <label class="depends">
+                  <input type="checkbox" name="pat/depends" unchecked/>
+                  <a class="navigation depends" href="demo/depends/index.html" title="">Depends</a>
+                </label>
+                <label class="forward">
+                  <input type="checkbox" name="pat/forward" unchecked/>
+                  <a class="navigation ajax" href="demo/forward/index.html" title="AJAX injection">Forward</a>
+                </label>
+                <label class="inject">
+                  <input type="checkbox" name="pat/inject" unchecked/>
+                  <a class="navigation ajax" href="demo/inject/index.html" title="AJAX injection">Injection (AJAX)</a>
+                </label>
+                <!-- <label class="inject-history"> -->
+                <!--   <input type="checkbox" name="pat/inject-history" unchecked/> -->
+                <!--   <a class="navigation ajax" href="demo/inject-history/index.html" title="AJAX inject-history">Inject-History</a> -->
+                <!-- </label> -->
+                <label class="switch">
+                  <input type="checkbox" name="pat/switch" unchecked/>
+                  <a class="navigation switch" href="demo/switch/index.html" title="Switch">Switch</a>
+                </label>
+                <label class="toggle">
+                  <input type="checkbox" name="pat/toggle" unchecked/>
+                  <a class="navigation toggle" href="demo/toggle/index.html" title="Toggle">Class toggle</a>
+                  
+                </label>
+              </fieldset>
+              
+              <h2>Forms</h2>
+              
+              <fieldset class="checklist forms">
+                <label class="auto-submit">
+                  <input type="checkbox" name="pat/autosubmit" unchecked/>
+                  <a class="navigation auto-submit" href="demo/auto-submit/index.html" title="Auto submit">Auto submit</a>
+                </label>
+                <label class="auto-suggest">
+                  <input type="checkbox" name="pat/autosuggest" unchecked/>
+                  <a class="navigation auto-suggest" href="demo/auto-suggest/index.html" title="Auto suggest">Auto suggest (Select2)</a>
+                </label>
+                <label class="autofocus">
+                  <input type="checkbox" name="pat/autofocus" unchecked/>
+                  <a class="navigation autofocus" href="demo/autofocus/index.html" title="Auto focus">Autofocus</a> 
+                </label>
+                <!-- <label class="chosen"> -->
+                <!--   <input type="checkbox" name="pat/chosen" unchecked/> -->
+                <!--   <a>Auto suggest (Chosen)</a> -->
+                <!-- </label> -->
+                <label class="checkedflag">
+                  <input type="checkbox" name="pat/checkedflag" unchecked/>
+                  <a class="navigation checked-flag" href="demo/checked-flag/index.html" title="checkedflag">Checked flag</a>
+                </label>
+                <label class="checklist">
+                  <input type="checkbox" name="pat/checklist" unchecked/>
+                  <a class="navigation checkboxes" href="demo/checklist/index.html" title="checklist">Checklist</a>
+                </label>
+                <label class="focus">
+                  <input type="checkbox" name="pat/focus" unchecked/>
+                  <a class="navigation focus" href="demo/focus/index.html" title="">Focus</a>
+                </label>
+                <label class="subform">
+                  <input type="checkbox" name="pat/subform" unchecked/>
+                  <a>Subform</a>
+                </label>
+                <!-- <label class="form"> -->
+                <!--   <input type="checkbox" name="pat/form-state" unchecked/> -->
+                <!--   <a>Form-state</a> -->
+                <!-- </label> -->
+                <!-- <label class="placeholder"> -->
+                <!--   <input type="checkbox" name="pat/placeholder" unchecked/> -->
+                <!--   <a>Placeholder</a> -->
+                <!-- </label>   -->
+                <!-- <label class="checklist"> -->
+                <!--   <input type="checkbox" name="pat/subform" unchecked/> -->
+                <!--   <a class="navigation subform" href="demo/subform/index.html" title="checklist">Subform</a> -->
+                <!-- </label> -->
+                <label class="validate">
+                  <input type="checkbox" name="pat/validate" unchecked/>
+                  <a class="navigation validate" href="demo/validate/index.html">Validate</a>
+                </label>
+                <!-- <label class="legend"> -->
+                <!--   <input type="checkbox" name="pat/legend" unchecked/> -->
+                <!--   <a class="navigation legend">Legend</a> -->
+                <!-- </label> -->
+              </fieldset>
+              
+              <h2>Navigation</h2>
+              
+              <fieldset class="checklist navigation">
+                <!-- <label class="breadcrumbs"> -->
+                <!--   <input type="checkbox" name="pat/breadcrumbs" unchecked/> -->
+                <!--   <a class="navigation breadcrumbs">Breadcrumbs</a> -->
+                <!-- </label> -->
+                <label class="expandable">
+                  <input type="checkbox" name="pat/expandable" unchecked/>
+                  <a class="navigation tree" href="demo/expandable-tree/index.html" title="">Expandable tree</a>
+                </label>
+                <label class="navigation">
+                  <input type="checkbox" name="pat/navigation" unchecked/>
+                  <a class="navigation navigation-marker" href="demo/navigation/index.html" title="Navigation markers">Navigation</a>
+                </label>
+                <label class="stacks">
+                  <input type="checkbox" name="pat/stacks" unchecked/>
+                  <a class="navigation stacks" href="demo/stacks/index.html" title="">Stacks</a>
+                </label>
+              </fieldset>
+              
+              <h2>Layout</h2>
+              
+              <fieldset class="checklist layout">
+                <!-- Breaks the bundle -->
+                <!-- <label class="autoscale"> -->
+                <!--   <input type="checkbox" name="pat/autoscale" unchecked/> -->
+                <!--   <a class="navigation auto-scale" href="demo/auto-scale/index.html" title="Auto scale">Auto scale</a> -->
+                <!-- </label> -->
+                <label class="bumper">
+                  <input type="checkbox" name="pat/bumper" unchecked/>
+                  <a class="navigation bumper" href="demo/bumper/index.html" title="Bumper">Bumper</a>
+                </label>
+                <label class="equaliser">
+                  <input type="checkbox" name="pat/equaliser" unchecked/>
+                  <a class="navigation bumper" href="demo/equaliser/index.html" title="Equaliser">Equaliser</a>
+                </label>
+                <label class="grid">
+                  <input type="checkbox" unchecked/>
+                  <a class="navigation grid" href="demo/grid/index.html" title="Grid">Grid</a>
+                </label>
+			  </fieldset>
+
+
+
+              <h2>Fancy stuff</h2>
+              
+              <fieldset class="checklist fancy">
+                <!-- <label class="calendar"> -->
+                <!--   <input type="checkbox" name="pat/calendar" unchecked/> -->
+                <!--   <a class="navigation full-calendar" href="demo/calendar/index.html" title="Calendar">Full calendar</a> -->
+                <!-- </label> -->
+                <label class="carousel">
+                  <input type="checkbox" name="pat/carousel" unchecked/>
+                  <a class="navigation carousel" href="demo/carousel/index.html" title="">Carousel</a>
+                </label>
+                <label class="collapsible">
+                  <input type="checkbox" name="pat/collapsible" unchecked/>
+                  <a class="navigation collapsible" href="demo/collapsible/index.html" title="collapsible">Collapsible</a>
+                </label>
+                <!-- <label class="tinymce"> -->
+                <!--   <input type="checkbox" name="pat/edit-tinymce" unchecked/> -->
+                <!--   <a class="navigation tiny-mce" href="demo/edit-tinymce/index.html" title="Rich editor">Tiny MCE</a> -->
+                <!-- </label> -->
+                <label class="gallery">
+                  <input type="checkbox" name="pat/gallery" unchecked/>
+                  <a class="navigation gallery" href="demo/gallery/index.html" title="Image galleries">Gallery</a>
+                </label>
+                <label class="image-crop">
+                  <input type="checkbox" name="pat/image-crop" unchecked/>
+                  <a class="navigation image-crop" href="demo/image-crop/index.html" title="Image crop">Image crop</a>
+                </label>
+                <label class="markdown">
+                  <input type="checkbox" name="pat/markdown" unchecked/>
+                  <a class="navigation markdown" href="demo/markdown/index.html" title="Markdown rendering">Markdown</a>
+                </label>
+                <label class="modal">
+                  <input type="checkbox" name="pat/modal" unchecked/>
+                  <a class="navigation modal-panel" href="demo/modal/index.html" title="Modal panels">Modal panels</a>
+                </label>
+                <label class="notification">
+                  <input type="checkbox" name="pat/notification" unchecked/>
+                  <a>Notification</a>
+                </label>
+                <!-- <label class="menu"> -->
+                <!--   <input type="checkbox" name="pat/menu" unchecked/> -->
+                <!--   <a>Menu</a> -->
+                <!-- </label> -->
+                <label class="slides">
+                  <input type="checkbox" name="pat/slides" unchecked/>
+                  <a class="navigation slides" href="demo/slides/index.html" title="">Slideshows</a>
+                </label>
+                <label class="slideshow-builder">
+                  <input type="checkbox" name="pat/slideshow-builder" unchecked/>
+                  <a class="navigation slideshow-builder" href="demo/slideshow-builder/index.html" title="">Custom slideshow builder</a>
+                </label>
+                <label class="sortable">
+                  <input type="checkbox" name="pat/sortable" unchecked/>
+                  <a class="navigation sortable" href="demo/sortable/index.html" title="">Sortable</a>
+                </label>
+                <label class="tooltip">
+                  <input type="checkbox" name="pat/tooltip" unchecked/>
+                  <a class="navigation tooltip" href="demo/tooltip/index.html" title="">Tooltips</a>
+                </label>
+                <label class="zoom">
+                  <input type="checkbox" name="pat/zoom" unchecked/>
+                  <a class="navigation zoom" href="demo/zoom/index.html" title="">Zoom</a>
+                </label>
+            </fieldset>
 		</fieldset>
 
 	    <fieldset class="button-bar">
