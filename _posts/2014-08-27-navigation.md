@@ -1,5 +1,5 @@
 ---
-layout: demo
+layout: hidden
 title: Navigation
 category: navigation
 description: ""
