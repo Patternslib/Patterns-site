@@ -16,3 +16,13 @@ exclude:
   - Gemfile.lock
   - config.codekit
   - config.rb
+patterns:
+  - version: 1.1.1
+  - components:
+    - modal
+    - avatar
+    - equaliser
+    - grid
+  - basics: 
+    - reset
+    - clear-fix
