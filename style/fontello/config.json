@@ -9,7 +9,7 @@
     {
       "uid": "ed53e2e7bf982c38275468a84e453feb",
       "css": "patterns-logo",
-      "code": 59392,
+      "code": 921600,
       "src": "custom_icons",
       "selected": true,
       "svg": {
@@ -23,7 +23,7 @@
     {
       "uid": "537203cad0121cc97842344270c2ab65",
       "css": "bookmark",
-      "code": 59394,
+      "code": 921601,
       "src": "custom_icons",
       "selected": true,
       "svg": {
@@ -37,7 +37,7 @@
     {
       "uid": "53bd1a25b580ab617531764273627ce8",
       "css": "download",
-      "code": 59397,
+      "code": 921602,
       "src": "custom_icons",
       "selected": true,
       "svg": {
