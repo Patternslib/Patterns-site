@@ -79,9 +79,9 @@ folder.
 Each pattern has its own subfolder in which you'll find the following files:
 
 - ``index.html`` which contains the HTML markup to demo the pattern which is injected (via
-  ``pat-inject``) into the ``_layout/demo.html`` layout.
+  ``pat-inject``) into the ``_layouts/demo.html`` layout.
 - ``documentation.md`` which contains the markdown which is also injected into
-  ``_layout/demo.html``.
+  ``_layouts/demo.html``.
 - ``${pattern name}.scss`` which is a Sass file containing CSS specific to this pattern.
 
 The scss file is included in [Patterns/_sass/_patterns.scss](https://github.com/Patternslib/Patterns/blob/master/_sass/_patterns.scss)
