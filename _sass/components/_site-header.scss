@@ -80,14 +80,16 @@
 .state-home #site-header nav a.patterns:after,
 .state-documentation #site-header nav a.documentation:after {
 	@media only screen and (min-width: 768px) {
-		position: absolute;
-		bottom: -10px;
-		left: 25%;
-		width: 50%;
-		height: 2px;
-		background-color: white;
-		content: " ";
+		width: 5em;
+		height: 5em;
+		border-radius: 50%;
 		display: block;
+		content: ' ';
+		border: 2px solid white;
+		position: absolute;
+		top: 0.78em;
+		left: 50%;
+		margin-left: -2.62em;
 	}
 }
 
