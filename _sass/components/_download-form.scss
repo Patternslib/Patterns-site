@@ -2,4 +2,29 @@ form.download {
 	.bundle-type {
 		margin-bottom: 1em;
 	}
+
+	.pat-well {
+		margin-bottom: 1.6em;
+
+		&.cat-behavioural {
+			background-color: $cat-behavioural;
+		}
+
+		&.cat-form {
+			background-color: $cat-form;
+		}
+
+		&.cat-layout {
+			background-color: $cat-layout;
+		}
+
+		&.cat-fancy-stuff {
+			background-color: $cat-fancy-stuff;
+		}
+
+		&.cat-core {
+			border: 1px solid gray;
+			background-color: transparent;
+		}
+	}
 }

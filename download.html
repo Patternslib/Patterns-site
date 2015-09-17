@@ -46,269 +46,111 @@ state: download
 <form action="getBundle" id="download" class="download">
 	<h1>Download a Patterns bundle</h1>
     <p>
-        A bundle consists of the core Patterns source code, as well as some or all of the individual patterns.
-    </p>
-    <p>
-        Ideally, your bundle will contain only those patterns which you'll be using in your site, so as to keep your served Javascript file small.
+        A bundle consists of the core Patterns source code, as well as some or all of the individual patterns. Ideally, your bundle will contain only those patterns which you'll be using in your site, so as to keep your served Javascript file small.
     </p>
     <br/>
 
 
 	<fieldset class="vertical">
 		<fieldset class="pat-checklist component-index" id="component-index">
-			<p class="functions pat-button-bar">
-				<button class="pat-button select-all" type="button">Select all</button>
-				<button class="pat-button deselect-all" type="button">Deselect all</button>
-
-				<button type="submit" class="pat-button float-after">Download bundle</button>
-			</p>
-			<fieldset class="listing pat-checklist">
-              {% comment %}
-                 <!-- Hardcoding for launch -->
-				{% for post in site.posts %}
-					{% if post.layout == 'demo' %}
-					    <label class="{{ post.id }}" title="{{ post.description }}">
-			   			    <input type="checkbox" checked name="{{ post.id }}" checked/>
-			   			    {{ post.title }}
-			   			</label>
-					{% endif %}
-				  {% endfor %}
-               {% endcomment %}
-      
-              <fieldset class="button-bar">
-                  <fieldset class="bundle-type pat-checklist radio">
-                  <h4>Bundle type</h4>
-                      <label>
-                          <input type="radio" name="minify" value="off"> Regular</input>
-                      </label>
-                      <label>
-                          <input type="radio" name="minify" value="on" checked> Minified</input>
-                      </label>
-                  </fieldset>
-              </fieldset>
-          <div class="row">
-            <div class="four columns">
-              
-               <h2>Core</h2>
-
-              <fieldset class="checklist core">
-                <label class="modernizr">
-                  <input type="checkbox" checked name="modernizr" />
-                  Modernizr
-                </label>
-                <label class="prefixfree">
-                  <input type="checkbox" name="prefixfree" />
-                  Prefixfree
-                </label>
-              </fieldset>
-
-              <h2>Behavioural</h2>
-
-              <fieldset class="checklist behavioural">
-                <label class="clone">
-                  <input type="checkbox" checked name="pat/clone" />
-                  Clone
-                </label>
-                <label class="depends">
-                  <input type="checkbox" checked name="pat/depends" />
-                  Depends
-                </label>
-                <label class="forward">
-                  <input type="checkbox" checked name="pat/forward" />
-                  Forward
-                </label>
-                <label class="inject">
-                  <input type="checkbox" checked name="pat/inject" />
-                  Injection (AJAX)
-                </label>
-                <!-- <label class="inject-history"> -->
-                <!--   <input type="checkbox" checked name="pat/inject-history" /> -->
-                <!--   Inject-History</a>
-                <!-- </label> -->
-                <label class="switch">
-                  <input type="checkbox" checked name="pat/switch" />
-                  Switch
-                </label>
-                <label class="toggle">
-                  <input type="checkbox" checked name="pat/toggle" />
-                  Class toggle
-
-                </label>
-              </fieldset>
-            </div>
-
-            <div class="four columns">
-              
-              <h2>Layout</h2>
-
-              <fieldset class="checklist layout">
-                <!-- Breaks the bundle -->
-                <!-- <label class="autoscale"> -->
-                <!--   <input type="checkbox" checked name="pat/autoscale" /> -->
-                <!--   <a class="navigation auto-scale" href="demo/auto-scale/index.html" title="Auto scale">Auto scale</a> -->
-                <!-- </label> -->
-                <label class="bumper">
-                  <input type="checkbox" checked name="pat/bumper" />
-                  Bumper
-                </label>
-                <label class="equaliser">
-                  <input type="checkbox" checked name="pat/equaliser" />
-                  Equaliser
-                </label>
-                <label class="grid">
-                  <input type="checkbox" checked />
-                  Grid
-                </label>
-              </fieldset>
-
-              <h2>Fancy stuff</h2>
-
-              <fieldset class="checklist fancy">
-                <!-- <label class="calendar"> -->
-                <!--   <input type="checkbox" checked name="pat/calendar" /> -->
-                <!--   <a class="navigation full-calendar" href="demo/calendar/index.html" title="Calendar">Full calendar</a> -->
-                <!-- </label> -->
-                <label class="carousel">
-                  <input type="checkbox" checked name="pat/carousel" />
-                  Carousel
-                </label>
-                <label class="collapsible">
-                  <input type="checkbox" checked name="pat/collapsible" />
-                  Collapsible
-                </label>
-                <!-- <label class="tinymce"> -->
-                <!--   <input type="checkbox" checked name="pat/edit-tinymce" /> -->
-                <!--   <a class="navigation tiny-mce" href="demo/edit-tinymce/index.html" title="Rich editor">Tiny MCE</a> -->
-                <!-- </label> -->
-                <label class="gallery">
-                  <input type="checkbox" checked name="pat/gallery" />
-                  Gallery
-                </label>
-                <label class="image-crop">
-                  <input type="checkbox" checked name="pat/image-crop" />
-                  Image crop
-                </label>
-                <label class="markdown">
-                  <input type="checkbox" checked name="pat/markdown" />
-                  Markdown
-                </label>
-                <label class="modal">
-                  <input type="checkbox" checked name="pat/modal" />
-                  Modal panels
-                </label>
-                <label class="notification">
-                  <input type="checkbox" checked name="pat/notification" />
-                  Notification
-                </label>
-                <!-- <label class="menu"> -->
-                <!--   <input type="checkbox" checked name="pat/menu" /> -->
-                <!--   <a>Menu</a> -->
-                <!-- </label> -->
-                <label class="slides">
-                  <input type="checkbox" name="pat/slides" />
-                  Slideshows
-                </label>
-                <label class="slideshow-builder">
-                  <input type="checkbox" name="pat/slideshow-builder" />
-                  Custom slideshow builder
-                </label>
-                <label class="sortable">
-                  <input type="checkbox" checked name="pat/sortable" />
-                  Sortable
-                </label>
-                <label class="tooltip">
-                  <input type="checkbox" checked name="pat/tooltip" />
-                  Tooltips
-                </label>
-                <label class="zoom">
-                  <input type="checkbox" checked name="pat/zoom" />
-                  Zoom
-                </label>
+                   
+            <fieldset class="button-bar">
+                <fieldset class="bundle-type pat-checklist radio">
+                    <label>
+                        <input type="radio" name="minify" value="off"> Regular bundle</input>
+                    </label>
+                    <label>
+                        <input type="radio" name="minify" value="on" checked> Minified bundle</input>
+                    </label>
+                </fieldset>
             </fieldset>
+
+            <p class="functions pat-button-bar">
+                <span class="button-cluster"> 
+                    <button class="pat-button select-all" type="button">Select all</button>
+                    <button class="pat-button deselect-all" type="button">Deselect all</button>
+                </span>
+
+                <button type="submit" class="pat-button float-after">Download bundle</button>
+            </p>
+
+            <div class="row">
+                <div class="four columns">
+                    <div class="pat-well cat-core">            
+                        <fieldset class="checklist core">
+                            <label class="modernizr">
+                                <input type="checkbox" checked name="modernizr" />
+                                Modernizr
+                            </label>
+                            <label class="prefixfree">
+                                <input type="checkbox" name="prefixfree" />
+                                Prefixfree
+                            </label>
+                      </fieldset>
+                    </div>
+                    <div class="pat-well cat-behavioural">   
+                        <h2>Behavioural</h2>         
+                        {% for post in site.posts %}
+                            {% if post.layout == 'demo' and post.category == 'behavioural' %}
+                                <label class="{{ post.id }}" title="{{ post.description }}">
+                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    {{ post.title }}
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                  
+                    <div class="pat-well cat-navigation">   
+                        <h2>Navigation</h2>         
+                        {% for post in site.posts %}
+                            {% if post.layout == 'demo' and post.category == 'navigation' %}
+                                <label class="{{ post.id }}" title="{{ post.description }}">
+                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    {{ post.title }}
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="four columns">
+                    <div class="pat-well cat-layout">   
+                        <h2>Layout</h2>         
+                        {% for post in site.posts %}
+                            {% if post.layout == 'demo' and post.category == 'layout' %}
+                                <label class="{{ post.id }}" title="{{ post.description }}">
+                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    {{ post.title }}
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="pat-well cat-fancy-stuff">   
+                        <h2>Fancy stuff</h2>         
+                        {% for post in site.posts %}
+                            {% if post.layout == 'demo' and post.category == 'fancy-stuff' %}
+                                <label class="{{ post.id }}" title="{{ post.description }}">
+                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    {{ post.title }}
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="four columns">
+                    <div class="pat-well cat-form">   
+                        <h2>Forms</h2>         
+                        {% for post in site.posts %}
+                            {% if post.layout == 'demo' and post.category == 'form' %}
+                                <label class="{{ post.id }}" title="{{ post.description }}">
+                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    {{ post.title }}
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-
-            <div class="four columns">
-              
-              <h2>Forms</h2>
-
-              <fieldset class="checklist forms">
-                <label class="auto-submit">
-                  <input type="checkbox" checked name="pat/autosubmit" />
-                  Auto submit
-                </label>
-                <label class="auto-suggest">
-                  <input type="checkbox" checked name="pat/autosuggest" />
-                  Auto suggest (Select2)
-                </label>
-                <label class="autofocus">
-                  <input type="checkbox" checked name="pat/autofocus" />
-                  Autofocus
-                </label>
-                <!-- <label class="chosen"> -->
-                <!--   <input type="checkbox" checked name="pat/chosen" /> -->
-                <!--   <a>Auto suggest (Chosen)</a> -->
-                <!-- </label> -->
-                <label class="checkedflag">
-                  <input type="checkbox" checked name="pat/checkedflag" />
-                  Checked flag
-                </label>
-                <label class="checklist">
-                  <input type="checkbox" checked name="pat/checklist" />
-                  Checklist
-                </label>
-                <label class="_focus">
-                  <input type="checkbox" checked name="pat/focus" />
-                  Focus
-                </label>
-                <label class="subform">
-                  <input type="checkbox" checked name="pat/subform" />
-                  Subform
-                </label>
-                <!-- <label class="form"> -->
-                <!--   <input type="checkbox" checked name="pat/form-state" /> -->
-                <!--   <a>Form-state</a> -->
-                <!-- </label> -->
-                <!-- <label class="placeholder"> -->
-                <!--   <input type="checkbox" checked name="pat/placeholder" /> -->
-                <!--   <a>Placeholder</a> -->
-                <!-- </label>   -->
-                <!-- <label class="checklist"> -->
-                <!--   <input type="checkbox" checked name="pat/subform" /> -->
-                <!--   <a class="navigation subform" href="demo/subform/index.html" title="checklist">Subform</a> -->
-                <!-- </label> -->
-                <label class="validate">
-                  <input type="checkbox" checked name="pat/validation" />
-                  Validate
-                </label>
-                <!-- <label class="legend"> -->
-                <!--   <input type="checkbox" checked name="pat/legend" /> -->
-                <!--   <a class="navigation legend">Legend</a> -->
-                <!-- </label> -->
-              </fieldset>
-
-              <h2>Navigation</h2>
-
-              <fieldset class="checklist navigation">
-                <!-- <label class="breadcrumbs"> -->
-                <!--   <input type="checkbox" checked name="pat/breadcrumbs" /> -->
-                <!--   <a class="navigation breadcrumbs">Breadcrumbs</a> -->
-                <!-- </label> -->
-                <label class="expandable">
-                  <input type="checkbox" checked name="pat/expandable" />
-                  Expandable tree
-                </label>
-                <label class="navigation">
-                  <input type="checkbox" checked name="pat/navigation" />
-                  Navigation
-                </label>
-                <label class="stacks">
-                  <input type="checkbox" checked name="pat/stacks" />
-                  Stacks
-                </label>
-              </fieldset>
-            </div>
-            
-          </div>
 		</fieldset>
 	</fieldset>
 </form>
