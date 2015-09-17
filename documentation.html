@@ -4,9 +4,9 @@ state: documentation
 ---
 
 <div class="pat-equaliser row">
-	<div class="four columns">
+	<div class="six columns">
 		<section class="documentation pat-well">
-			<h3>For developers</h3>
+			<h2>For developers</h2>
 			<ul>
 				{% for post in site.posts  %}
 					{% if post.layout == "documentation" and post.sub == "developer" %}
@@ -18,9 +18,9 @@ state: documentation
 			</ul>
 		</section>
 	</div>
-	<div class="four columns">
+	<div class="six columns">
 		<section class="documentation pat-well">
-			<h3>For designers</h3>
+			<h2>For designers</h2>
 			<ul>
 				{% for post in site.posts  %}
 					{% if post.layout == "documentation" and post.sub == "designer" %}
@@ -33,6 +33,7 @@ state: documentation
 		</section>
 	</div>
 
+    <!--
 	<div class="four columns">
 		<section class="documentation pat-well">
 			<h3>Example pages</h3>
@@ -47,4 +48,5 @@ state: documentation
 			</ul>
 		</section>
 	</div>
+    -->
 </div>
