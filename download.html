@@ -68,34 +68,36 @@ state: download
 				{% for post in site.posts %}
 					{% if post.layout == 'demo' %}
 					    <label class="{{ post.id }}" title="{{ post.description }}">
-			   			    <input type="checkbox" name="{{ post.id }}" checked/>
+			   			    <input type="checkbox" checked name="{{ post.id }}" checked/>
 			   			    {{ post.title }}
 			   			</label>
 					{% endif %}
 				  {% endfor %}
                {% endcomment %}
-
-                <fieldset class="button-bar">
-                    <fieldset class="bundle-type pat-checklist radio">
-                    <h4>Bundle type</h4>
-                        <label>
-                            <input type="radio" name="minify" value="off"> Regular</input>
-                        </label>
-                        <label>
-                            <input type="radio" name="minify" value="on" checked> Minified</input>
-                        </label>
-                    </fieldset>
-                </fieldset>
-
-			  <h2>Core</h2>
+      
+              <fieldset class="button-bar">
+                  <fieldset class="bundle-type pat-checklist radio">
+                  <h4>Bundle type</h4>
+                      <label>
+                          <input type="radio" name="minify" value="off"> Regular</input>
+                      </label>
+                      <label>
+                          <input type="radio" name="minify" value="on" checked> Minified</input>
+                      </label>
+                  </fieldset>
+              </fieldset>
+          <div class="row">
+            <div class="four columns">
+              
+               <h2>Core</h2>
 
               <fieldset class="checklist core">
                 <label class="modernizr">
-                  <input type="checkbox" name="modernizr" unchecked/>
+                  <input type="checkbox" checked name="modernizr" />
                   Modernizr
                 </label>
                 <label class="prefixfree">
-                  <input type="checkbox" name="prefixfree" unchecked/>
+                  <input type="checkbox" name="prefixfree" />
                   Prefixfree
                 </label>
               </fieldset>
@@ -104,89 +106,182 @@ state: download
 
               <fieldset class="checklist behavioural">
                 <label class="clone">
-                  <input type="checkbox" name="pat/clone" unchecked/>
+                  <input type="checkbox" checked name="pat/clone" />
                   Clone
                 </label>
                 <label class="depends">
-                  <input type="checkbox" name="pat/depends" unchecked/>
+                  <input type="checkbox" checked name="pat/depends" />
                   Depends
                 </label>
                 <label class="forward">
-                  <input type="checkbox" name="pat/forward" unchecked/>
+                  <input type="checkbox" checked name="pat/forward" />
                   Forward
                 </label>
                 <label class="inject">
-                  <input type="checkbox" name="pat/inject" unchecked/>
+                  <input type="checkbox" checked name="pat/inject" />
                   Injection (AJAX)
                 </label>
                 <!-- <label class="inject-history"> -->
-                <!--   <input type="checkbox" name="pat/inject-history" unchecked/> -->
+                <!--   <input type="checkbox" checked name="pat/inject-history" /> -->
                 <!--   Inject-History</a>
                 <!-- </label> -->
                 <label class="switch">
-                  <input type="checkbox" name="pat/switch" unchecked/>
+                  <input type="checkbox" checked name="pat/switch" />
                   Switch
                 </label>
                 <label class="toggle">
-                  <input type="checkbox" name="pat/toggle" unchecked/>
+                  <input type="checkbox" checked name="pat/toggle" />
                   Class toggle
 
                 </label>
               </fieldset>
+            </div>
 
+            <div class="four columns">
+              
+              <h2>Layout</h2>
+
+              <fieldset class="checklist layout">
+                <!-- Breaks the bundle -->
+                <!-- <label class="autoscale"> -->
+                <!--   <input type="checkbox" checked name="pat/autoscale" /> -->
+                <!--   <a class="navigation auto-scale" href="demo/auto-scale/index.html" title="Auto scale">Auto scale</a> -->
+                <!-- </label> -->
+                <label class="bumper">
+                  <input type="checkbox" checked name="pat/bumper" />
+                  Bumper
+                </label>
+                <label class="equaliser">
+                  <input type="checkbox" checked name="pat/equaliser" />
+                  Equaliser
+                </label>
+                <label class="grid">
+                  <input type="checkbox" checked />
+                  Grid
+                </label>
+              </fieldset>
+
+              <h2>Fancy stuff</h2>
+
+              <fieldset class="checklist fancy">
+                <!-- <label class="calendar"> -->
+                <!--   <input type="checkbox" checked name="pat/calendar" /> -->
+                <!--   <a class="navigation full-calendar" href="demo/calendar/index.html" title="Calendar">Full calendar</a> -->
+                <!-- </label> -->
+                <label class="carousel">
+                  <input type="checkbox" checked name="pat/carousel" />
+                  Carousel
+                </label>
+                <label class="collapsible">
+                  <input type="checkbox" checked name="pat/collapsible" />
+                  Collapsible
+                </label>
+                <!-- <label class="tinymce"> -->
+                <!--   <input type="checkbox" checked name="pat/edit-tinymce" /> -->
+                <!--   <a class="navigation tiny-mce" href="demo/edit-tinymce/index.html" title="Rich editor">Tiny MCE</a> -->
+                <!-- </label> -->
+                <label class="gallery">
+                  <input type="checkbox" checked name="pat/gallery" />
+                  Gallery
+                </label>
+                <label class="image-crop">
+                  <input type="checkbox" checked name="pat/image-crop" />
+                  Image crop
+                </label>
+                <label class="markdown">
+                  <input type="checkbox" checked name="pat/markdown" />
+                  Markdown
+                </label>
+                <label class="modal">
+                  <input type="checkbox" checked name="pat/modal" />
+                  Modal panels
+                </label>
+                <label class="notification">
+                  <input type="checkbox" checked name="pat/notification" />
+                  Notification
+                </label>
+                <!-- <label class="menu"> -->
+                <!--   <input type="checkbox" checked name="pat/menu" /> -->
+                <!--   <a>Menu</a> -->
+                <!-- </label> -->
+                <label class="slides">
+                  <input type="checkbox" name="pat/slides" />
+                  Slideshows
+                </label>
+                <label class="slideshow-builder">
+                  <input type="checkbox" name="pat/slideshow-builder" />
+                  Custom slideshow builder
+                </label>
+                <label class="sortable">
+                  <input type="checkbox" checked name="pat/sortable" />
+                  Sortable
+                </label>
+                <label class="tooltip">
+                  <input type="checkbox" checked name="pat/tooltip" />
+                  Tooltips
+                </label>
+                <label class="zoom">
+                  <input type="checkbox" checked name="pat/zoom" />
+                  Zoom
+                </label>
+            </fieldset>
+            </div>
+
+            <div class="four columns">
+              
               <h2>Forms</h2>
 
               <fieldset class="checklist forms">
                 <label class="auto-submit">
-                  <input type="checkbox" name="pat/autosubmit" unchecked/>
+                  <input type="checkbox" checked name="pat/autosubmit" />
                   Auto submit
                 </label>
                 <label class="auto-suggest">
-                  <input type="checkbox" name="pat/autosuggest" unchecked/>
+                  <input type="checkbox" checked name="pat/autosuggest" />
                   Auto suggest (Select2)
                 </label>
                 <label class="autofocus">
-                  <input type="checkbox" name="pat/autofocus" unchecked/>
+                  <input type="checkbox" checked name="pat/autofocus" />
                   Autofocus
                 </label>
                 <!-- <label class="chosen"> -->
-                <!--   <input type="checkbox" name="pat/chosen" unchecked/> -->
+                <!--   <input type="checkbox" checked name="pat/chosen" /> -->
                 <!--   <a>Auto suggest (Chosen)</a> -->
                 <!-- </label> -->
                 <label class="checkedflag">
-                  <input type="checkbox" name="pat/checkedflag" unchecked/>
+                  <input type="checkbox" checked name="pat/checkedflag" />
                   Checked flag
                 </label>
                 <label class="checklist">
-                  <input type="checkbox" name="pat/checklist" unchecked/>
+                  <input type="checkbox" checked name="pat/checklist" />
                   Checklist
                 </label>
                 <label class="_focus">
-                  <input type="checkbox" name="pat/focus" unchecked/>
+                  <input type="checkbox" checked name="pat/focus" />
                   Focus
                 </label>
                 <label class="subform">
-                  <input type="checkbox" name="pat/subform" unchecked/>
+                  <input type="checkbox" checked name="pat/subform" />
                   Subform
                 </label>
                 <!-- <label class="form"> -->
-                <!--   <input type="checkbox" name="pat/form-state" unchecked/> -->
+                <!--   <input type="checkbox" checked name="pat/form-state" /> -->
                 <!--   <a>Form-state</a> -->
                 <!-- </label> -->
                 <!-- <label class="placeholder"> -->
-                <!--   <input type="checkbox" name="pat/placeholder" unchecked/> -->
+                <!--   <input type="checkbox" checked name="pat/placeholder" /> -->
                 <!--   <a>Placeholder</a> -->
                 <!-- </label>   -->
                 <!-- <label class="checklist"> -->
-                <!--   <input type="checkbox" name="pat/subform" unchecked/> -->
+                <!--   <input type="checkbox" checked name="pat/subform" /> -->
                 <!--   <a class="navigation subform" href="demo/subform/index.html" title="checklist">Subform</a> -->
                 <!-- </label> -->
                 <label class="validate">
-                  <input type="checkbox" name="pat/validation" unchecked/>
+                  <input type="checkbox" checked name="pat/validation" />
                   Validate
                 </label>
                 <!-- <label class="legend"> -->
-                <!--   <input type="checkbox" name="pat/legend" unchecked/> -->
+                <!--   <input type="checkbox" checked name="pat/legend" /> -->
                 <!--   <a class="navigation legend">Legend</a> -->
                 <!-- </label> -->
               </fieldset>
@@ -195,112 +290,25 @@ state: download
 
               <fieldset class="checklist navigation">
                 <!-- <label class="breadcrumbs"> -->
-                <!--   <input type="checkbox" name="pat/breadcrumbs" unchecked/> -->
+                <!--   <input type="checkbox" checked name="pat/breadcrumbs" /> -->
                 <!--   <a class="navigation breadcrumbs">Breadcrumbs</a> -->
                 <!-- </label> -->
                 <label class="expandable">
-                  <input type="checkbox" name="pat/expandable" unchecked/>
+                  <input type="checkbox" checked name="pat/expandable" />
                   Expandable tree
                 </label>
                 <label class="navigation">
-                  <input type="checkbox" name="pat/navigation" unchecked/>
+                  <input type="checkbox" checked name="pat/navigation" />
                   Navigation
                 </label>
                 <label class="stacks">
-                  <input type="checkbox" name="pat/stacks" unchecked/>
+                  <input type="checkbox" checked name="pat/stacks" />
                   Stacks
                 </label>
               </fieldset>
-
-              <h2>Layout</h2>
-
-              <fieldset class="checklist layout">
-                <!-- Breaks the bundle -->
-                <!-- <label class="autoscale"> -->
-                <!--   <input type="checkbox" name="pat/autoscale" unchecked/> -->
-                <!--   <a class="navigation auto-scale" href="demo/auto-scale/index.html" title="Auto scale">Auto scale</a> -->
-                <!-- </label> -->
-                <label class="bumper">
-                  <input type="checkbox" name="pat/bumper" unchecked/>
-                  Bumper
-                </label>
-                <label class="equaliser">
-                  <input type="checkbox" name="pat/equaliser" unchecked/>
-                  Equaliser
-                </label>
-                <label class="grid">
-                  <input type="checkbox" unchecked/>
-                  Grid
-                </label>
-			  </fieldset>
-
-
-
-              <h2>Fancy stuff</h2>
-
-              <fieldset class="checklist fancy">
-                <!-- <label class="calendar"> -->
-                <!--   <input type="checkbox" name="pat/calendar" unchecked/> -->
-                <!--   <a class="navigation full-calendar" href="demo/calendar/index.html" title="Calendar">Full calendar</a> -->
-                <!-- </label> -->
-                <label class="carousel">
-                  <input type="checkbox" name="pat/carousel" unchecked/>
-                  Carousel
-                </label>
-                <label class="collapsible">
-                  <input type="checkbox" name="pat/collapsible" unchecked/>
-                  Collapsible
-                </label>
-                <!-- <label class="tinymce"> -->
-                <!--   <input type="checkbox" name="pat/edit-tinymce" unchecked/> -->
-                <!--   <a class="navigation tiny-mce" href="demo/edit-tinymce/index.html" title="Rich editor">Tiny MCE</a> -->
-                <!-- </label> -->
-                <label class="gallery">
-                  <input type="checkbox" name="pat/gallery" unchecked/>
-                  Gallery
-                </label>
-                <label class="image-crop">
-                  <input type="checkbox" name="pat/image-crop" unchecked/>
-                  Image crop
-                </label>
-                <label class="markdown">
-                  <input type="checkbox" name="pat/markdown" unchecked/>
-                  Markdown
-                </label>
-                <label class="modal">
-                  <input type="checkbox" name="pat/modal" unchecked/>
-                  Modal panels
-                </label>
-                <label class="notification">
-                  <input type="checkbox" name="pat/notification" unchecked/>
-                  Notification
-                </label>
-                <!-- <label class="menu"> -->
-                <!--   <input type="checkbox" name="pat/menu" unchecked/> -->
-                <!--   <a>Menu</a> -->
-                <!-- </label> -->
-                <label class="slides">
-                  <input type="checkbox" name="pat/slides" unchecked/>
-                  Slideshows
-                </label>
-                <label class="slideshow-builder">
-                  <input type="checkbox" name="pat/slideshow-builder" unchecked/>
-                  Custom slideshow builder
-                </label>
-                <label class="sortable">
-                  <input type="checkbox" name="pat/sortable" unchecked/>
-                  Sortable
-                </label>
-                <label class="tooltip">
-                  <input type="checkbox" name="pat/tooltip" unchecked/>
-                  Tooltips
-                </label>
-                <label class="zoom">
-                  <input type="checkbox" name="pat/zoom" unchecked/>
-                  Zoom
-                </label>
-            </fieldset>
+            </div>
+            
+          </div>
 		</fieldset>
-
 	</fieldset>
 </form>
