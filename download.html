@@ -93,7 +93,7 @@ state: download
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'behavioural' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
-                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    <input type="checkbox" checked name="pat/{{ post.id }}" checked/>
                                     {{ post.title }}
                                     <a href="{{ post.url }}#content" class="pat-modal iconified icon-info-circle" data-pat-modal="class: large demo">Information</a>
                                 </label>
@@ -106,7 +106,7 @@ state: download
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'navigation' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
-                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    <input type="checkbox" checked name="pat/{{ post.id }}" checked/>
                                     {{ post.title }}
                                     <a href="{{ post.url }}#content" class="pat-modal iconified icon-info-circle" data-pat-modal="class: large demo">Information</a>
                                 </label>
@@ -120,7 +120,7 @@ state: download
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'layout' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
-                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    <input type="checkbox" checked name="pat/{{ post.id }}" checked/>
                                     {{ post.title }}
                                     <a href="{{ post.url }}#content" class="pat-modal iconified icon-info-circle" data-pat-modal="class: large demo">Information</a>
                                 </label>
@@ -133,7 +133,7 @@ state: download
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'fancy-stuff' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
-                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    <input type="checkbox" checked name="pat/{{ post.id }}" checked/>
                                     {{ post.title }}
                                     <a href="{{ post.url }}#content" class="pat-modal iconified icon-info-circle" data-pat-modal="class: large demo">Information</a>
                                 </label>
@@ -147,7 +147,7 @@ state: download
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'form' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
-                                    <input type="checkbox" checked name="{{ post.id }}" checked/>
+                                    <input type="checkbox" checked name="pat/{{ post.id }}" checked/>
                                     {{ post.title }}
                                     <a href="{{ post.url }}#content" class="pat-modal iconified icon-info-circle" data-pat-modal="class: large demo">Information</a>
                                 </label>
