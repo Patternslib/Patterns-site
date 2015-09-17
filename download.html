@@ -3,6 +3,7 @@ layout: shell
 state: download
 ---
 
+<!--
 <div class="pat-well">
 	<article class="row pat-equaliser">
 		<div class="four columns">
@@ -10,7 +11,7 @@ state: download
 				Full bundle
 			</h3>
 			<p>
-				The most straight forward way to use Patterns is to download the complete bundle and include it in your website. 
+				The most straight forward way to use Patterns is to download the complete bundle and include it in your website.
 			</p>
 			<p class="button-bar">
 				<a href="" class="pat-button">Download</a>
@@ -40,9 +41,19 @@ state: download
 		</div>
 	</article>
 </div>
+-->
 
-<form action="getBundle" id="download" class="download pat-collapsible closed">
-	<h4>Tailored bundle</h4>
+<form action="getBundle" id="download" class="download">
+	<h1>Download a Patterns bundle</h1>
+    <p>
+        A bundle consists of the core Patterns source code, as well as some or all of the individual patterns.
+    </p>
+    <p>
+        Ideally, your bundle will containe only those patterns which you'll be using in your site, so as to keep your served Javascript file small.
+    </p>
+    <br/>
+
+
 	<fieldset class="vertical">
 		<fieldset class="pat-checklist component-index" id="component-index">
 			<p class="functions pat-button-bar">
@@ -64,9 +75,20 @@ state: download
 				  {% endfor %}
                {% endcomment %}
 
+                <fieldset class="button-bar">
+                    <fieldset class="bundle-type pat-checklist radio">
+                    <h4>Bundle type</h4>
+                        <label>
+                            <input type="radio" name="minify" value="off"> Regular</input>
+                        </label>
+                        <label>
+                            <input type="radio" name="minify" value="on" checked> Minified</input>
+                        </label>
+                    </fieldset>
+                </fieldset>
 
 			  <h2>Core</h2>
-              
+
               <fieldset class="checklist core">
                 <label class="modernizr">
                   <input type="checkbox" name="modernizr" unchecked/>
@@ -77,9 +99,9 @@ state: download
                   Prefixfree
                 </label>
               </fieldset>
-              
+
               <h2>Behavioural</h2>
-              
+
               <fieldset class="checklist behavioural">
                 <label class="clone">
                   <input type="checkbox" name="pat/clone" unchecked/>
@@ -108,12 +130,12 @@ state: download
                 <label class="toggle">
                   <input type="checkbox" name="pat/toggle" unchecked/>
                   Class toggle
-                  
+
                 </label>
               </fieldset>
-              
+
               <h2>Forms</h2>
-              
+
               <fieldset class="checklist forms">
                 <label class="auto-submit">
                   <input type="checkbox" name="pat/autosubmit" unchecked/>
@@ -139,13 +161,13 @@ state: download
                   <input type="checkbox" name="pat/checklist" unchecked/>
                   Checklist
                 </label>
-                <label class="focus">
+                <label class="_focus">
                   <input type="checkbox" name="pat/focus" unchecked/>
                   Focus
                 </label>
                 <label class="subform">
                   <input type="checkbox" name="pat/subform" unchecked/>
-                  <a>Subform</a>
+                  Subform
                 </label>
                 <!-- <label class="form"> -->
                 <!--   <input type="checkbox" name="pat/form-state" unchecked/> -->
@@ -168,9 +190,9 @@ state: download
                 <!--   <a class="navigation legend">Legend</a> -->
                 <!-- </label> -->
               </fieldset>
-              
+
               <h2>Navigation</h2>
-              
+
               <fieldset class="checklist navigation">
                 <!-- <label class="breadcrumbs"> -->
                 <!--   <input type="checkbox" name="pat/breadcrumbs" unchecked/> -->
@@ -189,9 +211,9 @@ state: download
                   Stacks
                 </label>
               </fieldset>
-              
+
               <h2>Layout</h2>
-              
+
               <fieldset class="checklist layout">
                 <!-- Breaks the bundle -->
                 <!-- <label class="autoscale"> -->
@@ -215,7 +237,7 @@ state: download
 
 
               <h2>Fancy stuff</h2>
-              
+
               <fieldset class="checklist fancy">
                 <!-- <label class="calendar"> -->
                 <!--   <input type="checkbox" name="pat/calendar" unchecked/> -->
@@ -280,16 +302,5 @@ state: download
             </fieldset>
 		</fieldset>
 
-	    <fieldset class="button-bar">
-			<fieldset class="bundle-type pat-checklist radio">       
-		       <h4>Bundle type</h4>  
-		        <label>
-		            <input type="radio" name="minify" value="off"> Regular</input>
-		        </label>
-		        <label>
-		            <input type="radio" name="minify" value="on" checked> Minified</input>
-		        </label>
-		    </fieldset>
-		</fieldset>
 	</fieldset>
 </form>
