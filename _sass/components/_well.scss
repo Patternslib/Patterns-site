@@ -1,0 +1,6 @@
+.pat-well {
+	background: rgba(255,255,255,0.1);
+	padding: 5%;
+	@include box-sizing();
+	height: 100%;
+}
