@@ -3,7 +3,7 @@ layout: shell
 state: home
 ---
 
-<section class="container patterns tiles">
+<section class="container patterns tiles" id="pattern-tiles">
 	<div class="tile-cloud row">
 		{% assign sortedposts = site.posts | sort: 'title' %}
 		{% for post in sortedposts %}
