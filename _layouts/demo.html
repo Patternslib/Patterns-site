@@ -4,11 +4,17 @@ state: demo
 ---
 <h1>{{ page.title }}</h1>
 
+<article>
+    <a href="/patternslib/src/pat/{{page.id}}/documentation.md"
+        class="pat-inject" data-pat-inject="data-type: markdown; source: ##Description; target: self::element; trigger: autoload">Documentation</a>
+</article>
+
+<h2>Demo</h2>
 <div id="demo" class="pattern-demo">
     <a href="/patternslib/src/pat/{{ page.id }}/index.html" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
 </div>
 
 <article>
-    <a href="/patternslib/src/pat/{{page.id}}/documentation.md"
-        class="pat-inject" data-pat-inject="data-type: markdown; source: ::element; target: self::element; trigger: autoload">Documentation</a>
+    <a href="/patternslib/src/pat/{{page.id}}/documentation.md#documentation"
+        class="pat-inject" data-pat-inject="data-type: markdown; source: ##Documentation; target: self::element; trigger: autoload">Documentation</a>
 </article>
