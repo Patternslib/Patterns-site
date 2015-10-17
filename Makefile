@@ -18,11 +18,11 @@ dev: stamp-bundler
 bundle patternslib/bundle.js:
 	@cd patternslib && make bundle && cd ..;
 		
-serve-designer:: stamp-bundler
+serve-designer:: stamp-bundler bundle
 	$(BUNDLE) exec jekyll serve
 
 .PHONY: serve
-serve:: stamp-bundler
+serve:: stamp-bundler bundle
 	$(BUNDLE) exec jekyll serve  --baseurl "" --host "0.0.0.0"
 
 .PHONY: clean
