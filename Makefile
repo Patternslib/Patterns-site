@@ -18,7 +18,7 @@ dev: stamp-bundler
 bundle patternslib/bundle.js:
 	@cd patternslib && make bundle && cd ..;
 		
-serve-designer::
+serve-designer:: stamp-bundler
 	$(BUNDLE) exec jekyll serve
 
 .PHONY: serve
