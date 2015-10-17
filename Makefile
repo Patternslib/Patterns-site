@@ -22,7 +22,7 @@ serve-designer:: stamp-bundler
 	$(BUNDLE) exec jekyll serve
 
 .PHONY: serve
-serve::
+serve:: stamp-bundler
 	$(BUNDLE) exec jekyll serve  --baseurl "" --host "0.0.0.0"
 
 .PHONY: clean
