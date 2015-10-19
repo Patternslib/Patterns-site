@@ -4,4 +4,11 @@
 	padding: 5%;
 	@include box-sizing();
 	height: 100%;
+
+    h2 {
+        margin-bottom: 5%;
+    } 
+    li {
+        padding-bottom: 5%;
+    }
 }

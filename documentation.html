@@ -4,7 +4,7 @@ state: documentation
 ---
 
 <div class="pat-equaliser row">
-	<div class="six columns">
+	<div class="four columns">
 		<section class="documentation pat-well">
 			<h2>For developers</h2>
 			<ul>
@@ -18,7 +18,7 @@ state: documentation
 			</ul>
 		</section>
 	</div>
-	<div class="six columns">
+	<div class="four columns">
 		<section class="documentation pat-well">
 			<h2>For designers</h2>
 			<ul>
@@ -32,21 +32,26 @@ state: documentation
 			</ul>
 		</section>
 	</div>
-
-    <!--
 	<div class="four columns">
 		<section class="documentation pat-well">
-			<h3>Example pages</h3>
+			<h2>Examples</h2>
+			<h3>Prototypes</h3>
 			<ul>
-				{% for page in site.pages  %}
-					{% if page.layout == "example" %}
-						<li>
-							<a href="{{ page.url }}#main-content">{{ page.title }}</a>
-						</li>
-					{% endif %}
-				{% endfor %}
+                <li>
+                    <a href="http://prototype.ploneintranet.net/dashboard.html">The Plone Intranet Prototype</a>
+                </li>
+			</ul>
+			<h3>Websites</h3>
+			<ul>
+                <li>
+                    <a href="http://www.overstroomik.nl">Overstroom ik?</a>
+                    <p>A Dutch website on the risks of flooding in certain areas in the Netherlands.</p>
+                </li>
+                <li>
+                    <a href="http://patternslib.com">Patternslib.com</a>
+                    <p>This website you're looking at now uses patterns. <a href="https://github.com/Patternslib/Patterns-site">Github repo</a>.</p>
+                </li>
 			</ul>
 		</section>
 	</div>
-    -->
 </div>
