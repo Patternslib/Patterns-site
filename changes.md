@@ -1,5 +1,4 @@
 # Changelog
-- Define UTF-8 charset on all files
 
 ## 1.5.0 - January 22, 2014
 
