@@ -49,7 +49,9 @@ Now install jekyll itself:
 ## Integration with the Patterns repo
 
 The website includes demos and documentation from the [Patterns repo](https://github.com/Patternslib/Patterns.git)
-which means that we need to have a git checkout of it in Patterns-site.
+which means that we need to have a git checkout of it in Patterns-site. Run:
+
+    make patternslib
 
 To automatically have this repo checked out and updated, simply run:
 
