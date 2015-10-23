@@ -52,6 +52,7 @@ The website includes demos and documentation from the [Patterns repo](https://gi
 which means that we need to have a git checkout of it in Patterns-site. Run:
 
     make patternslib
+    make bundle
 
 To automatically have this repo checked out and updated, simply run:
 
@@ -60,16 +61,20 @@ To automatically have this repo checked out and updated, simply run:
 Patterns will then be checked out into ./patternslib and the files for the
 individual patterns (index.html, scss, documentation.md etc.) are located in ./patternslib/src/pat/${pattern name}/
 
+A bundle.js will be created, and Jekyll will serve the site on port 4000.
+
 Jekyll will pick up modifications to these files and because this is a git
 checkout, you can also commit and push your changes to Patterns.
 
 ### Generating the site
 
-Running ``make designerhappy`` will generate and serve the site.
+Running ``make designerhappy`` will generate and serve the site on port 4000.
 
 Otherwise you can also run:
 
-    bundle exec jekyll serve --watch --baseurl ""
+    bundle exec jekyll serve --watch --baseurl "" --port xxxx
+
+where xxxx is your port number. 
 
 ### How to include the demos and docs for the individual patterns
 
