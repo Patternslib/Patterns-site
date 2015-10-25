@@ -47,3 +47,8 @@
 	@extend .pattern-tile;
 	background-color: $cat-fancy-stuff;
 }
+
+.cat-navigation {
+	@extend .pattern-tile;
+	background-color: $cat-navigation;
+}
