@@ -1,0 +1,65 @@
+.tiles {
+	position: relative;
+	z-index: 1;
+	padding: 0 15px;
+
+	.tile-cloud .pattern-tile {
+		width: 20%;
+		float: left;
+
+		@include screen-size(medium) {
+			width: 25%;
+		}
+
+		@include screen-size(small) {
+			width: 50%;
+		}
+	}
+
+	.pattern-tile {
+		overflow: hidden;
+		display: block;
+		color: white;
+		text-decoration: none;
+		padding-bottom: 15px;
+		
+		figure {
+			img {
+				width: 100%
+			}
+
+			figcaption {
+				text-align: center;
+				height: 2.5em;
+				margin: 0 -15px;
+				font-size: 0.8em;
+				font-weight: bold;
+			}
+		}
+	}
+
+
+	.cat-behavioural {
+		@extend .pattern-tile;
+		background-color: $cat-behavioural;
+	}
+
+	.cat-form {
+		@extend .pattern-tile;
+		background-color: $cat-form;
+	}
+
+	.cat-layout {
+		@extend .pattern-tile;
+		background-color: $cat-layout;
+	}
+
+	.cat-fancy-stuff {
+		@extend .pattern-tile;
+		background-color: $cat-fancy-stuff;
+	}
+
+	// .tiles-up #pattern-tiles {
+	// 	margin-top: -6em;
+	// }
+}

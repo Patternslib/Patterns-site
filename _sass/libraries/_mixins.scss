@@ -5,72 +5,17 @@
 
 $fixViewport: false !default;
 
-@mixin respond-min($width) {
-	// If we're outputting for a fixed media query set
-	@if $fixViewport {
-		// ...and if we should apply these rules
-		@if $fixViewport >= $width {
-			// ...output the content the user gave us.
-			@content;
-		}
-	}
-	@else {
-		// Otherwise, output it using a regular media query
-		@media (min-width: $width) {
-			@content;
-		}
-	}
+@mixin screen-size($media) {
+  @if $media == small {
+    @media only screen and (max-width: $break-small) { @content; }
+  }
+  @else if $media == medium {
+    @media only screen and (min-width: $break-small + 1) and (max-width: $break-large - 1) { @content; }
+  }
+  @else if $media == large {
+    @media only screen and (min-width: $break-large) { @content; }
+  }
 }
-
-@mixin respond-max($width) {
-	// If we're outputting for a fixed media query set...
-	@if $fixViewport {
-		// ...and if we should apply these rules...
-		@if $fixViewport < $width {
-			// ...output the content the user gave us.
-			@content;
-		}
-	}
-	@else {
-		// Otherwise, output it using a regular media query
-		@media (max-width: $width) {
-			@content;
-		}
-	}
-}
-
-@mixin respond-min-max($minwidth,$maxwidth) {
-	// If we're outputting for a fixed media query set...
-	@if $fixViewport {
-		// ...and if we should apply these rules...
-		@if $fixViewport >= $minwidth {
-			@if  $fixViewport <= $maxwidth {
-				// ...output the content the user gave us.
-				@content;
-			}
-		}
-	}
-	@else {
-		// Otherwise, output it using a regular media query
-		@media (min-width: $minwidth) and (max-width: $maxwidth) {
-			@content;
-		}
-	}
-}
-
-// specific breakpoint on type
-// $breakpoints: (
-// 				(small, 36em),
-// 				(medium, 50em),
-// 				(large, 58em)
-// 			);
-// @mixin respond-to($respond-to-breakpoint) {
-// 	@each $breakpoint in $breakpoints {
-// 		@if nth($breakpoint, 1) == $respond-to-breakpoint {
-// 			@include respond-min(nth($breakpoint, 2));
-// 		}
-// 	}
-// }
 
 // general media query
 @mixin media-query($value, $operator: 'min-width', $query: 'screen') {

@@ -30,7 +30,8 @@ $cat-form: #be9ac1;
 $cat-layout: #a1ced2;
 
 // Breakpoints
-$mobile: 768px;
+$break-small: 768px !default;
+$break-large: 769px !default;
 
 // Libraries
 @import "libraries/reset";
@@ -46,8 +47,10 @@ $mobile: 768px;
 @import "components/demo-block";
 @import "components/html";
 @import "components/modal";
-@import "components/pattern-tile";
+@import "components/pattern-tiles";
 @import "components/site-header";
+@import "components/site-hero";
+@import "components/site-intro";
 @import "components/sub-nav";
 @import "components/typography";
 @import "components/well";

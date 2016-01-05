@@ -1,0 +1,42 @@
+#site-hero {
+	@include screen-size(large) {
+		width: 100%;
+		margin: -3em auto 1em;
+		position: relative;
+		z-index: 0;
+
+		.state-home.tiles-up & {
+			margin-bottom: -24em;
+			-webkit-filter: blur(25px);
+			-moz-filter: blur(25px);
+			filter: blur(25px);
+			opacity: 0.5;
+		}
+
+		-moz-transition: opacity 2s 0.5s, width 0.5s, filter 0.5s, margin 0.5s;
+		-webkit-transition: opacity 2s 0.5s, width 0.5s, filter 0.5s, margin 0.5s;
+		transition: opacity 2s 0.5s, width 0.5s, filter 0.5s, margin 0.5s;
+		
+		svg {
+			width: 100%;
+		}
+		
+		figcaption {
+			// position: absolute;
+			// left: 30%;
+			// top: 71%;
+
+			// button {
+			// 	-webkit-transform: translateX(-50%);
+			// 	-moz-transform: translateX(-50%);
+			// 	transform: translateX(-50%);
+			// 	opacity: 0;
+			// 	color: white;
+			// }
+		}	
+	}
+
+	@include screen-size(small) {
+		display: none;
+	}
+}
