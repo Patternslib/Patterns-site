@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAIQ,yDAA8C;ACFtD;WACY;EACX,KAAK,EDYU,OAAO",
+"sources": ["../../../_sass/_settings.scss","_focus.scss"],
+"names": [],
+"file": "focus.css"
+}

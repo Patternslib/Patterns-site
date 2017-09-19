@@ -1,0 +1,200 @@
+@import url(/patternslib/style/fontello/css/fontello.css);
+.pat-button {
+  font-family: "Source Sans Pro", sans-serif;
+  margin: 0 0.5em 0 0;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  cursor: default;
+  border-radius: 0.2em;
+  background-image: -moz-linear-gradient(bottom, rgba(0, 0, 0, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%);
+  background-image: -webkit-linear-gradient(bottom, rgba(0, 0, 0, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%);
+  background-image: linear-gradient(bottom, rgba(0, 0, 0, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%);
+  text-decoration: none !important;
+  line-height: 1.5;
+  white-space: nowrap;
+  background-color: transparent;
+  display: inline-block;
+  padding-top: 0;
+  padding-left: 1em;
+  padding-right: 1em;
+  font-size: 0.98em; }
+  .pat-button:active, .pat-button.active {
+    box-shadow: inset 0 0 0.3em rgba(0, 0, 0, 0.3); }
+  .pat-button.no-label {
+    padding-left: 0;
+    padding-right: 0;
+    width: 1.7em; }
+    .pat-button.no-label:before {
+      width: 100%;
+      text-align: center;
+      margin: 0; }
+
+::-webkit-search-cancel-button {
+  -webkit-appearance: none; }
+
+::-webkit-search-cancel-button:hover {
+  color: #0198E1; }
+::-webkit-search-cancel-button::after {
+  content: '\e803';
+  font-family: fontello;
+  right: 1em;
+  position: absolute;
+  top: 50%;
+  line-height: 1;
+  margin-top: -.5em; }
+
+.pat-button:focus,
+*[data-option].focus:after,
+input:focus,
+.select2-container-multi.select2-container-active,
+textarea:focus {
+  border-color: #0081be;
+  box-shadow: 0 0 4px #0081be; }
+
+.pat-button.link {
+  border-style: none;
+  background-image: none; }
+
+.pat-button.dropdown {
+  position: relative;
+  padding-right: 1.6em; }
+
+.pat-button.dropdown:after {
+  content: '\25be';
+  display: inline-block;
+  font: 18px fontello;
+  position: absolute;
+  right: 4px; }
+
+.pat-button.dropdown[class*="icon-"] {
+  padding-right: 12px; }
+
+a.button.dropdown[class*="icon-"]:after, button.dropdown[class*="icon-"]:after {
+  display: none; }
+
+a.button.tentative, button.tentative, ul.cal-events label[data-option="Tentative"] select {
+  background-color: #ff9300;
+  color: white;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#c9de96', endColorstr='#398235',GradientType=0 );
+  border: 1px solid #c46f00; }
+
+a.button.confirmative, button.confirmative, ul.cal-events label[data-option="Confirmed"] select {
+  background-color: #5bb75b;
+  color: white;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#c9de96', endColorstr='#398235',GradientType=0 );
+  border: 1px solid #298f00; }
+
+a.button.negative, button.negative, ul.cal-events label[data-option="Declined"] select {
+  background-color: red;
+  color: white;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffcb91', endColorstr='#ff1a00',GradientType=0 );
+  border: 1px solid #941100; }
+
+.pat-button.on,
+a.button:active {
+  box-shadow: inset 0 1px 10px rgba(0, 0, 0, 0.3); }
+
+.pat-button.disabled {
+  opacity: 0.4;
+  filter: alpha(opacity=40); }
+
+button.pat-button[disabled="disabled"], button.pat-button:disabled {
+  opacity: 0.4;
+  filter: alpha(opacity=40); }
+
+.button-cluster {
+  overflow: hidden;
+  display: inline-block;
+  margin: 0; }
+
+.button-cluster.float-before {
+  margin-right: 5px; }
+.button-cluster button, .button-cluster a.button {
+  margin: 0;
+  border-radius: 0;
+  border-left-style: none;
+  float: left; }
+.button-cluster :first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left-style: none;
+  border-left-style: solid; }
+
+.button-cluster :last-child {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important; }
+
+.pat-notification-panel {
+  padding: 0.5em;
+  margin-bottom: 1em;
+  box-shadow: 0 1px 0.2em rgba(0, 0, 0, 0.6);
+  display: block;
+  border-radius: 0.2em;
+  background-color: rgba(254, 255, 255, 0.98);
+  color: #6f5a44; }
+  .pat-notification-panel button {
+    font-family: "Source Sans Pro", sans-serif;
+    margin: 0 0.5em 0 0;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    cursor: default;
+    border-radius: 0.2em;
+    background-image: -moz-linear-gradient(bottom, rgba(0, 0, 0, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgba(0, 0, 0, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%);
+    background-image: linear-gradient(bottom, rgba(0, 0, 0, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%);
+    text-decoration: none !important;
+    line-height: 1.5;
+    white-space: nowrap;
+    background-color: transparent;
+    display: inline-block;
+    padding-top: 0;
+    padding-left: 1em;
+    padding-right: 1em;
+    font-size: 0.98em; }
+    .pat-notification-panel button:active, .pat-notification-panel button.active {
+      box-shadow: inset 0 0 0.3em rgba(0, 0, 0, 0.3); }
+    .pat-notification-panel button.no-label {
+      padding-left: 0;
+      padding-right: 0;
+      width: 1.7em; }
+      .pat-notification-panel button.no-label:before {
+        width: 100%;
+        text-align: center;
+        margin: 0; }
+  .pat-notification-panel a {
+    text-decoration: underline; }
+  .pat-notification-panel.notice {
+    background-color: #FFFFD6; }
+  .pat-notification-panel.success {
+    background-color: green;
+    color: black; }
+    .pat-notification-panel.success * {
+      color: black !important; }
+  .pat-notification-panel.warning {
+    background-color: orange;
+    color: white; }
+    .pat-notification-panel.warning * {
+      color: white !important; }
+  .pat-notification-panel.error {
+    background-color: red;
+    color: white; }
+    .pat-notification-panel.error * {
+      color: white !important; }
+  .pat-notification-panel.info {
+    background-color: #FFFFD6;
+    color: #247fad; }
+  .pat-notification-panel p:last-of-type {
+    margin-bottom: 10px; }
+
+#pat-notification-banners {
+  position: fixed;
+  top: 15px;
+  width: 380px;
+  z-index: 2147483647;
+  right: 15px; }
+  #pat-notification-banners .pat-notification-panel {
+    padding-right: 108px; }
+  #pat-notification-banners .close-panel {
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em; }
+
+/*# sourceMappingURL=notification.css.map */

@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,aAAc;EACV,UAAU,EAAE,eAAe",
+"sources": ["_checked-flag.scss"],
+"names": [],
+"file": "checked-flag.css"
+}

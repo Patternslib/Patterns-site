@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,mBAAmB;ACIX,yDAA8C;ADDtD,WAAY;EACV,OAAO,EAAE,EAAE;EAEX,mBAAU;IACR,gBAAgB,ECYH,KAAK;IDXlB,KAAK,EAAE,KAAK;EAEd,mBAAU;IACR,gBAAgB,ECUH,MAAM;IDTnB,KAAK,EAAE,KAAK;;AAKhB,UAAU",
+"sources": ["_bumper.scss","../../../_sass/_settings.scss"],
+"names": [],
+"file": "bumper.css"
+}

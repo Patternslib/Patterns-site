@@ -1,0 +1,14 @@
+/* @group Bumper */
+@import url(/patternslib/style/fontello/css/fontello.css);
+.pat-bumper {
+  z-index: 99; }
+  .pat-bumper.success {
+    background-color: green;
+    color: white; }
+  .pat-bumper.warning {
+    background-color: orange;
+    color: black; }
+
+/* @end */
+
+/*# sourceMappingURL=bumper.css.map */

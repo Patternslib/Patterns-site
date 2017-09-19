@@ -1,0 +1,26 @@
+.pat-sortable .sortable-item.dragged {
+  color: #dedede; }
+.pat-sortable .sortable-item.drop-target-above {
+  border-top: 3px solid #ff0000; }
+.pat-sortable .sortable-item.drop-target-below {
+  border-bottom: 3px solid #ff0000; }
+.pat-sortable .sortable-item .handle {
+  background-color: #808080;
+  display: none;
+  float: right;
+  height: 1.5em;
+  margin: 0.1em;
+  cursor: move;
+  line-height: 1.5em;
+  text-decoration: none;
+  border-radius: 0.8em; }
+  .pat-sortable .sortable-item .handle:before {
+    content: "Drag";
+    text-align: center;
+    padding: 0 0.8em;
+    color: white;
+    display: inline-block; }
+.pat-sortable .sortable-item:hover .handle {
+  display: inline-block; }
+
+/*# sourceMappingURL=sortable.css.map */

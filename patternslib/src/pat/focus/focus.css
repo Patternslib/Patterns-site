@@ -1,0 +1,6 @@
+@import url(/patternslib/style/fontello/css/fontello.css);
+fieldset.focus > .legend,
+label.focus {
+  color: #0198E1; }
+
+/*# sourceMappingURL=focus.css.map */

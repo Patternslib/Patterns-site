@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,eAAgB;EACZ,qBAAqB,EAAE,QAAQ;EAC/B,wBAAwB,EAAE,QAAQ;EAClC,gBAAgB,EAAE,QAAQ;EAC1B,OAAO,EAAE,CAAC;EACV,eAAe,EAAE,YAAY;EAC7B,kBAAkB,EAAE,YAAY;EAChC,UAAU,EAAE,YAAY;;AAG5B,sBAAuB;EACnB,OAAO,EAAE,CAAC",
+"sources": ["_auto-scale.scss"],
+"names": [],
+"file": "auto-scale.css"
+}

@@ -1,0 +1,11 @@
+.pat-masonry {
+  position: relative; }
+  .pat-masonry .item {
+    opacity: 0;
+    -moz-transition: opacity 0.5s;
+    -webkit-transition: opacity 0.5s;
+    transition: opacity 0.5s; }
+  .pat-masonry.masonry-ready .item {
+    opacity: 1; }
+
+/*# sourceMappingURL=masonry.css.map */

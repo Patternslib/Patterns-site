@@ -2,7 +2,6 @@
 .sass-cache
 _site
 *.codekit
-src
 node_modules
 npm-debug.log
 .bundle
