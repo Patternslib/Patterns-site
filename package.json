@@ -1,0 +1,48 @@
+{
+  "name": "Patterns-site",
+  "version": "3.0.0",
+  "title": "Patternslib Website",
+  "description": "The documentation website for the patternslib project",
+  "author": {
+    "name": "Cornelis Kolbach"
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Patternslib/Patterns-site/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Patternslib/Patterns-site/"
+  },
+  "dependencies": {
+    "patternslib": "git@github.com:Patternslib/Patterns.git"
+  },
+  "devDependencies": {
+    "generator-patternslib": "0.2.1",
+    "exports-loader": "",
+    "expose-loader": "",
+    "imports-loader": "",
+    "jasmine-core": "2.5.2",
+    "jasmine-webpack-plugin": "",
+    "script-loader": "",
+    "webpack": "",
+    "webpack-merge": "",
+    "webpack-uglify-js-plugin": "",
+    "wrapper-webpack-plugin": ""
+  },
+  "scripts": {
+    "build": "NODE_ENV=production webpack --config webpack.config.js"
+  },
+  "homepage": "http://www.patternslib.com",
+  "docs": "http://www.patternslib.com/",
+  "maintainers": [
+    {
+      "name": "Cornelis Kolbach",
+      "url": "http://www.cornae.com"
+    },
+    {
+      "name": "Alexander Pilz",
+      "url": "http://www.syslab.com"
+    }
+  ]
+}

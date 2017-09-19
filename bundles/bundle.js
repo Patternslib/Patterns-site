@@ -1,5 +1,3 @@
-// Patternslib 3.0.0dev
-
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -19584,6 +19582,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* Patterns bund
     return registry;
 }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
 
 
 /***/ }),
@@ -73866,14 +73865,5 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FRO
 }.call(window));
 
 /***/ })
-/******/ ]);// (function(root) {
-//   root.patterns=require("patterns");
-//   root.patterns.Parser=require("pat-parser");
-//   root.patterns.logging=require("pat-logger");
-//   root.patterns.utils=require("pat-utils");
-//   root.patterns.logger=require("pat-logger");
-//   root.patterns.Base=require("pat-base");
-// })(window);
-// window.define=undefined;
-
+/******/ ]);
 //# sourceMappingURL=bundle.js.map

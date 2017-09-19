@@ -6,5 +6,5 @@ src
 node_modules
 npm-debug.log
 .bundle
-patternslib
 stamp-bundler
+stamp-npm

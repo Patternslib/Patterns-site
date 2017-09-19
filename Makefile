@@ -1,11 +1,10 @@
 SASS            ?= ./.bundle/bin/sass
 BUNDLE          ?= ./.bundle/bin/bundle
 
-patternslib::
-	@if [ ! -d "patternslib" ]; then \
-		git clone https://github.com/Patternslib/Patterns.git patternslib; \
-	 fi;
-	cd patternslib && npm install && ./node_modules/.bin/bower update && cd ..; \
+stamp-npm: package.json
+	@npm install
+	@touch stamp-npm
+	@echo "Dependencies loaded successfully."
 
 stamp-bundler:
 	mkdir -p .bundle
@@ -13,12 +12,10 @@ stamp-bundler:
 	$(BUNDLE) install --path .bundle --binstubs .bundle/bin
 	touch stamp-bundler
 
-dev: stamp-bundler
+bundle: stamp-npm		  ## Build a custom javascript bundle
+	@npm run build
+	@echo "The bundle has been built."
 
-bundle patternslib/bundle.js:
-	mkdir -p bundles
-	@cd patternslib && make bundle && cd ..;
-	cp patternslib/bundle.js ./bundles
 		
 serve-designer:: stamp-bundler bundle
 	$(BUNDLE) exec jekyll serve
@@ -29,7 +26,9 @@ serve:: stamp-bundler bundle
 
 .PHONY: clean
 clean::
-	rm -rf patternslib
+	@rm -f stamp-npm
+	@rm -rf node_modules
+	@echo "All cleaned up."
 
 .PHONY: designerhappy
 designerhappy:: patternslib bundle serve-designer
