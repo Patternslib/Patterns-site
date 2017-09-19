@@ -16,7 +16,9 @@ stamp-bundler:
 dev: stamp-bundler
 
 bundle patternslib/bundle.js:
+	mkdir -p bundles
 	@cd patternslib && make bundle && cd ..;
+	cp patternslib/bundle.js ./bundles
 		
 serve-designer:: stamp-bundler bundle
 	$(BUNDLE) exec jekyll serve
