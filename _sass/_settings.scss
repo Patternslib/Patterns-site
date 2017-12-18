@@ -2,7 +2,7 @@
 //@import url(http://fonts.googleapis.com/css?family=Sorts+Mill+Goudy:400,400italic);
 
 @import url(http://fonts.googleapis.com/css?family=Lato:200,400,700,300italic&subset=latin,latin-ext);
-@import "/style/fontello/css/fontello.css";
+@import "fontello/css/fontello.css";
 
 // @import url(fonts/font.css);
 
@@ -33,10 +33,13 @@ $cat-layout: #a1ced2;
 $break-small: 768px !default;
 $break-large: 769px !default;
 
+// Glyphs
+$glyph-throbber: '\e838';
+
 // Libraries
 @import "libraries/reset";
 @import "libraries/animation";
-// @import "libraries/patterns/patterns";
+@import "libraries/patterns/patterns";
 
 // Project components
 @import "components/article";

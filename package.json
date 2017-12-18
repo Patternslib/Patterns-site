@@ -1,0 +1,45 @@
+{
+  "name": "myproject",
+  "version": "3.0.0",
+  "title": "My Project",
+  "description": "My project description.",
+  "author": {
+    "name": "Your name here"
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/url/to/your/project/tracker"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/url/to/your/project"
+  },
+  "dependencies": {
+    "patternslib": "https://github.com/Patternslib/Patterns.git"
+  },
+  "devDependencies": {
+    "jquery": "1.11.3",
+    "generator-patternslib": "0.2.1",
+    "exports-loader": "",
+    "expose-loader": "",
+    "imports-loader": "",
+    "jasmine-core": "2.5.2",
+    "jasmine-webpack-plugin": "",
+    "script-loader": "",
+    "webpack": "",
+    "webpack-merge": "",
+    "webpack-uglify-js-plugin": "",
+    "wrapper-webpack-plugin": ""
+  },
+  "scripts": {
+    "build": "NODE_ENV=production webpack --config webpack.config.js"
+  },
+  "homepage": "https://your.project.homepage.com",
+  "docs": "http://your.docs/",
+  "maintainers": [
+    {
+      "name": "Your Name",
+      "url": "http://your.url"
+    }
+  ]
+}

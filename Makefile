@@ -1,11 +1,12 @@
-SASS            ?= ./.bundle/bin/sass
-BUNDLE          ?= ./.bundle/bin/bundle
+BUNDLE      ?= ./.bundle/bin/bundle
 
-patternslib::
-	@if [ ! -d "patternslib" ]; then \
-		git clone https://github.com/Patternslib/Patterns.git patternslib; \
-	 fi;
-	cd patternslib && npm install && ./node_modules/.bin/bower update && cd ..; \
+########################################################################
+## Install dependencies
+
+stamp-npm: package.json
+	@npm install
+	@touch stamp-npm
+	@echo "Dependencies loaded successfully."
 
 stamp-bundler:
 	mkdir -p .bundle
@@ -13,21 +14,29 @@ stamp-bundler:
 	$(BUNDLE) install --path .bundle --binstubs .bundle/bin
 	touch stamp-bundler
 
-dev: stamp-bundler
+clean::    ## Clean up by removing all depencencies
+	@rm -f stamp-npm
+	@rm -rf node_modules
+	@echo "All cleaned up."
 
-bundle patternslib/bundle.js:
-	@cd patternslib && make bundle && cd ..;
-		
-serve-designer:: stamp-bundler bundle
-	$(BUNDLE) exec jekyll serve
+########################################################################
+## Build JS
 
-.PHONY: serve
-serve:: stamp-bundler bundle
-	$(BUNDLE) exec jekyll serve  --baseurl "" --host "0.0.0.0"
+bundle: stamp-npm		  ## Build a custom javascript bundle
+	@npm run build
+	@echo "The bundle has been built."
 
-.PHONY: clean
-clean::
-	rm -rf patternslib
+# Add help text after each target name starting with ' \#\# '
+help:
+	@grep " ## " $(MAKEFILE_LIST) | grep -v MAKEFILE_LIST | sed 's/\([^:]*\).*##/\1    /'
 
-.PHONY: designerhappy
-designerhappy:: patternslib bundle serve-designer
+jekyll-serve:: stamp-bundler   ## run jekyll, serve and watch
+	bundle exec jekyll serve
+
+jekyll-serve-blank:: stamp-bundler  ## run jekyll, serve and watch (ignoring the baseurl and host settings)
+	bundle exec jekyll serve  --baseurl "" --host "0.0.0.0" 
+
+
+.PHONY: compile-all clean jekyll-serve jekyll-serve-blank bundle help
+
+

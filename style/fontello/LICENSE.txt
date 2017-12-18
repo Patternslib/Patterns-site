@@ -1,6 +1,15 @@
 Font license info
 
 
+## Font Awesome
+
+   Copyright (C) 2016 by Dave Gandy
+
+   Author:    Dave Gandy
+   License:   SIL ()
+   Homepage:  http://fortawesome.github.com/Font-Awesome/
+
+
 ## Iconic
 
    Copyright (C) 2012 by P.J. Onori
@@ -19,21 +28,12 @@ Font license info
    Homepage:  http://www.entypo.com
 
 
-## Font Awesome
+## Fontelico
 
-   Copyright (C) 2012 by Dave Gandy
+   Copyright (C) 2012 by Fontello project
 
-   Author:    Dave Gandy
-   License:   SIL ()
-   Homepage:  http://fortawesome.github.com/Font-Awesome/
-
-
-## Elusive
-
-   Copyright (C) 2013 by Aristeides Stathopoulos
-
-   Author:    Aristeides Stathopoulos
+   Author:    Crowdsourced, for Fontello project
    License:   SIL (http://scripts.sil.org/OFL)
-   Homepage:  http://aristeides.com/
+   Homepage:  http://fontello.com
 
 
