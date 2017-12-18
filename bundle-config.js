@@ -14,7 +14,7 @@ define([
     // "prefixfree",
     "pat-ajax",
     "pat-autofocus",
-    // "pat-autoscale",
+    "pat-autoscale",
     "pat-autosubmit",
     "pat-autosuggest",
     "pat-breadcrumbs",
