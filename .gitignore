@@ -8,3 +8,4 @@ npm-debug.log
 .bundle
 stamp-bundler
 stamp-npm
+/patternslib
