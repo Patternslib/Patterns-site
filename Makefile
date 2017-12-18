@@ -2,7 +2,7 @@ BUNDLE      ?= ./.bundle/bin/bundle
 
 patternslib::
 	@if [ ! -d "patternslib" ]; then \
-		git clone https://github.com/Patternslib/Patterns.git patternslib; \
+		git clone --depth=1 https://github.com/Patternslib/Patterns.git patternslib; \
 	fi;
 	(cd patternslib && npm install && ./node_modules/.bin/bower update)
 
