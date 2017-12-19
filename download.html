@@ -83,13 +83,14 @@ state: download
                                 Modernizr
                             </label>
                             <label class="prefixfree">
-                                <input type="checkbox" checked name="prefixfree" />
+                                <input type="checkbox" name="prefixfree" />
                                 Prefixfree
                             </label>
                       </fieldset>
                     </div>
                     <div class="pat-well cat-behavioural">   
-                        <h2>Behavioural</h2>         
+                        <h2>Behavioural</h2>     
+                        <fieldset class="checklist">    
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'behavioural' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
@@ -99,10 +100,12 @@ state: download
                                 </label>
                             {% endif %}
                         {% endfor %}
+                        </fieldset>
                     </div>
                   
                     <div class="pat-well cat-navigation">   
-                        <h2>Navigation</h2>         
+                        <h2>Navigation</h2>  
+                        <fieldset class="checklist">        
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'navigation' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
@@ -112,11 +115,13 @@ state: download
                                 </label>
                             {% endif %}
                         {% endfor %}
+                        </fieldset>
                     </div>
                 </div>
                 <div class="four columns">
                     <div class="pat-well cat-layout">   
-                        <h2>Layout</h2>         
+                        <h2>Layout</h2>      
+                        <fieldset class="checklist">    
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'layout' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
@@ -126,10 +131,12 @@ state: download
                                 </label>
                             {% endif %}
                         {% endfor %}
+                        </fieldset>
                     </div>
 
                     <div class="pat-well cat-fancy-stuff">   
-                        <h2>Fancy stuff</h2>         
+                        <h2>Fancy stuff</h2>   
+                        <fieldset class="checklist">       
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'fancy-stuff' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
@@ -139,11 +146,13 @@ state: download
                                 </label>
                             {% endif %}
                         {% endfor %}
+                        </fieldset>
                     </div>
                 </div>
                 <div class="four columns">
                     <div class="pat-well cat-form">   
-                        <h2>Forms</h2>         
+                        <h2>Forms</h2>       
+                        <fieldset class="checklist">   
                         {% for post in site.posts %}
                             {% if post.layout == 'demo' and post.category == 'form' %}
                                 <label class="{{ post.id }}" title="{{ post.description }}">
@@ -153,6 +162,7 @@ state: download
                                 </label>
                             {% endif %}
                         {% endfor %}
+                        </fieldset>
                     </div>
                 </div>
             </div>
