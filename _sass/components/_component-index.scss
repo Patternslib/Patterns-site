@@ -1,10 +1,15 @@
 .component-index {
 	margin-bottom: 1em;
 	
-	// .functions {
-	// 	display: block;
-	// 	margin-bottom: 1em;
-	// }
+	.functions {
+		display: block;
+		margin-bottom: 1em;
+
+		.button-cluster {
+			float: left;
+			margin-right: 10px;
+		}
+	}
 
 	// .listing {
 	// 	column-count: 5;
