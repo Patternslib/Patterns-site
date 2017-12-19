@@ -54,17 +54,17 @@ label.pat-checklist {
 	&.radio label {
 		position: relative;
 
-		&:after {
-			background-color: white;
-			display: block;
-			position: absolute;
-			border-radius: 50%;
-			width: 0.8em;
-			height: 0.8em;
-			top: 0.3em;
-			left: 0.02em;
-			z-index: 0;
-		}
+		// &:after {
+		// 	background-color: white;
+		// 	display: block;
+		// 	position: absolute;
+		// 	border-radius: 50%;
+		// 	width: 0.8em;
+		// 	height: 0.8em;
+		// 	top: 0.3em;
+		// 	left: 0.02em;
+		// 	z-index: 0;
+		// }
 
 		&:before {
 			content: '#{$glyph-radio-button}';
