@@ -119,6 +119,18 @@
       "css": "check-on",
       "code": 59401,
       "src": "fontawesome"
+    },
+    {
+      "uid": "e82cedfa1d5f15b00c5a81c9bd731ea2",
+      "css": "info-circle",
+      "code": 59402,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "06301c50d89b5d3e651bd07ebd6d7de7",
+      "css": "cancel",
+      "code": 59403,
+      "src": "mfglabs"
     }
   ]
 }

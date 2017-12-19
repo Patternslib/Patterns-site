@@ -1,10 +1,6 @@
 @charset "UTF-8";
 
-#global-nav,
-#main,
-#footer,
-#site-header,
-> form {
+> *:not(.pat-modal) {
   -ms-filter: blur(0);
   -webkit-filter: blur(0);
   filter: blur(0);
@@ -31,7 +27,7 @@ body.modal-active {
   overflow: hidden;
 }
 
-.pat-modal {
+div.pat-modal {
   transition: background-color 1s;
   background-color: rgba(255,255,255,0.5);
 

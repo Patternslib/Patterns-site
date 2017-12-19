@@ -34,7 +34,7 @@ $break-small: 768px !default;
 $break-large: 769px !default;
 
 // Glyphs
-$glyph-throbber: '\e838';
+$glyph-close-thin: "\e80b";
 
 // Libraries
 @import "libraries/reset";
@@ -49,7 +49,7 @@ $glyph-throbber: '\e838';
 @import "components/content";
 @import "components/demo-block";
 @import "components/html";
-@import "components/modal";
+@import "components/icon";
 @import "components/pattern-tiles";
 @import "components/site-header";
 @import "components/site-hero";
