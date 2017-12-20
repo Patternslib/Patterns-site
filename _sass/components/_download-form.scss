@@ -5,30 +5,31 @@ form.download {
 
 	.pat-well {
 		margin-bottom: 1.6em;
-		color: white;
+		color: black;
+		background-color: rgba(255,255,255,0.95);
 
-		&.cat-behavioural {
-			background-color: $cat-behavioural;
+		&.cat-behavioural * {
+			color: $cat-behavioural;
 		}
 
-		&.cat-form {
-			background-color: $cat-form;
+		&.cat-form * {
+			color: $cat-form;
 		}
 
-		&.cat-layout {
-			background-color: $cat-layout;
+		&.cat-layout * {
+			color: $cat-layout;
 		}
 
-		&.cat-navigation {
-			background-color: $cat-navigation;
+		&.cat-navigation * {
+			color: $cat-navigation;
 		}
 
-		&.cat-fancy-stuff {
-			background-color: $cat-fancy-stuff;
+		&.cat-fancy-stuff * {
+			color: $cat-fancy-stuff;
 		}
 
-		&.cat-core {
-			background-color: rgba(255,255,255,0.3);
+		&.cat-core * {
+			color: gray;
 		}
 	}
 }
