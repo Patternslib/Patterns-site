@@ -16,7 +16,7 @@ state: documentation
 					{% for post in site.posts  %}
 						{% if post.layout == "documentation" and post.sub == "developer" %}
 							<li>
-								<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+								<a href="{{ post.url }}#content" class="pat-inject">{{ post.title }}</a>
 							</li>
 						{% endif %}
 					{% endfor %}
@@ -30,7 +30,7 @@ state: documentation
 					{% for post in site.posts  %}
 						{% if post.layout == "documentation" and post.sub == "designer" %}
 							<li>
-								<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+								<a href="{{ post.url }}#content" class="pat-inject">{{ post.title }}</a>
 							</li>
 						{% endif %}
 					{% endfor %}
