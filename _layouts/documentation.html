@@ -1,19 +1,9 @@
-pat-demos--- 
+---
 layout: shell
 state: documentation
 ---
 
-<!-- <nav class="sub-nav">
-	{% for post in site.posts %}
-		{% if post.layout == 'documentation' %}
-		    <a href="{{ post.url }}" title="{{ post.description }}">
-				{{ post.title }}
-		    </a>
-		{% endif %}
-	{% endfor %}
-</nav> -->
-
-<article id="main-content">
+<article id="main-content" class="container">
     <section id="docs">
         <a href="/pat-demos/docs/{{ page.sub }}/{{ page.file }}" class="pat-inject" data-pat-inject="target: #docs; trigger: autoload; data-type: markdown">Load documentation</a>
     </section>
