@@ -14,6 +14,10 @@
 	margin-left: auto;
 	clear: left;
 
+	&:before {
+		position: fixed;
+	}
+
 	h1 {
         text-align: center;
 		font-weight: $font-weight-light; 
