@@ -25,10 +25,13 @@
 		padding: 5px;
 		
 		figure {
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: top center;
+
 			img {
 				width: 100%;
-				background-size: contain;
-				background-repeat: no-repeat;
+				opacity: 0;
 			}
 
 			figcaption {

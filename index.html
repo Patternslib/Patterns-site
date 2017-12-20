@@ -37,8 +37,8 @@ state: home
 		{% for post in sortedposts %}
 			{% if post.layout == 'demo' %}
 			    <a href="{{ post.url }}" title="{{ post.description }}" class="pattern-tile cat-{{ post.category }}">
-					<figure>
-						<img style="background-image: url(/media/{{ post.id }}.svg)" src="{{ site.placeholder-1x1 }}" alt="" />
+					<figure style="background-image: url(/media/{{ post.id }}.svg)">
+						<img src="{{ site.placeholder-1x1 }}" alt="" />
 						<figcaption>{{ post.title }}</figcaption>
 					</figure>
 			    </a>
