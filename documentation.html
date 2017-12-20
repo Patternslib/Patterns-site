@@ -3,71 +3,73 @@ layout: shell
 state: documentation
 ---
 
+<div class="container">
 	<h1>
 		Documentation
 	</h1>
 
-<div class="pat-equaliser row">
-	<div class="four columns">
-		<section class="documentation pat-well">
-			<h2>For developers</h2>
-			<ul class="links">
-				{% for post in site.posts  %}
-					{% if post.layout == "documentation" and post.sub == "developer" %}
-						<li>
-							<a href="{{ post.url }}#main-content">{{ post.title }}</a>
-						</li>
-					{% endif %}
-				{% endfor %}
-			</ul>
-		</section>
-	</div>
-	<div class="four columns">
-		<section class="documentation pat-well">
-			<h2>For designers</h2>
-			<ul class="links">
-				{% for post in site.posts  %}
-					{% if post.layout == "documentation" and post.sub == "designer" %}
-						<li>
-							<a href="{{ post.url }}#main-content">{{ post.title }}</a>
-						</li>
-					{% endif %}
-				{% endfor %}
-			</ul>
-		</section>
-	</div>
-	<div class="four columns">
-		<section class="documentation pat-well">
-			<h2>Examples</h2>
-			<h3>Prototypes</h3>
-			<ul class="links">
-                <li>
-                    <h4><a href="http://quaive.syslab.com">The Plone Intranet Prototype</a></h4>
-                </li>
-			</ul>
-			<h3>Websites</h3>
-			<ul class="links">
-                <li>
-                    <h4><a href="http://www.overstroomik.nl">Overstroom ik?</a></h4>
-                    <p>A Dutch website on the risks of flooding in certain areas in the Netherlands.</p>
-                </li>
-                <li>
-                    <h4><a href="http://www.patternslib.com">Patternslib.com</a></h4>
-                    <p>This website you're looking at now uses patterns. <a href="https://github.com/Patternslib/Patterns-site">Github repo</a>.</p>
-                </li>
-                <li>
-                    <h4><a href="http://en.syslab.com">Syslab.com</a></h4>
-                    <p>
-                    	The website of Syslab.com, entirely made with Patterns. Watch the fancy modal panels that are created with pat-switch.
-                    </p>
-                </li>
-                <li>
-                    <h4><a href="http://www.informaat.com">Informaat.com</a></h4>
-                    <p>
-                    	The website of the renounced Dutch design and consultancy agency Informaat. Entirely made with Patterns.
-                    </p>
-                </li>
-			</ul>
-		</section>
+	<div class="pat-equaliser row">
+		<div class="four columns">
+			<section class="documentation pat-well">
+				<h2>For developers</h2>
+				<ul class="links">
+					{% for post in site.posts  %}
+						{% if post.layout == "documentation" and post.sub == "developer" %}
+							<li>
+								<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+							</li>
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</section>
+		</div>
+		<div class="four columns">
+			<section class="documentation pat-well">
+				<h2>For designers</h2>
+				<ul class="links">
+					{% for post in site.posts  %}
+						{% if post.layout == "documentation" and post.sub == "designer" %}
+							<li>
+								<a href="{{ post.url }}#main-content">{{ post.title }}</a>
+							</li>
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</section>
+		</div>
+		<div class="four columns">
+			<section class="documentation pat-well">
+				<h2>Examples</h2>
+				<h3>Prototypes</h3>
+				<ul class="links">
+	                <li>
+	                    <h4><a href="http://quaive.syslab.com">The Plone Intranet Prototype</a></h4>
+	                </li>
+				</ul>
+				<h3>Websites</h3>
+				<ul class="links">
+	                <li>
+	                    <h4><a href="http://www.overstroomik.nl">Overstroom ik?</a></h4>
+	                    <p>A Dutch website on the risks of flooding in certain areas in the Netherlands.</p>
+	                </li>
+	                <li>
+	                    <h4><a href="http://www.patternslib.com">Patternslib.com</a></h4>
+	                    <p>This website you're looking at now uses patterns. <a href="https://github.com/Patternslib/Patterns-site">Github repo</a>.</p>
+	                </li>
+	                <li>
+	                    <h4><a href="http://en.syslab.com">Syslab.com</a></h4>
+	                    <p>
+	                    	The website of Syslab.com, entirely made with Patterns. Watch the fancy modal panels that are created with pat-switch.
+	                    </p>
+	                </li>
+	                <li>
+	                    <h4><a href="http://www.informaat.com">Informaat.com</a></h4>
+	                    <p>
+	                    	The website of the renounced Dutch design and consultancy agency Informaat. Entirely made with Patterns.
+	                    </p>
+	                </li>
+				</ul>
+			</section>
+		</div>
 	</div>
 </div>

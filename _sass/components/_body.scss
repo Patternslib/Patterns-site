@@ -8,6 +8,8 @@ body {
 	font-weight: $font-weight-normal;
 	min-height: 100%;
 
+	-webkit-font-smoothing: antialiased;
+
 	background-color: $felt;
 	background-image: -moz-linear-gradient(top, rgba(111,93,119,1) 0%, rgba(136,186,207,1) 100%); 
 	background-image: -webkit-linear-gradient(top, rgba(111,93,119,1) 0%,rgba(136,186,207,1) 100%); 
