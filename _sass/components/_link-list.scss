@@ -1,0 +1,127 @@
+.link-list {
+	@include screen-size(large) {
+		&.col-2 {
+			column-count: 2;
+			overflow: hidden;
+		}
+
+		&.col-3 {
+			column-count: 3;
+			overflow: hidden;
+		}
+
+		&.col-4 {
+			column-count: 4;
+			overflow: hidden;
+		}
+	}
+
+	@include screen-size(medium) {
+		&.col-2 {
+			column-count: 2;
+			overflow: hidden;
+		}
+
+		&.col-3 {
+			column-count: 3;
+			overflow: hidden;
+		}
+
+		&.col-4 {
+			column-count: 3;
+			overflow: hidden;
+		}
+	}
+	
+	li {
+		margin: 0 0 .5em;
+		padding: 0;
+		padding-left: 2em;
+
+		-webkit-column-break-inside: avoid;
+          page-break-inside: avoid;
+               break-inside: avoid;
+
+		a,
+		.group-title {
+			display: block;
+			padding: 0;
+			margin-left: 0;
+			text-decoration: none;
+
+			&:hover {
+				text-decoration: underline;
+			}
+
+			.-ms- & {
+				text-decoration: none;
+			}
+
+			&:before {
+				font-family: fontello;
+				margin-left: -1.8em;
+				margin-top: 0.38em;
+				font-weight: normal;
+				float: left;
+				text-decoration: none;
+
+				width: 1em;
+				margin-right: .2em;
+				text-align: center;
+				speak: none;
+
+				display: inline-block;
+				line-height: 1em;
+			}
+
+			&:not([class*="icon-"]) {
+				&:before {
+					content: '#{$glyph-angle-right}';
+				}
+			}
+
+			&.document {
+				&:before {
+					content: '#{$glyph-doc-text-inv}';
+				}
+			}
+
+			&.website {
+				&:before {
+					content: '#{$glyph-globe}';
+				}
+			}
+		}
+
+		ul {
+			font-size: 0.8em;
+			margin: 0;
+			line-height: 1.2;
+
+			li {
+				margin: 0;
+				padding: 0;
+
+				a {
+					padding: 0 0 0 0.8em;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+
+					&:before {
+						margin-left: -0.8em;
+						margin-top: 0;
+						font-weight: normal;
+						float: left;
+						content: '#{$glyph-angle-right}';
+						font-family: fontello;
+					}
+				}
+			}
+		}
+
+		&:before {
+			display: none;
+		}
+	}
+}

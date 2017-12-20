@@ -1,6 +1,22 @@
 ---
 layout: shell
 state: documentation
+examples:
+  - title: "Overstroom ik?"
+    url: "http://www.overstroomik.nl"
+    description: A Dutch website on the risks of flooding in certain areas in the Netherlands.
+  - title: "Patternslib.com"
+    url: "http://www.patternslib.com"
+    description: This website you're looking at now uses patterns. 
+  - title: "Syslab.com"
+    url: "http://en.syslab.com"
+    description: The website of Syslab.com, entirely made with Patterns. Watch the fancy modal panels that are created with pat-switch.
+  - title: "Informaat.com"
+    url: "http://www.informaat.com"
+    description: The website of the Dutch design and consultancy agency Informaat. Entirely made with Patterns.
+  - title: "Quaive prototype"
+    url: "http://quaive.syslab.com"
+    description: "Patterns is also great tool for designers to create rich interactive prototypes with that deliver directly re-usable front-end code that developers can use."
 ---
 
 <div class="container">
@@ -12,11 +28,11 @@ state: documentation
 		<div class="four columns">
 			<section class="documentation pat-well">
 				<h2>For developers</h2>
-				<ul class="links">
+				<ul class="link-list">
 					{% for post in site.posts  %}
 						{% if post.layout == "documentation" and post.sub == "developer" %}
 							<li>
-								<a href="{{ post.url }}#content" class="pat-inject">{{ post.title }}</a>
+								<a href="{{ post.url }}#content" class="pat-inject document">{{ post.title }}</a>
 							</li>
 						{% endif %}
 					{% endfor %}
@@ -26,11 +42,11 @@ state: documentation
 		<div class="four columns">
 			<section class="documentation pat-well">
 				<h2>For designers</h2>
-				<ul class="links">
+				<ul class="link-list document">
 					{% for post in site.posts  %}
 						{% if post.layout == "documentation" and post.sub == "designer" %}
 							<li>
-								<a href="{{ post.url }}#content" class="pat-inject">{{ post.title }}</a>
+								<a href="{{ post.url }}#content" class="pat-inject document">{{ post.title }}</a>
 							</li>
 						{% endif %}
 					{% endfor %}
@@ -40,34 +56,19 @@ state: documentation
 		<div class="four columns">
 			<section class="documentation pat-well">
 				<h2>Examples</h2>
-				<h3>Prototypes</h3>
-				<ul class="links">
-	                <li>
-	                    <h4><a href="http://quaive.syslab.com">The Plone Intranet Prototype</a></h4>
-	                </li>
-				</ul>
-				<h3>Websites</h3>
-				<ul class="links">
-	                <li>
-	                    <h4><a href="http://www.overstroomik.nl">Overstroom ik?</a></h4>
-	                    <p>A Dutch website on the risks of flooding in certain areas in the Netherlands.</p>
-	                </li>
-	                <li>
-	                    <h4><a href="http://www.patternslib.com">Patternslib.com</a></h4>
-	                    <p>This website you're looking at now uses patterns. <a href="https://github.com/Patternslib/Patterns-site">Github repo</a>.</p>
-	                </li>
-	                <li>
-	                    <h4><a href="http://en.syslab.com">Syslab.com</a></h4>
-	                    <p>
-	                    	The website of Syslab.com, entirely made with Patterns. Watch the fancy modal panels that are created with pat-switch.
-	                    </p>
-	                </li>
-	                <li>
-	                    <h4><a href="http://www.informaat.com">Informaat.com</a></h4>
-	                    <p>
-	                    	The website of the renounced Dutch design and consultancy agency Informaat. Entirely made with Patterns.
-	                    </p>
-	                </li>
+				<ul class="link-list">
+					{% for example in page.examples %}
+		                <li>
+	                		<a href="{{ example.url }}" class="website">
+		                    	<h4>{{ example.title }}</h4>
+		                    	{% if example.description %}
+		                    		<p>
+		                    			{{ example.description }}
+		                    		</p>
+		                    	{% endif %}
+		                	</a>
+		                </li>
+					{% endfor %}
 				</ul>
 			</section>
 		</div>

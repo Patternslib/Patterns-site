@@ -37,6 +37,10 @@ $break-large: 769px !default;
 
 // Glyphs
 $glyph-close-thin: "\e80b";
+$glyph-angle-right: "\f105";
+$glyph-doc-text-inv: "\f15c";
+$glyph-angle-right: "\f105";
+$glyph-globe: "\e844";
 
 // Libraries
 @import "libraries/reset";
@@ -53,7 +57,8 @@ $glyph-close-thin: "\e80b";
 @import "components/demo-block";
 @import "components/fork-me";
 @import "components/html";
-@import "components/icon";
+@import "components/icon";;
+@import "components/link-list";
 @import "components/pattern-tiles";
 @import "components/site-header";
 @import "components/site-hero";
