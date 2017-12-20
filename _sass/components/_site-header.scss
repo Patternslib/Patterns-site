@@ -18,15 +18,19 @@
 #site-header nav a {
 	display: block;
 	text-align: center;
+	font-weight: bold;
+
 	@media only screen and (max-width: 767px) {
 		line-height: 2em;
 		font-size: 1.5em;
 	}
+
 	@media only screen and (min-width: 768px) {
 		display: inline-block;
 		width: 17%;
-		font-size: 1em;
+		font-size: 0.8em;
 	}
+
 	text-decoration: none;
 	position: relative;
 	transition: all 0.5s;
@@ -50,7 +54,9 @@
 	}
 }
 
-.state-home #site-header nav a.patterns {
+.state-home #site-header nav a.patterns,
+.state-documentation #site-header nav a.documentation,
+.state-download #site-header nav a.download {
 	@media only screen and (min-width: 768px) {
 		transform: scale(1.5);
 	}

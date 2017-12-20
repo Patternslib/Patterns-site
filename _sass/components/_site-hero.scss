@@ -19,6 +19,12 @@
 		
 		svg {
 			width: 100%;
+
+			#call-to-action * {
+				font-family: $body-font-family;
+				font-weight: bold;
+				cursor: pointer;
+			}
 		}
 		
 		figcaption {

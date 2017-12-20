@@ -19,13 +19,16 @@ form.download {
 			background-color: $cat-layout;
 		}
 
+		&.cat-navigation {
+			background-color: $cat-navigation;
+		}
+
 		&.cat-fancy-stuff {
 			background-color: $cat-fancy-stuff;
 		}
 
 		&.cat-core {
-			border: 1px solid gray;
-			background-color: transparent;
+			background-color: rgba(255,255,255,0.3);
 		}
 	}
 }

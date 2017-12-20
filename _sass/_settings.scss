@@ -1,7 +1,7 @@
 // Assets
 //@import url(http://fonts.googleapis.com/css?family=Sorts+Mill+Goudy:400,400italic);
 
-@import url(http://fonts.googleapis.com/css?family=Lato:200,400,700,300italic&subset=latin,latin-ext);
+@import url('https://fonts.googleapis.com/css?family=Lato:200,300,900');
 @import "fontello/css/fontello.css";
 
 // @import url(fonts/font.css);
@@ -15,8 +15,9 @@ $colour-accent: #0198E1;
 // Font treatment
 $base-font-size: 18px;
 $base-line-height: 150%;
-$font-weight-normal: 200;
-$font-weight-bold: 700;
+$font-weight-light: 200;
+$font-weight-normal: 300;
+$font-weight-bold: 900;
 
 // We use these to control various global styles
 $body-font-family: 'Lato', sans-serif;
@@ -28,6 +29,7 @@ $cat-behavioural: #717dd7;
 $cat-fancy-stuff: #bf9230;
 $cat-form: #be9ac1;
 $cat-layout: #a1ced2;
+$cat-navigation: #b6c16e;
 
 // Breakpoints
 $break-small: 768px !default;
@@ -48,6 +50,7 @@ $glyph-close-thin: "\e80b";
 @import "components/container";
 @import "components/content";
 @import "components/demo-block";
+@import "components/fork-me";
 @import "components/html";
 @import "components/icon";
 @import "components/pattern-tiles";

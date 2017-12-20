@@ -11,6 +11,7 @@ sass:
     - "_sass"
     - "patternslib"
     - "patternslib/_sass"
+placeholder-1x1: 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
 exclude: 
   - Gemfile
   - Gemfile.lock

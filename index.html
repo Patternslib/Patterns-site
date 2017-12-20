@@ -38,7 +38,7 @@ state: home
 			{% if post.layout == 'demo' %}
 			    <a href="{{ post.url }}" title="{{ post.description }}" class="pattern-tile cat-{{ post.category }}">
 					<figure>
-						<img src="/media/{{ post.id }}.svg" alt="" />
+						<img style="background-image: url(/media/{{ post.id }}.svg)" src="{{ site.placeholder-1x1 }}" alt="" />
 						<figcaption>{{ post.title }}</figcaption>
 					</figure>
 			    </a>

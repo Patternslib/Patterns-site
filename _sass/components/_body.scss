@@ -2,8 +2,46 @@ body {
 	-webkit-font-smoothing: subpixel-antialiased;
 	padding: 0;
 	margin: 0;
-	background-color: $felt;
+	position: relative;
 	font: $base-font-size $body-font-family;
 	line-height: 1.7;
 	font-weight: $font-weight-normal;
+	min-height: 100%;
+
+	background-color: $felt;
+	background-image: -moz-linear-gradient(top, rgba(111,93,119,1) 0%, rgba(136,186,207,1) 100%); 
+	background-image: -webkit-linear-gradient(top, rgba(111,93,119,1) 0%,rgba(136,186,207,1) 100%); 
+	background-image: linear-gradient(to bottom, rgba(111,93,119,1) 0%,rgba(136,186,207,1) 100%); 
+	background-attachment: fixed;
+
+	background-size: cover;
+	
+	&:before,
+	&:after {		
+		content: ' ';
+		display: block;
+		transition: all 2s;
+		background-size: cover;
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		opacity: 0;
+		min-height: 100%;
+	}
+
+	&.state-documentation:before {
+		opacity: 1;
+		background-image: -moz-linear-gradient(top, rgba(109,168,145,1) 0%, rgba(150,96,45,1) 100%); 
+		background-image: -webkit-linear-gradient(top, rgba(109,168,145,1) 0%,rgba(150,96,45,1) 100%); 
+		background-image: linear-gradient(to bottom, rgba(109,168,145,1) 0%,rgba(150,96,45,1) 100%); 
+	}
+
+	&.state-download:after {
+		opacity: 1;
+		background-image: -moz-linear-gradient(top, rgba(255,76,0,1) 0%, rgba(183,223,45,1) 100%); 
+		background-image: -webkit-linear-gradient(top, rgba(255,76,0,1) 0%,rgba(183,223,45,1) 100%);
+		background-image: linear-gradient(to bottom, rgba(255,76,0,1) 0%,rgba(183,223,45,1) 100%); 
+	}
 }

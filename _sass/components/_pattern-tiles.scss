@@ -21,11 +21,14 @@
 		display: block;
 		color: white;
 		text-decoration: none;
-		padding-bottom: 15px;
+		box-sizing: border-box;
+		padding: 5px;
 		
 		figure {
 			img {
-				width: 100%
+				width: 100%;
+				background-size: contain;
+				background-repeat: no-repeat;
 			}
 
 			figcaption {
@@ -39,23 +42,23 @@
 	}
 
 
-	.cat-behavioural {
-		@extend .pattern-tile;
+	.cat-behavioural figure {
 		background-color: $cat-behavioural;
 	}
 
-	.cat-form {
-		@extend .pattern-tile;
+	.cat-form figure {
 		background-color: $cat-form;
 	}
 
-	.cat-layout {
-		@extend .pattern-tile;
+	.cat-layout figure {
 		background-color: $cat-layout;
 	}
 
-	.cat-fancy-stuff {
-		@extend .pattern-tile;
+	.cat-navigation figure {
+		background-color: $cat-navigation;
+	}
+
+	.cat-fancy-stuff figure {
 		background-color: $cat-fancy-stuff;
 	}
 
