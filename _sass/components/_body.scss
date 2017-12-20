@@ -33,15 +33,18 @@ body {
 		min-height: 100%;
 	}
 
-	&.state-documentation:before {
+	&.state-documentation:before,
+	&.state-download:after {
 		opacity: 1;
+	}
+
+	&:before {
 		background-image: -moz-linear-gradient(top, rgba(109,168,145,1) 0%, rgba(150,96,45,1) 100%); 
 		background-image: -webkit-linear-gradient(top, rgba(109,168,145,1) 0%,rgba(150,96,45,1) 100%); 
 		background-image: linear-gradient(to bottom, rgba(109,168,145,1) 0%,rgba(150,96,45,1) 100%); 
 	}
 
-	&.state-download:after {
-		opacity: 1;
+	&:after {
 		background-image: -moz-linear-gradient(top, rgba(255,76,0,1) 0%, rgba(183,223,45,1) 100%); 
 		background-image: -webkit-linear-gradient(top, rgba(255,76,0,1) 0%,rgba(183,223,45,1) 100%);
 		background-image: linear-gradient(to bottom, rgba(255,76,0,1) 0%,rgba(183,223,45,1) 100%); 
