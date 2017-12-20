@@ -2,6 +2,10 @@
 	color: white;
 	position: relative;
 	z-index: 1;
+
+	> .container {
+		animation: fadeIn 1s;
+	}
 	
 	@media only screen and (min-width: 768px) {
 		width: 80%;
@@ -16,6 +20,10 @@
 
 	&:before {
 		position: fixed;
+	}
+
+	&.injecting > .container {
+		opacity: 0;
 	}
 
 	h1 {
