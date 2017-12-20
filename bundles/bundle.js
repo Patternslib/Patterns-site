@@ -888,7 +888,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
     // END: Taken from Underscore.js until here.
 
     function rebaseURL(base, url) {
-        if (url.indexOf("://")!==-1 || url[0]==="/")
+        console.log(base);
+        console.log(url);
+        if (url.indexOf("://")!==-1 || url[0]==="/" || url.indexOf("data:")===0)
             return url;
         return base.slice(0, base.lastIndexOf("/")+1) + url;
     }
@@ -2828,6 +2830,795 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscor
 
 /***/ }),
 /* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
+    __webpack_require__(0),
+    __webpack_require__(6),
+    __webpack_require__(12),
+    __webpack_require__(2),
+    __webpack_require__(3),
+    __webpack_require__(1),
+    __webpack_require__(4),
+    __webpack_require__(48),
+    __webpack_require__(10)  // for :scrollable for autoLoading-visible
+], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, _, ajax, Parser, logger, registry, utils, htmlparser) {
+    var log = logger.getLogger("pat.inject"),
+        parser = new Parser("inject"),
+        TEXT_NODE = 3,
+        COMMENT_NODE = 8;
+
+    parser.addArgument("selector");
+    parser.addArgument("target");
+    parser.addArgument("data-type", "html");
+    parser.addArgument("next-href");
+    parser.addArgument("source");
+    parser.addArgument("trigger", "default", ["default", "autoload", "autoload-visible"]);
+    parser.addArgument("delay", 0);    // only used in autoload
+    parser.addArgument("confirm", 'class', ['never', 'always', 'form-data', 'class']);
+    parser.addArgument("confirm-message", 'Are you sure you want to leave this page?');
+    parser.addArgument("hooks", [], ["raptor"], true); // After injection, pat-inject will trigger an event for each hook: pat-inject-hook-$(hook)
+    parser.addArgument("loading-class", "injecting"); // Add a class to the target while content is still loading.
+    parser.addArgument("class"); // Add a class to the injected content.
+    parser.addArgument("history");
+    // XXX: this should not be here but the parser would bail on
+    // unknown parameters and expand/collapsible need to pass the url
+    // to us
+    parser.addArgument("url");
+
+    var inject = {
+        name: "inject",
+        trigger: ".raptor-ui .ui-button.pat-inject, a.pat-inject, form.pat-inject, .pat-subform.pat-inject",
+        init: function inject_init($el, opts) {
+            var cfgs = inject.extractConfig($el, opts);
+            if (cfgs.some(function(e){return e.history === "record";}) && !("pushState" in history)) {
+                // if the injection shall add a history entry and HTML5 pushState
+                // is missing, then don't initialize the injection.
+                return $el;
+            }
+            $el.data("pat-inject", cfgs);
+
+            if (cfgs[0].nextHref && cfgs[0].nextHref.indexOf('#') === 0) {
+                // In case the next href is an anchor, and it already
+                // exists in the page, we do not activate the injection
+                // but instead just change the anchors href.
+
+                // XXX: This is used in only one project for linked
+                // fullcalendars, it's sanity is wonky and we should
+                // probably solve it differently.
+                if ($el.is("a") && $(cfgs[0].nextHref).length > 0) {
+                    log.debug("Skipping as next href is anchor, which already exists", cfgs[0].nextHref);
+                    // XXX: reconsider how the injection enters exhausted state
+                    return $el.attr({href: (window.location.href.split("#")[0] || "") + cfgs[0].nextHref});
+                }
+            }
+
+            switch (cfgs[0].trigger) {
+            case "default":
+                // setup event handlers
+                if ($el.is("form")) {
+                    $el.on("submit.pat-inject", inject.onTrigger)
+                        .on("click.pat-inject", "[type=submit]", ajax.onClickSubmit)
+                        .on("click.pat-inject", "[type=submit][formaction], [type=image][formaction]", inject.onFormActionSubmit);
+                } else if ($el.is(".pat-subform")) {
+                    log.debug("Initializing subform with injection");
+                } else {
+                    $el.on("click.pat-inject", inject.onTrigger);
+                }
+                break;
+            case "autoload":
+                if (!cfgs[0].delay) {
+                    inject.onTrigger.apply($el[0], []);
+                } else {
+                    // function to trigger the autoload and mark as triggered
+                    function delayed_trigger() {
+                        $el.data("pat-inject-autoloaded", true);
+                        inject.onTrigger.apply($el[0], []);
+                        return true;
+                    }
+                    window.setTimeout(delayed_trigger, cfgs[0].delay);
+                }
+                break;
+            case "autoload-visible":
+                inject._initAutoloadVisible($el);
+                break;
+            }
+
+            log.debug("initialised:", $el);
+            return $el;
+        },
+
+        destroy: function inject_destroy($el) {
+            $el.off(".pat-inject");
+            $el.data("pat-inject", null);
+            return $el;
+        },
+
+        onTrigger: function inject_onTrigger(ev) {
+            /* Injection has been triggered, either via form submission or a
+             * link has been clicked.
+             */
+            var cfgs = $(this).data("pat-inject"),
+                $el = $(this);
+            if (ev)
+                ev.preventDefault();
+            $el.trigger("patterns-inject-triggered");
+            inject.execute(cfgs, $el);
+        },
+
+        onFormActionSubmit: function inject_onFormActionSubmit(ev) {
+            ajax.onClickSubmit(ev); // make sure the submitting button is sent with the form
+
+            var $button = $(ev.target),
+                formaction = $button.attr("formaction"),
+                $form = $button.parents(".pat-inject").first(),
+                opts = {url: formaction},
+                $cfg_node = $button.closest("[data-pat-inject]"),
+                cfgs = inject.extractConfig($cfg_node, opts);
+
+            ev.preventDefault();
+            $form.trigger("patterns-inject-triggered");
+            inject.execute(cfgs, $form);
+        },
+
+        submitSubform: function inject_submitSubform($sub) {
+            /* This method is called from pat-subform
+             */
+            var $el = $sub.parents("form"),
+                cfgs = $sub.data("pat-inject");
+
+            // store the params of the subform in the config, to be used by history
+            $(cfgs).each(function(i, v) {v.params = $.param($sub.serializeArray());});
+
+            try {
+                $el.trigger("patterns-inject-triggered");
+            } catch (e) {
+                log.error("patterns-inject-triggered", e);
+            }
+            inject.execute(cfgs, $el);
+        },
+
+        extractConfig: function inject_extractConfig($el, opts) {
+            opts = $.extend({}, opts);
+
+            var cfgs = parser.parse($el, opts, true);
+            cfgs.forEach(function inject_extractConfig_each(cfg) {
+                var urlparts, defaultSelector;
+                // opts and cfg have priority, fallback to href/action
+                cfg.url = opts.url || cfg.url || $el.attr("href") ||
+                    $el.attr("action") || $el.parents("form").attr("action") ||
+                    "";
+
+                // separate selector from url
+                urlparts = cfg.url.split("#");
+                cfg.url = urlparts[0];
+
+                // if no selector, check for selector as part of original url
+                defaultSelector = urlparts[1] && "#" + urlparts[1] || "body";
+
+                if (urlparts.length > 2) {
+                    log.warn("Ignoring additional source ids:", urlparts.slice(2));
+                }
+
+                cfg.selector = cfg.selector || defaultSelector;
+            });
+            return cfgs;
+        },
+
+        elementIsDirty: function(m) {
+            /* Check whether the passed in form element contains a value.
+             */
+            var data = $.map(m.find(":input:not(select)"),
+                function(i) {
+                    var val = $(i).val();
+                    return (Boolean(val) && val !== $(i).attr('placeholder'));
+                });
+            return $.inArray(true, data)!==-1;
+        },
+
+        askForConfirmation: function inject_askForConfirmation(cfgs) {
+            /* If configured to do so, show a confirmation dialog to the user.
+             * This is done before attempting to perform injection.
+             */
+            var should_confirm = false, message;
+
+            _.each(cfgs, function(cfg) {
+                var _confirm = false;
+                if (cfg.confirm == 'always') {
+                    _confirm = true;
+                } else if (cfg.confirm === 'form-data') {
+                    _confirm = inject.elementIsDirty(cfg.$target);
+                } else if (cfg.confirm === 'class') {
+                    _confirm = cfg.$target.hasClass('is-dirty');
+                }
+                if (_confirm) {
+                    should_confirm = true;
+                    message = cfg.confirmMessage;
+                }
+            });
+            if (should_confirm) {
+                if (!window.confirm(message)) {
+                    return false;
+                }
+            }
+            return true;
+        },
+
+        ensureTarget: function inject_ensureTarget(cfg, $el) {
+            /* Make sure that a target element exists and that it's assigned to
+             * cfg.$target.
+             */
+            // make sure target exist
+            cfg.$target = cfg.$target || (cfg.target==="self" ? $el : $(cfg.target));
+            if (cfg.$target.length === 0) {
+                if (!cfg.target) {
+                    log.error("Need target selector", cfg);
+                    return false;
+                }
+                cfg.$target = inject.createTarget(cfg.target);
+                cfg.$injected = cfg.$target;
+            }
+            return true;
+        },
+
+        verifySingleConfig: function inject_verifySingleonfig($el, url, cfg) {
+            /* Verify one of potentially multiple configs (i.e. argument lists).
+             *
+             * Extract modifiers such as ::element or ::after.
+             * Ensure that a target element exists.
+             */
+            if (cfg.url !== url) {
+                // in case of multi-injection, all injections need to use
+                // the same url
+                log.error("Unsupported different urls for multi-inject");
+                return false;
+            }
+            // defaults
+            cfg.source = cfg.source || cfg.selector;
+            cfg.target = cfg.target || cfg.selector;
+
+            if (!inject.extractModifiers(cfg)) {
+                return false;
+            }
+            if (!inject.ensureTarget(cfg, $el)) {
+                return false;
+            }
+            inject.listenForFormReset(cfg);
+            return true;
+        },
+
+        verifyConfig: function inject_verifyConfig(cfgs, $el) {
+            /* Verify and post-process all the configurations.
+             * Each "config" is an arguments list separated by the &&
+             * combination operator.
+             *
+             * In case of multi-injection, only one URL is allowed, which
+             * should be specified in the first config (i.e. arguments list).
+             *
+             * Verification for each cfg in the array needs to succeed.
+             */
+            return cfgs.every(_.partial(inject.verifySingleConfig, $el, cfgs[0].url));
+        },
+
+        listenForFormReset: function (cfg) {
+            /* if pat-inject is used to populate target in some form and when
+             * Cancel button is pressed (this triggers reset event on the
+             * form) you would expect to populate with initial placeholder
+             */
+            var $form = cfg.$target.parents('form');
+            if ($form.size() !== 0 && cfg.$target.data('initial-value') === undefined) {
+                cfg.$target.data('initial-value', cfg.$target.html());
+                $form.on('reset', function() {
+                    cfg.$target.html(cfg.$target.data('initial-value'));
+                });
+            }
+        },
+
+        extractModifiers: function inject_extractModifiers(cfg) {
+            /* The user can add modifiers to the source and target arguments.
+             * Modifiers such as ::element, ::before and ::after.
+             * We identifiy and extract these modifiers here.
+             */
+            var source_re = /^(.*?)(::element)?$/,
+                target_re = /^(.*?)(::element)?(::after|::before)?$/,
+                source_match = source_re.exec(cfg.source),
+                target_match = target_re.exec(cfg.target),
+                targetMod, targetPosition;
+
+            cfg.source = source_match[1];
+            cfg.sourceMod = source_match[2] ? "element" : "content";
+            cfg.target = target_match[1];
+            targetMod = target_match[2] ? "element" : "content";
+            targetPosition = (target_match[3] || "::").slice(2); // position relative to target
+
+            if (cfg.loadingClass) {
+                cfg.loadingClass += " "+ cfg.loadingClass + "-" + targetMod;
+                if (targetPosition && cfg.loadingClass) {
+                    cfg.loadingClass += " " + cfg.loadingClass + "-" + targetPosition;
+                }
+            }
+            cfg.action = targetMod + targetPosition;
+            // Once we start detecting illegal combinations, we'll
+            // return false in case of error
+            return true;
+        },
+
+        createTarget: function inject_createTarget (selector) {
+            /* create a target that matches the selector
+             *
+             * XXX: so far we only support #target and create a div with
+             * that id appended to the body.
+             */
+            var $target;
+            if (selector.slice(0,1) !== "#") {
+                log.error("only id supported for non-existing target");
+                return null;
+            }
+            $target = $("<div />").attr({id: selector.slice(1)});
+            $("body").append($target);
+            return $target;
+        },
+
+        stopBubblingFromRemovedElement: function ($el, cfgs, ev) {
+            /* IE8 fix. Stop event from propagating IF $el will be removed
+            * from the DOM. With pat-inject, often $el is the target that
+            * will itself be replaced with injected content.
+            *
+            * IE8 cannot handle events bubbling up from an element removed
+            * from the DOM.
+            *
+            * See: http://stackoverflow.com/questions/7114368/why-is-jquery-remove-throwing-attr-exception-in-ie8
+            */
+            var s; // jquery selector
+            for (var i=0; i<cfgs.length; i++) {
+                s = cfgs[i].target;
+                if ($el.parents(s).addBack(s) && !ev.isPropagationStopped()) {
+                    ev.stopPropagation();
+                    return;
+                }
+            }
+        },
+
+        _performInjection: function ($el, $source, cfg, trigger) {
+            /* Called after the XHR has succeeded and we have a new $source
+             * element to inject.
+             */
+            if (cfg.sourceMod === "content") {
+                $source = $source.contents();
+            }
+            var $src;
+            // $source.clone() does not work with shived elements in IE8
+            if (document.all && document.querySelector &&
+                !document.addEventListener) {
+                $src = $source.map(function() {
+                    return $(this.outerHTML)[0];
+                });
+            } else {
+                $src = $source.safeClone();
+            }
+            var $target = $(this),
+                $injected = cfg.$injected || $src;
+
+            $src.findInclusive("img").on("load", function() {
+                $(this).trigger("pat-inject-content-loaded");
+            });
+            // Now the injection actually happens.
+            if (inject._inject(trigger, $src, $target, cfg)) { inject._afterInjection($el, $injected, cfg); }
+            // History support. if subform is submitted, append form params
+            if ((cfg.history === "record") && ("pushState" in history)) {
+                if (cfg.params) {
+                    history.pushState({'url': cfg.url + '?' + cfg.params}, "", cfg.url + '?' + cfg.params);
+                } else {
+                    history.pushState({'url': cfg.url}, "", cfg.url);
+                }
+            }
+        },
+
+        _afterInjection: function ($el, $injected, cfg) {
+            /* Set a class on the injected elements and fire the
+             * patterns-injected event.
+             */
+            $injected.filter(function() {
+                // setting data on textnode fails in IE8
+                return this.nodeType !== TEXT_NODE;
+            }).data("pat-injected", {origin: cfg.url});
+
+            if ($injected.length === 1 && $injected[0].nodeType == TEXT_NODE) {
+                // Only one element injected, and it was a text node.
+                // So we trigger "patterns-injected" on the parent.
+                // The event handler should check whether the
+                // injected element and the triggered element are
+                // the same.
+                $injected.parent().trigger("patterns-injected", [cfg, $el[0], $injected[0]]);
+            } else {
+                $injected.each(function () {
+                    // patterns-injected event will be triggered for each injected (non-text) element.
+                    if (this.nodeType !== TEXT_NODE) {
+                        $(this).addClass(cfg["class"]).trigger("patterns-injected", [cfg, $el[0], this]);
+                    }
+                });
+            }
+            $el.trigger("pat-inject-success");
+        },
+
+        _onInjectSuccess: function ($el, cfgs, ev) {
+            var sources$,
+                data = ev && ev.jqxhr && ev.jqxhr.responseText;
+            if (!data) {
+                log.warn("No response content, aborting", ev);
+                return;
+            }
+            $.each(cfgs[0].hooks || [], function (idx, hook) {
+                $el.trigger("pat-inject-hook-"+hook);
+            });
+            inject.stopBubblingFromRemovedElement($el, cfgs, ev);
+            sources$ = inject.callTypeHandler(cfgs[0].dataType, "sources", $el, [cfgs, data, ev]);
+            cfgs.forEach(function(cfg, idx) {
+                cfg.$target.each(function() {
+                    inject._performInjection.apply(this, [$el, sources$[idx], cfg, ev.target]);
+                });
+            });
+            if (cfgs[0].nextHref && $el.is("a")) {
+                // In case next-href is specified the anchor's href will
+                // be set to it after the injection is triggered.
+                $el.attr({href: cfgs[0].nextHref.replace(/&amp;/g, '&')});
+                inject.destroy($el);
+            }
+            $el.off("pat-ajax-success.pat-inject");
+            $el.off("pat-ajax-error.pat-inject");
+        },
+
+        _onInjectError: function ($el, cfgs) {
+            cfgs.forEach(function(cfg) {
+                if ("$injected" in cfg)
+                    cfg.$injected.remove();
+            });
+            $el.off("pat-ajax-success.pat-inject");
+            $el.off("pat-ajax-error.pat-inject");
+        },
+
+        execute: function inject_execute(cfgs, $el) {
+            /* Actually execute the injection.
+             *
+             * Either by making an ajax request or by spoofing an ajax
+             * request when the content is readily available in the current page.
+             */
+            // get a kinda deep copy, we scribble on it
+            cfgs = cfgs.map(function(cfg) { return $.extend({}, cfg); });
+            if (!inject.verifyConfig(cfgs, $el)) {
+                return;
+            }
+            if (!inject.askForConfirmation(cfgs)) {
+                return;
+            }
+            // possibility for spinners on targets
+            _.chain(cfgs).filter(_.property('loadingClass')).each(function(cfg) { cfg.$target.addClass(cfg.loadingClass); });
+
+            $el.on("pat-ajax-success.pat-inject", this._onInjectSuccess.bind(this, $el, cfgs));
+            $el.on("pat-ajax-error.pat-inject", this._onInjectError.bind(this, $el, cfgs));
+
+            if (cfgs[0].url.length) {
+                ajax.request($el, {url: cfgs[0].url});
+            } else {
+                // If there is no url specified, then content is being fetched
+                // from the same page.
+                // No need to do an ajax request for this, so we spoof the ajax
+                // event.
+                $el.trigger({
+                    type: "pat-ajax-success",
+                    jqxhr: {
+                        responseText:  $("body").html()
+                    }
+                });
+            }
+        },
+
+        _inject: function inject_inject(trigger, $source, $target, cfg) {
+            // action to jquery method mapping, except for "content"
+            // and "element"
+            var method = {
+                contentbefore: "prepend",
+                contentafter:  "append",
+                elementbefore: "before",
+                elementafter:  "after"
+            }[cfg.action];
+
+            if ($source.length === 0) {
+                log.warn("Aborting injection, source not found:", $source);
+                $(trigger).trigger("pat-inject-missingSource",
+                        {url: cfg.url,
+                         selector: cfg.source});
+                return false;
+            }
+            if ($target.length === 0) {
+                log.warn("Aborting injection, target not found:", $target);
+                $(trigger).trigger("pat-inject-missingTarget",
+                        {selector: cfg.target});
+                return false;
+            }
+            if (cfg.action === "content") {
+                $target.empty().append($source);
+            } else if (cfg.action === "element") {
+                $target.replaceWith($source);
+            } else {
+                $target[method]($source);
+            }
+            return true;
+        },
+
+        _sourcesFromHtml: function inject_sourcesFromHtml(html, url, sources) {
+            var $html = inject._parseRawHtml(html, url);
+            return sources.map(function inject_sourcesFromHtml_map(source) {
+                if (source === "body") {
+                    source = "#__original_body";
+                }
+                var $source = $html.find(source);
+
+                if ($source.length === 0) {
+                    log.warn("No source elements for selector:", source, $html);
+                }
+
+                $source.find("a[href^=\"#\"]").each(function () {
+                    var href = this.getAttribute("href");
+                    if (href.indexOf("#{1}") !== -1) {
+                        // We ignore hrefs containing #{1} because they're not
+                        // valid and only applicable in the context of
+                        // pat-clone.
+                        return;
+                    }
+                    // Skip in-document links pointing to an id that is inside
+                    // this fragment.
+                    if (href.length === 1) { // Special case for top-of-page links
+                        this.href=url;
+                    } else if (!$source.find(href).length) {
+                        this.href=url+href;
+                    }
+                });
+                return $source;
+            });
+        },
+
+        _link_attributes: {
+            A: "href",
+            FORM: "action",
+            IMG: "src",
+            SOURCE: "src",
+            VIDEO: "src"
+        },
+
+        _rebaseHTML_via_HTMLParser: function inject_rebaseHTML_via_HTMLParser(base, html) {
+            var output = [],
+                i, link_attribute, value;
+
+            htmlparser.HTMLParser(html, {
+                start: function(tag, attrs, unary) {
+                    output.push("<"+tag);
+                    link_attribute = inject._link_attributes[tag.toUpperCase()];
+                    for (i=0; i<attrs.length; i++) {
+                        if (attrs[i].name.toLowerCase() === link_attribute) {
+                            value = attrs[i].value;
+                            // Do not rewrite Zope views or in-document links.
+                            // In-document links will be processed later after
+                            // extracting the right fragment.
+                            if (value.slice(0, 2) !== "@@" && value[0] !== "#") {
+                                value = utils.rebaseURL(base, value);
+                                value = value.replace(/(^|[^\\])"/g, "$1\\\"");
+                            }
+                        }  else
+                            value = attrs[i].escaped;
+                        output.push(" " + attrs[i].name + "=\"" + value + "\"");
+                    }
+                    output.push(unary ? "/>" : ">");
+                },
+
+                end: function(tag) {
+                    output.push("</"+tag+">");
+                },
+
+                chars: function(text) {
+                    output.push(text);
+                },
+
+                comment: function(text) {
+                    output.push("<!--"+text+"-->");
+                }
+            });
+            return output.join("");
+        },
+
+        _rebaseAttrs: {
+            A: "href",
+            FORM: "action",
+            IMG: "data-pat-inject-rebase-src",
+            SOURCE: "data-pat-inject-rebase-src",
+            VIDEO: "data-pat-inject-rebase-src"
+        },
+
+        _rebaseHTML: function inject_rebaseHTML(base, html) {
+            var $page = $(html.replace(
+                /(\s)(src\s*)=/gi,
+                "$1src=\"\" data-pat-inject-rebase-$2="
+            ).trim()).wrapAll("<div>").parent();
+
+            $page.find(Object.keys(inject._rebaseAttrs).join(",")).each(function() {
+                var $this = $(this),
+                    attrName = inject._rebaseAttrs[this.tagName],
+                    value = $this.attr(attrName);
+
+                if (value && value.slice(0, 2) !== "@@" && value[0] !== "#" &&
+                    value.slice(0, 7) !== "mailto:") {
+                    value = utils.rebaseURL(base, value);
+                    $this.attr(attrName, value);
+                }
+            });
+            // XXX: IE8 changes the order of attributes in html. The following
+            // lines move data-pat-inject-rebase-src to src.
+            $page.find("[data-pat-inject-rebase-src]").each(function() {
+                var $el = $(this);
+                $el.attr("src", $el.attr("data-pat-inject-rebase-src"))
+                   .removeAttr("data-pat-inject-rebase-src");
+            });
+
+            return $page.html().replace(
+                    /src="" data-pat-inject-rebase-/g, ""
+                ).trim();
+        },
+
+        _parseRawHtml: function inject_parseRawHtml(html, url) {
+            url = url || "";
+
+            // remove script tags and head and replace body by a div
+            var clean_html = html
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                    .replace(/<head\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/head>/gi, "")
+                    .replace(/<body([^>]*?)>/gi, "<div id=\"__original_body\">")
+                    .replace(/<\/body([^>]*?)>/gi, "</div>");
+            try {
+                clean_html = inject._rebaseHTML(url, clean_html);
+            } catch (e) {
+                log.error("Error rebasing urls", e);
+            }
+            var $html = $("<div/>").html(clean_html);
+            if ($html.children().length === 0) {
+                log.warn("Parsing html resulted in empty jquery object:", clean_html);
+            }
+            return $html;
+        },
+
+        // XXX: hack
+        _initAutoloadVisible: function inject_initAutoloadVisible($el) {
+            if ($el.data("pat-inject-autoloaded")) {
+                // ignore executed autoloads
+                return false;
+            }
+            var $scrollable = $el.parents(":scrollable"), checkVisibility;
+
+            // function to trigger the autoload and mark as triggered
+            function trigger() {
+                $el.data("pat-inject-autoloaded", true);
+                inject.onTrigger.apply($el[0], []);
+                return true;
+            }
+
+            // Use case 1: a (heigh-constrained) scrollable parent
+            if ($scrollable.length) {
+                // if scrollable parent and visible -> trigger it
+                // we only look at the closest scrollable parent, no nesting
+                checkVisibility = utils.debounce(function inject_checkVisibility_scrollable() {
+                    if ($el.data("patterns.autoload") || !$.contains(document, $el[0])) {
+                        return false;
+                    }
+                    if (!$el.is(":visible")) {
+                        return false;
+                    } 
+                    var reltop = $el.offset().top - $scrollable.offset().top - 1000,
+                        doTrigger = reltop <= $scrollable.innerHeight();
+                    if (doTrigger) {
+                        // checkVisibility was possibly installed as a scroll
+                        // handler and has now served its purpose -> remove
+                        $($scrollable[0]).off("scroll", checkVisibility);
+                        $(window).off("resize.pat-autoload", checkVisibility);
+                        return trigger();
+                    }
+                    return false;
+                }, 100);
+                if (checkVisibility()) {
+                    return true;
+                }
+                // wait to become visible - again only immediate scrollable parent
+                $($scrollable[0]).on("scroll", checkVisibility);
+                $(window).on("resize.pat-autoload", checkVisibility);
+            } else {
+                // Use case 2: scrolling the entire page
+                checkVisibility = utils.debounce(function inject_checkVisibility_not_scrollable() {
+                    if ($el.data("patterns.autoload")) {
+                        return false;
+                    }
+                    if (!utils.elementInViewport($el[0])) {
+                        return false;
+                    }
+                    $(window).off(".pat-autoload", checkVisibility);
+                    return trigger();
+                }, 100);
+                if (checkVisibility()) {
+                    return true;
+                }
+                $(window).on("resize.pat-autoload scroll.pat-autoload", checkVisibility);
+            }
+            return false;
+        },
+
+        // XXX: simple so far to see what the team thinks of the idea
+        registerTypeHandler: function inject_registerTypeHandler(type, handler) {
+            inject.handlers[type] = handler;
+        },
+
+        callTypeHandler: function inject_callTypeHandler(type, fn, context, params) {
+            type = type || "html";
+            if (inject.handlers[type] && $.isFunction(inject.handlers[type][fn])) {
+                return inject.handlers[type][fn].apply(context, params);
+            } else {
+                return null;
+            }
+        },
+
+        handlers: {
+            "html": {
+                sources: function(cfgs, data) {
+                    var sources = cfgs.map(function(cfg) { return cfg.source; });
+                    return inject._sourcesFromHtml(data, cfgs[0].url, sources);
+                }
+            }
+        }
+    };
+
+    $(document).on("patterns-injected.inject", function onInjected(ev, cfg, trigger, injected) {
+        /* Listen for the patterns-injected event.
+         *
+         * Remove the "loading-class" classes from all injection targets and
+         * then scan the injected content for new patterns.
+         */
+        cfg.$target.removeClass(cfg.loadingClass);
+        if (injected.nodeType !== TEXT_NODE && injected !== COMMENT_NODE) {
+            registry.scan(injected, null, {type: "injection", element: trigger});
+            $(injected).trigger("patterns-injected-scanned");
+        }
+    });
+
+    $(window).bind("popstate", function (event) {
+        // popstate also triggers on traditional anchors
+        if (!event.originalEvent.state && ("replaceState" in history)) {
+            try {
+                history.replaceState("anchor", "", document.location.href);
+            } catch (e) {
+                log.debug(e);
+            }
+            return;
+        }
+        // Not only change the URL, also reload the page. 
+        window.location.reload();
+    });
+
+    // this entry ensures that the initally loaded page can be reached with
+    // the back button
+    if ("replaceState" in history) {
+        try {
+            history.replaceState("pageload", "", document.location.href);
+        } catch (e) {
+            log.debug(e);
+        }
+    }
+    registry.register(inject);
+    return inject;
+}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+// jshint indent: 4, browser: true, jquery: true, quotmark: double
+// vim: sw=4 expandtab
+
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -13185,795 +13976,6 @@ return jQuery;
 
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-    __webpack_require__(0),
-    __webpack_require__(6),
-    __webpack_require__(12),
-    __webpack_require__(2),
-    __webpack_require__(3),
-    __webpack_require__(1),
-    __webpack_require__(4),
-    __webpack_require__(48),
-    __webpack_require__(10)  // for :scrollable for autoLoading-visible
-], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, _, ajax, Parser, logger, registry, utils, htmlparser) {
-    var log = logger.getLogger("pat.inject"),
-        parser = new Parser("inject"),
-        TEXT_NODE = 3,
-        COMMENT_NODE = 8;
-
-    parser.addArgument("selector");
-    parser.addArgument("target");
-    parser.addArgument("data-type", "html");
-    parser.addArgument("next-href");
-    parser.addArgument("source");
-    parser.addArgument("trigger", "default", ["default", "autoload", "autoload-visible"]);
-    parser.addArgument("delay", 0);    // only used in autoload
-    parser.addArgument("confirm", 'class', ['never', 'always', 'form-data', 'class']);
-    parser.addArgument("confirm-message", 'Are you sure you want to leave this page?');
-    parser.addArgument("hooks", [], ["raptor"], true); // After injection, pat-inject will trigger an event for each hook: pat-inject-hook-$(hook)
-    parser.addArgument("loading-class", "injecting"); // Add a class to the target while content is still loading.
-    parser.addArgument("class"); // Add a class to the injected content.
-    parser.addArgument("history");
-    // XXX: this should not be here but the parser would bail on
-    // unknown parameters and expand/collapsible need to pass the url
-    // to us
-    parser.addArgument("url");
-
-    var inject = {
-        name: "inject",
-        trigger: ".raptor-ui .ui-button.pat-inject, a.pat-inject, form.pat-inject, .pat-subform.pat-inject",
-        init: function inject_init($el, opts) {
-            var cfgs = inject.extractConfig($el, opts);
-            if (cfgs.some(function(e){return e.history === "record";}) && !("pushState" in history)) {
-                // if the injection shall add a history entry and HTML5 pushState
-                // is missing, then don't initialize the injection.
-                return $el;
-            }
-            $el.data("pat-inject", cfgs);
-
-            if (cfgs[0].nextHref && cfgs[0].nextHref.indexOf('#') === 0) {
-                // In case the next href is an anchor, and it already
-                // exists in the page, we do not activate the injection
-                // but instead just change the anchors href.
-
-                // XXX: This is used in only one project for linked
-                // fullcalendars, it's sanity is wonky and we should
-                // probably solve it differently.
-                if ($el.is("a") && $(cfgs[0].nextHref).length > 0) {
-                    log.debug("Skipping as next href is anchor, which already exists", cfgs[0].nextHref);
-                    // XXX: reconsider how the injection enters exhausted state
-                    return $el.attr({href: (window.location.href.split("#")[0] || "") + cfgs[0].nextHref});
-                }
-            }
-
-            switch (cfgs[0].trigger) {
-            case "default":
-                // setup event handlers
-                if ($el.is("form")) {
-                    $el.on("submit.pat-inject", inject.onTrigger)
-                        .on("click.pat-inject", "[type=submit]", ajax.onClickSubmit)
-                        .on("click.pat-inject", "[type=submit][formaction], [type=image][formaction]", inject.onFormActionSubmit);
-                } else if ($el.is(".pat-subform")) {
-                    log.debug("Initializing subform with injection");
-                } else {
-                    $el.on("click.pat-inject", inject.onTrigger);
-                }
-                break;
-            case "autoload":
-                if (!cfgs[0].delay) {
-                    inject.onTrigger.apply($el[0], []);
-                } else {
-                    // function to trigger the autoload and mark as triggered
-                    function delayed_trigger() {
-                        $el.data("pat-inject-autoloaded", true);
-                        inject.onTrigger.apply($el[0], []);
-                        return true;
-                    }
-                    window.setTimeout(delayed_trigger, cfgs[0].delay);
-                }
-                break;
-            case "autoload-visible":
-                inject._initAutoloadVisible($el);
-                break;
-            }
-
-            log.debug("initialised:", $el);
-            return $el;
-        },
-
-        destroy: function inject_destroy($el) {
-            $el.off(".pat-inject");
-            $el.data("pat-inject", null);
-            return $el;
-        },
-
-        onTrigger: function inject_onTrigger(ev) {
-            /* Injection has been triggered, either via form submission or a
-             * link has been clicked.
-             */
-            var cfgs = $(this).data("pat-inject"),
-                $el = $(this);
-            if (ev)
-                ev.preventDefault();
-            $el.trigger("patterns-inject-triggered");
-            inject.execute(cfgs, $el);
-        },
-
-        onFormActionSubmit: function inject_onFormActionSubmit(ev) {
-            ajax.onClickSubmit(ev); // make sure the submitting button is sent with the form
-
-            var $button = $(ev.target),
-                formaction = $button.attr("formaction"),
-                $form = $button.parents(".pat-inject").first(),
-                opts = {url: formaction},
-                $cfg_node = $button.closest("[data-pat-inject]"),
-                cfgs = inject.extractConfig($cfg_node, opts);
-
-            ev.preventDefault();
-            $form.trigger("patterns-inject-triggered");
-            inject.execute(cfgs, $form);
-        },
-
-        submitSubform: function inject_submitSubform($sub) {
-            /* This method is called from pat-subform
-             */
-            var $el = $sub.parents("form"),
-                cfgs = $sub.data("pat-inject");
-
-            // store the params of the subform in the config, to be used by history
-            $(cfgs).each(function(i, v) {v.params = $.param($sub.serializeArray());});
-
-            try {
-                $el.trigger("patterns-inject-triggered");
-            } catch (e) {
-                log.error("patterns-inject-triggered", e);
-            }
-            inject.execute(cfgs, $el);
-        },
-
-        extractConfig: function inject_extractConfig($el, opts) {
-            opts = $.extend({}, opts);
-
-            var cfgs = parser.parse($el, opts, true);
-            cfgs.forEach(function inject_extractConfig_each(cfg) {
-                var urlparts, defaultSelector;
-                // opts and cfg have priority, fallback to href/action
-                cfg.url = opts.url || cfg.url || $el.attr("href") ||
-                    $el.attr("action") || $el.parents("form").attr("action") ||
-                    "";
-
-                // separate selector from url
-                urlparts = cfg.url.split("#");
-                cfg.url = urlparts[0];
-
-                // if no selector, check for selector as part of original url
-                defaultSelector = urlparts[1] && "#" + urlparts[1] || "body";
-
-                if (urlparts.length > 2) {
-                    log.warn("Ignoring additional source ids:", urlparts.slice(2));
-                }
-
-                cfg.selector = cfg.selector || defaultSelector;
-            });
-            return cfgs;
-        },
-
-        elementIsDirty: function(m) {
-            /* Check whether the passed in form element contains a value.
-             */
-            var data = $.map(m.find(":input:not(select)"),
-                function(i) {
-                    var val = $(i).val();
-                    return (Boolean(val) && val !== $(i).attr('placeholder'));
-                });
-            return $.inArray(true, data)!==-1;
-        },
-
-        askForConfirmation: function inject_askForConfirmation(cfgs) {
-            /* If configured to do so, show a confirmation dialog to the user.
-             * This is done before attempting to perform injection.
-             */
-            var should_confirm = false, message;
-
-            _.each(cfgs, function(cfg) {
-                var _confirm = false;
-                if (cfg.confirm == 'always') {
-                    _confirm = true;
-                } else if (cfg.confirm === 'form-data') {
-                    _confirm = inject.elementIsDirty(cfg.$target);
-                } else if (cfg.confirm === 'class') {
-                    _confirm = cfg.$target.hasClass('is-dirty');
-                }
-                if (_confirm) {
-                    should_confirm = true;
-                    message = cfg.confirmMessage;
-                }
-            });
-            if (should_confirm) {
-                if (!window.confirm(message)) {
-                    return false;
-                }
-            }
-            return true;
-        },
-
-        ensureTarget: function inject_ensureTarget(cfg, $el) {
-            /* Make sure that a target element exists and that it's assigned to
-             * cfg.$target.
-             */
-            // make sure target exist
-            cfg.$target = cfg.$target || (cfg.target==="self" ? $el : $(cfg.target));
-            if (cfg.$target.length === 0) {
-                if (!cfg.target) {
-                    log.error("Need target selector", cfg);
-                    return false;
-                }
-                cfg.$target = inject.createTarget(cfg.target);
-                cfg.$injected = cfg.$target;
-            }
-            return true;
-        },
-
-        verifySingleConfig: function inject_verifySingleonfig($el, url, cfg) {
-            /* Verify one of potentially multiple configs (i.e. argument lists).
-             *
-             * Extract modifiers such as ::element or ::after.
-             * Ensure that a target element exists.
-             */
-            if (cfg.url !== url) {
-                // in case of multi-injection, all injections need to use
-                // the same url
-                log.error("Unsupported different urls for multi-inject");
-                return false;
-            }
-            // defaults
-            cfg.source = cfg.source || cfg.selector;
-            cfg.target = cfg.target || cfg.selector;
-
-            if (!inject.extractModifiers(cfg)) {
-                return false;
-            }
-            if (!inject.ensureTarget(cfg, $el)) {
-                return false;
-            }
-            inject.listenForFormReset(cfg);
-            return true;
-        },
-
-        verifyConfig: function inject_verifyConfig(cfgs, $el) {
-            /* Verify and post-process all the configurations.
-             * Each "config" is an arguments list separated by the &&
-             * combination operator.
-             *
-             * In case of multi-injection, only one URL is allowed, which
-             * should be specified in the first config (i.e. arguments list).
-             *
-             * Verification for each cfg in the array needs to succeed.
-             */
-            return cfgs.every(_.partial(inject.verifySingleConfig, $el, cfgs[0].url));
-        },
-
-        listenForFormReset: function (cfg) {
-            /* if pat-inject is used to populate target in some form and when
-             * Cancel button is pressed (this triggers reset event on the
-             * form) you would expect to populate with initial placeholder
-             */
-            var $form = cfg.$target.parents('form');
-            if ($form.size() !== 0 && cfg.$target.data('initial-value') === undefined) {
-                cfg.$target.data('initial-value', cfg.$target.html());
-                $form.on('reset', function() {
-                    cfg.$target.html(cfg.$target.data('initial-value'));
-                });
-            }
-        },
-
-        extractModifiers: function inject_extractModifiers(cfg) {
-            /* The user can add modifiers to the source and target arguments.
-             * Modifiers such as ::element, ::before and ::after.
-             * We identifiy and extract these modifiers here.
-             */
-            var source_re = /^(.*?)(::element)?$/,
-                target_re = /^(.*?)(::element)?(::after|::before)?$/,
-                source_match = source_re.exec(cfg.source),
-                target_match = target_re.exec(cfg.target),
-                targetMod, targetPosition;
-
-            cfg.source = source_match[1];
-            cfg.sourceMod = source_match[2] ? "element" : "content";
-            cfg.target = target_match[1];
-            targetMod = target_match[2] ? "element" : "content";
-            targetPosition = (target_match[3] || "::").slice(2); // position relative to target
-
-            if (cfg.loadingClass) {
-                cfg.loadingClass += " "+ cfg.loadingClass + "-" + targetMod;
-                if (targetPosition && cfg.loadingClass) {
-                    cfg.loadingClass += " " + cfg.loadingClass + "-" + targetPosition;
-                }
-            }
-            cfg.action = targetMod + targetPosition;
-            // Once we start detecting illegal combinations, we'll
-            // return false in case of error
-            return true;
-        },
-
-        createTarget: function inject_createTarget (selector) {
-            /* create a target that matches the selector
-             *
-             * XXX: so far we only support #target and create a div with
-             * that id appended to the body.
-             */
-            var $target;
-            if (selector.slice(0,1) !== "#") {
-                log.error("only id supported for non-existing target");
-                return null;
-            }
-            $target = $("<div />").attr({id: selector.slice(1)});
-            $("body").append($target);
-            return $target;
-        },
-
-        stopBubblingFromRemovedElement: function ($el, cfgs, ev) {
-            /* IE8 fix. Stop event from propagating IF $el will be removed
-            * from the DOM. With pat-inject, often $el is the target that
-            * will itself be replaced with injected content.
-            *
-            * IE8 cannot handle events bubbling up from an element removed
-            * from the DOM.
-            *
-            * See: http://stackoverflow.com/questions/7114368/why-is-jquery-remove-throwing-attr-exception-in-ie8
-            */
-            var s; // jquery selector
-            for (var i=0; i<cfgs.length; i++) {
-                s = cfgs[i].target;
-                if ($el.parents(s).addBack(s) && !ev.isPropagationStopped()) {
-                    ev.stopPropagation();
-                    return;
-                }
-            }
-        },
-
-        _performInjection: function ($el, $source, cfg, trigger) {
-            /* Called after the XHR has succeeded and we have a new $source
-             * element to inject.
-             */
-            if (cfg.sourceMod === "content") {
-                $source = $source.contents();
-            }
-            var $src;
-            // $source.clone() does not work with shived elements in IE8
-            if (document.all && document.querySelector &&
-                !document.addEventListener) {
-                $src = $source.map(function() {
-                    return $(this.outerHTML)[0];
-                });
-            } else {
-                $src = $source.safeClone();
-            }
-            var $target = $(this),
-                $injected = cfg.$injected || $src;
-
-            $src.findInclusive("img").on("load", function() {
-                $(this).trigger("pat-inject-content-loaded");
-            });
-            // Now the injection actually happens.
-            if (inject._inject(trigger, $src, $target, cfg)) { inject._afterInjection($el, $injected, cfg); }
-            // History support. if subform is submitted, append form params
-            if ((cfg.history === "record") && ("pushState" in history)) {
-                if (cfg.params) {
-                    history.pushState({'url': cfg.url + '?' + cfg.params}, "", cfg.url + '?' + cfg.params);
-                } else {
-                    history.pushState({'url': cfg.url}, "", cfg.url);
-                }
-            }
-        },
-
-        _afterInjection: function ($el, $injected, cfg) {
-            /* Set a class on the injected elements and fire the
-             * patterns-injected event.
-             */
-            $injected.filter(function() {
-                // setting data on textnode fails in IE8
-                return this.nodeType !== TEXT_NODE;
-            }).data("pat-injected", {origin: cfg.url});
-
-            if ($injected.length === 1 && $injected[0].nodeType == TEXT_NODE) {
-                // Only one element injected, and it was a text node.
-                // So we trigger "patterns-injected" on the parent.
-                // The event handler should check whether the
-                // injected element and the triggered element are
-                // the same.
-                $injected.parent().trigger("patterns-injected", [cfg, $el[0], $injected[0]]);
-            } else {
-                $injected.each(function () {
-                    // patterns-injected event will be triggered for each injected (non-text) element.
-                    if (this.nodeType !== TEXT_NODE) {
-                        $(this).addClass(cfg["class"]).trigger("patterns-injected", [cfg, $el[0], this]);
-                    }
-                });
-            }
-            $el.trigger("pat-inject-success");
-        },
-
-        _onInjectSuccess: function ($el, cfgs, ev) {
-            var sources$,
-                data = ev && ev.jqxhr && ev.jqxhr.responseText;
-            if (!data) {
-                log.warn("No response content, aborting", ev);
-                return;
-            }
-            $.each(cfgs[0].hooks || [], function (idx, hook) {
-                $el.trigger("pat-inject-hook-"+hook);
-            });
-            inject.stopBubblingFromRemovedElement($el, cfgs, ev);
-            sources$ = inject.callTypeHandler(cfgs[0].dataType, "sources", $el, [cfgs, data, ev]);
-            cfgs.forEach(function(cfg, idx) {
-                cfg.$target.each(function() {
-                    inject._performInjection.apply(this, [$el, sources$[idx], cfg, ev.target]);
-                });
-            });
-            if (cfgs[0].nextHref && $el.is("a")) {
-                // In case next-href is specified the anchor's href will
-                // be set to it after the injection is triggered.
-                $el.attr({href: cfgs[0].nextHref.replace(/&amp;/g, '&')});
-                inject.destroy($el);
-            }
-            $el.off("pat-ajax-success.pat-inject");
-            $el.off("pat-ajax-error.pat-inject");
-        },
-
-        _onInjectError: function ($el, cfgs) {
-            cfgs.forEach(function(cfg) {
-                if ("$injected" in cfg)
-                    cfg.$injected.remove();
-            });
-            $el.off("pat-ajax-success.pat-inject");
-            $el.off("pat-ajax-error.pat-inject");
-        },
-
-        execute: function inject_execute(cfgs, $el) {
-            /* Actually execute the injection.
-             *
-             * Either by making an ajax request or by spoofing an ajax
-             * request when the content is readily available in the current page.
-             */
-            // get a kinda deep copy, we scribble on it
-            cfgs = cfgs.map(function(cfg) { return $.extend({}, cfg); });
-            if (!inject.verifyConfig(cfgs, $el)) {
-                return;
-            }
-            if (!inject.askForConfirmation(cfgs)) {
-                return;
-            }
-            // possibility for spinners on targets
-            _.chain(cfgs).filter(_.property('loadingClass')).each(function(cfg) { cfg.$target.addClass(cfg.loadingClass); });
-
-            $el.on("pat-ajax-success.pat-inject", this._onInjectSuccess.bind(this, $el, cfgs));
-            $el.on("pat-ajax-error.pat-inject", this._onInjectError.bind(this, $el, cfgs));
-
-            if (cfgs[0].url.length) {
-                ajax.request($el, {url: cfgs[0].url});
-            } else {
-                // If there is no url specified, then content is being fetched
-                // from the same page.
-                // No need to do an ajax request for this, so we spoof the ajax
-                // event.
-                $el.trigger({
-                    type: "pat-ajax-success",
-                    jqxhr: {
-                        responseText:  $("body").html()
-                    }
-                });
-            }
-        },
-
-        _inject: function inject_inject(trigger, $source, $target, cfg) {
-            // action to jquery method mapping, except for "content"
-            // and "element"
-            var method = {
-                contentbefore: "prepend",
-                contentafter:  "append",
-                elementbefore: "before",
-                elementafter:  "after"
-            }[cfg.action];
-
-            if ($source.length === 0) {
-                log.warn("Aborting injection, source not found:", $source);
-                $(trigger).trigger("pat-inject-missingSource",
-                        {url: cfg.url,
-                         selector: cfg.source});
-                return false;
-            }
-            if ($target.length === 0) {
-                log.warn("Aborting injection, target not found:", $target);
-                $(trigger).trigger("pat-inject-missingTarget",
-                        {selector: cfg.target});
-                return false;
-            }
-            if (cfg.action === "content") {
-                $target.empty().append($source);
-            } else if (cfg.action === "element") {
-                $target.replaceWith($source);
-            } else {
-                $target[method]($source);
-            }
-            return true;
-        },
-
-        _sourcesFromHtml: function inject_sourcesFromHtml(html, url, sources) {
-            var $html = inject._parseRawHtml(html, url);
-            return sources.map(function inject_sourcesFromHtml_map(source) {
-                if (source === "body") {
-                    source = "#__original_body";
-                }
-                var $source = $html.find(source);
-
-                if ($source.length === 0) {
-                    log.warn("No source elements for selector:", source, $html);
-                }
-
-                $source.find("a[href^=\"#\"]").each(function () {
-                    var href = this.getAttribute("href");
-                    if (href.indexOf("#{1}") !== -1) {
-                        // We ignore hrefs containing #{1} because they're not
-                        // valid and only applicable in the context of
-                        // pat-clone.
-                        return;
-                    }
-                    // Skip in-document links pointing to an id that is inside
-                    // this fragment.
-                    if (href.length === 1) { // Special case for top-of-page links
-                        this.href=url;
-                    } else if (!$source.find(href).length) {
-                        this.href=url+href;
-                    }
-                });
-                return $source;
-            });
-        },
-
-        _link_attributes: {
-            A: "href",
-            FORM: "action",
-            IMG: "src",
-            SOURCE: "src",
-            VIDEO: "src"
-        },
-
-        _rebaseHTML_via_HTMLParser: function inject_rebaseHTML_via_HTMLParser(base, html) {
-            var output = [],
-                i, link_attribute, value;
-
-            htmlparser.HTMLParser(html, {
-                start: function(tag, attrs, unary) {
-                    output.push("<"+tag);
-                    link_attribute = inject._link_attributes[tag.toUpperCase()];
-                    for (i=0; i<attrs.length; i++) {
-                        if (attrs[i].name.toLowerCase() === link_attribute) {
-                            value = attrs[i].value;
-                            // Do not rewrite Zope views or in-document links.
-                            // In-document links will be processed later after
-                            // extracting the right fragment.
-                            if (value.slice(0, 2) !== "@@" && value[0] !== "#") {
-                                value = utils.rebaseURL(base, value);
-                                value = value.replace(/(^|[^\\])"/g, "$1\\\"");
-                            }
-                        }  else
-                            value = attrs[i].escaped;
-                        output.push(" " + attrs[i].name + "=\"" + value + "\"");
-                    }
-                    output.push(unary ? "/>" : ">");
-                },
-
-                end: function(tag) {
-                    output.push("</"+tag+">");
-                },
-
-                chars: function(text) {
-                    output.push(text);
-                },
-
-                comment: function(text) {
-                    output.push("<!--"+text+"-->");
-                }
-            });
-            return output.join("");
-        },
-
-        _rebaseAttrs: {
-            A: "href",
-            FORM: "action",
-            IMG: "data-pat-inject-rebase-src",
-            SOURCE: "data-pat-inject-rebase-src",
-            VIDEO: "data-pat-inject-rebase-src"
-        },
-
-        _rebaseHTML: function inject_rebaseHTML(base, html) {
-            var $page = $(html.replace(
-                /(\s)(src\s*)=/gi,
-                "$1src=\"\" data-pat-inject-rebase-$2="
-            ).trim()).wrapAll("<div>").parent();
-
-            $page.find(Object.keys(inject._rebaseAttrs).join(",")).each(function() {
-                var $this = $(this),
-                    attrName = inject._rebaseAttrs[this.tagName],
-                    value = $this.attr(attrName);
-
-                if (value && value.slice(0, 2) !== "@@" && value[0] !== "#" &&
-                    value.slice(0, 7) !== "mailto:") {
-                    value = utils.rebaseURL(base, value);
-                    $this.attr(attrName, value);
-                }
-            });
-            // XXX: IE8 changes the order of attributes in html. The following
-            // lines move data-pat-inject-rebase-src to src.
-            $page.find("[data-pat-inject-rebase-src]").each(function() {
-                var $el = $(this);
-                $el.attr("src", $el.attr("data-pat-inject-rebase-src"))
-                   .removeAttr("data-pat-inject-rebase-src");
-            });
-
-            return $page.html().replace(
-                    /src="" data-pat-inject-rebase-/g, ""
-                ).trim();
-        },
-
-        _parseRawHtml: function inject_parseRawHtml(html, url) {
-            url = url || "";
-
-            // remove script tags and head and replace body by a div
-            var clean_html = html
-                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-                    .replace(/<head\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/head>/gi, "")
-                    .replace(/<body([^>]*?)>/gi, "<div id=\"__original_body\">")
-                    .replace(/<\/body([^>]*?)>/gi, "</div>");
-            try {
-                clean_html = inject._rebaseHTML(url, clean_html);
-            } catch (e) {
-                log.error("Error rebasing urls", e);
-            }
-            var $html = $("<div/>").html(clean_html);
-            if ($html.children().length === 0) {
-                log.warn("Parsing html resulted in empty jquery object:", clean_html);
-            }
-            return $html;
-        },
-
-        // XXX: hack
-        _initAutoloadVisible: function inject_initAutoloadVisible($el) {
-            if ($el.data("pat-inject-autoloaded")) {
-                // ignore executed autoloads
-                return false;
-            }
-            var $scrollable = $el.parents(":scrollable"), checkVisibility;
-
-            // function to trigger the autoload and mark as triggered
-            function trigger() {
-                $el.data("pat-inject-autoloaded", true);
-                inject.onTrigger.apply($el[0], []);
-                return true;
-            }
-
-            // Use case 1: a (heigh-constrained) scrollable parent
-            if ($scrollable.length) {
-                // if scrollable parent and visible -> trigger it
-                // we only look at the closest scrollable parent, no nesting
-                checkVisibility = utils.debounce(function inject_checkVisibility_scrollable() {
-                    if ($el.data("patterns.autoload") || !$.contains(document, $el[0])) {
-                        return false;
-                    }
-                    if (!$el.is(":visible")) {
-                        return false;
-                    } 
-                    var reltop = $el.offset().top - $scrollable.offset().top - 1000,
-                        doTrigger = reltop <= $scrollable.innerHeight();
-                    if (doTrigger) {
-                        // checkVisibility was possibly installed as a scroll
-                        // handler and has now served its purpose -> remove
-                        $($scrollable[0]).off("scroll", checkVisibility);
-                        $(window).off("resize.pat-autoload", checkVisibility);
-                        return trigger();
-                    }
-                    return false;
-                }, 100);
-                if (checkVisibility()) {
-                    return true;
-                }
-                // wait to become visible - again only immediate scrollable parent
-                $($scrollable[0]).on("scroll", checkVisibility);
-                $(window).on("resize.pat-autoload", checkVisibility);
-            } else {
-                // Use case 2: scrolling the entire page
-                checkVisibility = utils.debounce(function inject_checkVisibility_not_scrollable() {
-                    if ($el.data("patterns.autoload")) {
-                        return false;
-                    }
-                    if (!utils.elementInViewport($el[0])) {
-                        return false;
-                    }
-                    $(window).off(".pat-autoload", checkVisibility);
-                    return trigger();
-                }, 100);
-                if (checkVisibility()) {
-                    return true;
-                }
-                $(window).on("resize.pat-autoload scroll.pat-autoload", checkVisibility);
-            }
-            return false;
-        },
-
-        // XXX: simple so far to see what the team thinks of the idea
-        registerTypeHandler: function inject_registerTypeHandler(type, handler) {
-            inject.handlers[type] = handler;
-        },
-
-        callTypeHandler: function inject_callTypeHandler(type, fn, context, params) {
-            type = type || "html";
-            if (inject.handlers[type] && $.isFunction(inject.handlers[type][fn])) {
-                return inject.handlers[type][fn].apply(context, params);
-            } else {
-                return null;
-            }
-        },
-
-        handlers: {
-            "html": {
-                sources: function(cfgs, data) {
-                    var sources = cfgs.map(function(cfg) { return cfg.source; });
-                    return inject._sourcesFromHtml(data, cfgs[0].url, sources);
-                }
-            }
-        }
-    };
-
-    $(document).on("patterns-injected.inject", function onInjected(ev, cfg, trigger, injected) {
-        /* Listen for the patterns-injected event.
-         *
-         * Remove the "loading-class" classes from all injection targets and
-         * then scan the injected content for new patterns.
-         */
-        cfg.$target.removeClass(cfg.loadingClass);
-        if (injected.nodeType !== TEXT_NODE && injected !== COMMENT_NODE) {
-            registry.scan(injected, null, {type: "injection", element: trigger});
-            $(injected).trigger("patterns-injected-scanned");
-        }
-    });
-
-    $(window).bind("popstate", function (event) {
-        // popstate also triggers on traditional anchors
-        if (!event.originalEvent.state && ("replaceState" in history)) {
-            try {
-                history.replaceState("anchor", "", document.location.href);
-            } catch (e) {
-                log.debug(e);
-            }
-            return;
-        }
-        // Not only change the URL, also reload the page. 
-        window.location.reload();
-    });
-
-    // this entry ensures that the initally loaded page can be reached with
-    // the back button
-    if ("replaceState" in history) {
-        try {
-            history.replaceState("pageload", "", document.location.href);
-        } catch (e) {
-            log.debug(e);
-        }
-    }
-    registry.register(inject);
-    return inject;
-}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-// jshint indent: 4, browser: true, jquery: true, quotmark: double
-// vim: sw=4 expandtab
-
-
-/***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19622,7 +19624,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 (function (factory) {
   if (true) {
     // AMD. Register as an anonymous module.
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = (function ($) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = (function ($) {
       return factory($);
     }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -27164,7 +27166,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
     __webpack_require__(1),
     __webpack_require__(5),
     __webpack_require__(4),
-    __webpack_require__(8)
+    __webpack_require__(7)
 ], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, Parser, registry, Base, utils, inject) {
     var parser = new Parser("modal");
     parser.addArgument("class");
@@ -27460,7 +27462,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* Patterns bund
  */
 
 !(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-    __webpack_require__(7),
+    __webpack_require__(8),
     __webpack_require__(1),
     __webpack_require__(17),
     // "prefixfree",
@@ -27487,7 +27489,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* Patterns bund
     __webpack_require__(61),
     __webpack_require__(62),
     __webpack_require__(66),
-    __webpack_require__(8),
+    __webpack_require__(7),
     __webpack_require__(13),
     __webpack_require__(25),
     __webpack_require__(68),
@@ -50783,7 +50785,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(jQuery) {/*** IMPORTS FROM imports-loader ***/
-var jquery = __webpack_require__(7);
+var jquery = __webpack_require__(8);
 
 /*
 Copyright 2012 Igor Vaynberg
@@ -54062,7 +54064,7 @@ the specific language governing permissions and limitations under the Apache Lic
 }(jQuery));
 
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
 /* 38 */
@@ -78526,7 +78528,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 ;(function(factory) {
     'use strict';
     if (true) {
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -81549,28 +81551,32 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
         jquery_plugin: true,
 
         init: function($el, opts) {
-            return $el.each(function() {
-                var $trigger = $(this),
-                    options = parser.parse($trigger, opts, false);
+            function _init() {
+                return $el.each(function() {
+                    var $trigger = $(this),
+                        options = parser.parse($trigger, opts, false);
 
-                $trigger.data("patternChecklist", options);
-                $trigger.scopedFind(options.select)
-                    .on("click.pat-checklist", {trigger: $trigger}, _.onSelectAll);
-                $trigger.scopedFind(options.deselect)
-                    .on("click.pat-checklist", {trigger: $trigger}, _.onDeselectAll);
-                $trigger.on("change.pat-checklist", {trigger: $trigger}, _.onChange);
-                // update select/deselect button status
-                _.onChange({data: {trigger: $trigger}});
+                    $trigger.data("patternChecklist", options);
+                    $trigger.scopedFind(options.select)
+                        .on("click.pat-checklist", {trigger: $trigger}, _.onSelectAll);
+                    $trigger.scopedFind(options.deselect)
+                        .on("click.pat-checklist", {trigger: $trigger}, _.onDeselectAll);
+                    $trigger.on("change.pat-checklist", {trigger: $trigger}, _.onChange);
+                    // update select/deselect button status
+                    _.onChange({data: {trigger: $trigger}});
 
-                $trigger.find("input[type=checkbox]")
-                    .each(_._onChangeCheckbox)
-                    .on("change.pat-checklist", _._onChangeCheckbox);
+                    $trigger.find("input[type=checkbox]")
+                        .each(_._onChangeCheckbox)
+                        .on("change.pat-checklist", _._onChangeCheckbox);
 
-                $trigger.find("input[type=radio]")
-                    .each(_._initRadio)
-                    .on("change.pat-checklist", _._onChangeRadio);
+                    $trigger.find("input[type=radio]")
+                        .each(_._initRadio)
+                        .on("change.pat-checklist", _._onChangeRadio);
 
-            });
+                });
+            };
+            $el.on('patterns-injected', _init);
+            return _init();
         },
 
         destroy: function($el) {
@@ -81596,6 +81602,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
         onChange: function(event) {
             var $trigger = event.data.trigger,
                 options = $trigger.data("patternChecklist");
+            var siblings;
 
 
             var all_selects = $trigger.find(options.select);
@@ -81607,15 +81614,16 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
                 all_deselects = $(options.deselect);
             }
             for (var i=0; i<all_selects.length; i++) {
-
-                if (_._findSiblings(all_selects[i], "input[type=checkbox]:visible").filter(":not(:checked)").length === 0) {
+                siblings = _._findSiblings(all_selects[i], "input[type=checkbox]:visible");
+                if (siblings && siblings.filter(":not(:checked)").length === 0) {
                     $(all_selects[i]).prop("disabled", true);
                 } else {
                     $(all_selects[i]).prop("disabled", false);
                 }
             }
             for (var i=0; i< all_deselects.length; i++) {
-                if (_._findSiblings(all_deselects[i], "input[type=checkbox]:visible").filter(":checked").length === 0) {
+                siblings = _._findSiblings(all_deselects[i], "input[type=checkbox]:visible");
+                if (siblings && siblings.filter(":checked").length === 0) {
                     $(all_deselects[i]).prop("disabled", true);
                 } else {
                     $(all_deselects[i]).prop("disabled", false);
@@ -81628,8 +81636,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
             var $trigger = event.data.trigger,
                 options = $trigger.data("patternChecklist"),
                 button_clicked = event.currentTarget;
-            
-            /* look up checkboxes which are related to my button by going up one parent 
+
+            /* look up checkboxes which are related to my button by going up one parent
             at a time until I find some for the first time */
             var checkbox_siblings = _._findSiblings(button_clicked, "input[type=checkbox]:not(:checked)");
             checkbox_siblings.each(function () {
@@ -81644,7 +81652,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
                 options = $trigger.data("patternChecklist"),
                 button_clicked = event.currentTarget;
 
-            /* look up checkboxes which are related to my button by going up one parent 
+            /* look up checkboxes which are related to my button by going up one parent
             at a time until I find some for the first time */
             var checkbox_siblings = _._findSiblings(button_clicked, "input[type=checkbox]:checked");
             checkbox_siblings.each(function () {
@@ -81870,7 +81878,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
  */
 !(__WEBPACK_AMD_DEFINE_ARRAY__ = [
     __webpack_require__(0),
-    __webpack_require__(8),
+    __webpack_require__(7),
     __webpack_require__(3),
     __webpack_require__(2),
     __webpack_require__(11),
@@ -82433,7 +82441,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FROM imports-loader ***/
-var jquery = __webpack_require__(7);
+var jquery = __webpack_require__(0);
 
 // Spectrum Colorpicker v1.8.0
 // https://github.com/bgrins/spectrum
@@ -82444,7 +82452,7 @@ var jquery = __webpack_require__(7);
     "use strict";
 
     if (true) { // AMD
-        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -88136,7 +88144,7 @@ return EvEmitter;
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
     __webpack_require__(0),
-    __webpack_require__(8),
+    __webpack_require__(7),
     __webpack_require__(2),
     __webpack_require__(1)
 ], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, inject, Parser, registry) {
@@ -93336,7 +93344,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(jQuery) {/*** IMPORTS FROM imports-loader ***/
-var jquery = __webpack_require__(7);
+var jquery = __webpack_require__(0);
 
 /**
  * jquery.Jcrop.min.js v0.9.12 (build:20140524)
@@ -93346,7 +93354,7 @@ var jquery = __webpack_require__(7);
  */
 !function($){$.Jcrop=function(obj,opt){function px(n){return Math.round(n)+"px"}function cssClass(cl){return options.baseClass+"-"+cl}function supportsColorFade(){return $.fx.step.hasOwnProperty("backgroundColor")}function getPos(obj){var pos=$(obj).offset();return[pos.left,pos.top]}function mouseAbs(e){return[e.pageX-docOffset[0],e.pageY-docOffset[1]]}function setOptions(opt){"object"!=typeof opt&&(opt={}),options=$.extend(options,opt),$.each(["onChange","onSelect","onRelease","onDblClick"],function(i,e){"function"!=typeof options[e]&&(options[e]=function(){})})}function startDragMode(mode,pos,touch){if(docOffset=getPos($img),Tracker.setCursor("move"===mode?mode:mode+"-resize"),"move"===mode)return Tracker.activateHandlers(createMover(pos),doneSelect,touch);var fc=Coords.getFixed(),opp=oppLockCorner(mode),opc=Coords.getCorner(oppLockCorner(opp));Coords.setPressed(Coords.getCorner(opp)),Coords.setCurrent(opc),Tracker.activateHandlers(dragmodeHandler(mode,fc),doneSelect,touch)}function dragmodeHandler(mode,f){return function(pos){if(options.aspectRatio)switch(mode){case"e":pos[1]=f.y+1;break;case"w":pos[1]=f.y+1;break;case"n":pos[0]=f.x+1;break;case"s":pos[0]=f.x+1}else switch(mode){case"e":pos[1]=f.y2;break;case"w":pos[1]=f.y2;break;case"n":pos[0]=f.x2;break;case"s":pos[0]=f.x2}Coords.setCurrent(pos),Selection.update()}}function createMover(pos){var lloc=pos;return KeyManager.watchKeys(),function(pos){Coords.moveOffset([pos[0]-lloc[0],pos[1]-lloc[1]]),lloc=pos,Selection.update()}}function oppLockCorner(ord){switch(ord){case"n":return"sw";case"s":return"nw";case"e":return"nw";case"w":return"ne";case"ne":return"sw";case"nw":return"se";case"se":return"nw";case"sw":return"ne"}}function createDragger(ord){return function(e){return options.disabled?!1:"move"!==ord||options.allowMove?(docOffset=getPos($img),btndown=!0,startDragMode(ord,mouseAbs(e)),e.stopPropagation(),e.preventDefault(),!1):!1}}function presize($obj,w,h){var nw=$obj.width(),nh=$obj.height();nw>w&&w>0&&(nw=w,nh=w/$obj.width()*$obj.height()),nh>h&&h>0&&(nh=h,nw=h/$obj.height()*$obj.width()),xscale=$obj.width()/nw,yscale=$obj.height()/nh,$obj.width(nw).height(nh)}function unscale(c){return{x:c.x*xscale,y:c.y*yscale,x2:c.x2*xscale,y2:c.y2*yscale,w:c.w*xscale,h:c.h*yscale}}function doneSelect(){var c=Coords.getFixed();c.w>options.minSelect[0]&&c.h>options.minSelect[1]?(Selection.enableHandles(),Selection.done()):Selection.release(),Tracker.setCursor(options.allowSelect?"crosshair":"default")}function newSelection(e){if(!options.disabled&&options.allowSelect){btndown=!0,docOffset=getPos($img),Selection.disableHandles(),Tracker.setCursor("crosshair");var pos=mouseAbs(e);return Coords.setPressed(pos),Selection.update(),Tracker.activateHandlers(selectDrag,doneSelect,"touch"===e.type.substring(0,5)),KeyManager.watchKeys(),e.stopPropagation(),e.preventDefault(),!1}}function selectDrag(pos){Coords.setCurrent(pos),Selection.update()}function newTracker(){var trk=$("<div></div>").addClass(cssClass("tracker"));return is_msie&&trk.css({opacity:0,backgroundColor:"white"}),trk}function setClass(cname){$div.removeClass().addClass(cssClass("holder")).addClass(cname)}function animateTo(a,callback){function queueAnimator(){window.setTimeout(animator,interv)}var x1=a[0]/xscale,y1=a[1]/yscale,x2=a[2]/xscale,y2=a[3]/yscale;if(!animating){var animto=Coords.flipCoords(x1,y1,x2,y2),c=Coords.getFixed(),initcr=[c.x,c.y,c.x2,c.y2],animat=initcr,interv=options.animationDelay,ix1=animto[0]-initcr[0],iy1=animto[1]-initcr[1],ix2=animto[2]-initcr[2],iy2=animto[3]-initcr[3],pcent=0,velocity=options.swingSpeed;x1=animat[0],y1=animat[1],x2=animat[2],y2=animat[3],Selection.animMode(!0);var animator=function(){return function(){pcent+=(100-pcent)/velocity,animat[0]=Math.round(x1+pcent/100*ix1),animat[1]=Math.round(y1+pcent/100*iy1),animat[2]=Math.round(x2+pcent/100*ix2),animat[3]=Math.round(y2+pcent/100*iy2),pcent>=99.8&&(pcent=100),100>pcent?(setSelectRaw(animat),queueAnimator()):(Selection.done(),Selection.animMode(!1),"function"==typeof callback&&callback.call(api))}}();queueAnimator()}}function setSelect(rect){setSelectRaw([rect[0]/xscale,rect[1]/yscale,rect[2]/xscale,rect[3]/yscale]),options.onSelect.call(api,unscale(Coords.getFixed())),Selection.enableHandles()}function setSelectRaw(l){Coords.setPressed([l[0],l[1]]),Coords.setCurrent([l[2],l[3]]),Selection.update()}function tellSelect(){return unscale(Coords.getFixed())}function tellScaled(){return Coords.getFixed()}function setOptionsNew(opt){setOptions(opt),interfaceUpdate()}function disableCrop(){options.disabled=!0,Selection.disableHandles(),Selection.setCursor("default"),Tracker.setCursor("default")}function enableCrop(){options.disabled=!1,interfaceUpdate()}function cancelCrop(){Selection.done(),Tracker.activateHandlers(null,null)}function destroy(){$div.remove(),$origimg.show(),$origimg.css("visibility","visible"),$(obj).removeData("Jcrop")}function setImage(src,callback){Selection.release(),disableCrop();var img=new Image;img.onload=function(){var iw=img.width,ih=img.height,bw=options.boxWidth,bh=options.boxHeight;$img.width(iw).height(ih),$img.attr("src",src),$img2.attr("src",src),presize($img,bw,bh),boundx=$img.width(),boundy=$img.height(),$img2.width(boundx).height(boundy),$trk.width(boundx+2*bound).height(boundy+2*bound),$div.width(boundx).height(boundy),Shade.resize(boundx,boundy),enableCrop(),"function"==typeof callback&&callback.call(api)},img.src=src}function colorChangeMacro($obj,color,now){var mycolor=color||options.bgColor;options.bgFade&&supportsColorFade()&&options.fadeTime&&!now?$obj.animate({backgroundColor:mycolor},{queue:!1,duration:options.fadeTime}):$obj.css("backgroundColor",mycolor)}function interfaceUpdate(alt){options.allowResize?alt?Selection.enableOnly():Selection.enableHandles():Selection.disableHandles(),Tracker.setCursor(options.allowSelect?"crosshair":"default"),Selection.setCursor(options.allowMove?"move":"default"),options.hasOwnProperty("trueSize")&&(xscale=options.trueSize[0]/boundx,yscale=options.trueSize[1]/boundy),options.hasOwnProperty("setSelect")&&(setSelect(options.setSelect),Selection.done(),delete options.setSelect),Shade.refresh(),options.bgColor!=bgcolor&&(colorChangeMacro(options.shade?Shade.getShades():$div,options.shade?options.shadeColor||options.bgColor:options.bgColor),bgcolor=options.bgColor),bgopacity!=options.bgOpacity&&(bgopacity=options.bgOpacity,options.shade?Shade.refresh():Selection.setBgOpacity(bgopacity)),xlimit=options.maxSize[0]||0,ylimit=options.maxSize[1]||0,xmin=options.minSize[0]||0,ymin=options.minSize[1]||0,options.hasOwnProperty("outerImage")&&($img.attr("src",options.outerImage),delete options.outerImage),Selection.refresh()}var docOffset,options=$.extend({},$.Jcrop.defaults),_ua=navigator.userAgent.toLowerCase(),is_msie=/msie/.test(_ua),ie6mode=/msie [1-6]\./.test(_ua);"object"!=typeof obj&&(obj=$(obj)[0]),"object"!=typeof opt&&(opt={}),setOptions(opt);var img_css={border:"none",visibility:"visible",margin:0,padding:0,position:"absolute",top:0,left:0},$origimg=$(obj),img_mode=!0;if("IMG"==obj.tagName){if(0!=$origimg[0].width&&0!=$origimg[0].height)$origimg.width($origimg[0].width),$origimg.height($origimg[0].height);else{var tempImage=new Image;tempImage.src=$origimg[0].src,$origimg.width(tempImage.width),$origimg.height(tempImage.height)}var $img=$origimg.clone().removeAttr("id").css(img_css).show();$img.width($origimg.width()),$img.height($origimg.height()),$origimg.after($img).hide()}else $img=$origimg.css(img_css).show(),img_mode=!1,null===options.shade&&(options.shade=!0);presize($img,options.boxWidth,options.boxHeight);var boundx=$img.width(),boundy=$img.height(),$div=$("<div />").width(boundx).height(boundy).addClass(cssClass("holder")).css({position:"relative",backgroundColor:options.bgColor}).insertAfter($origimg).append($img);options.addClass&&$div.addClass(options.addClass);var $img2=$("<div />"),$img_holder=$("<div />").width("100%").height("100%").css({zIndex:310,position:"absolute",overflow:"hidden"}),$hdl_holder=$("<div />").width("100%").height("100%").css("zIndex",320),$sel=$("<div />").css({position:"absolute",zIndex:600}).dblclick(function(){var c=Coords.getFixed();options.onDblClick.call(api,c)}).insertBefore($img).append($img_holder,$hdl_holder);img_mode&&($img2=$("<img />").attr("src",$img.attr("src")).css(img_css).width(boundx).height(boundy),$img_holder.append($img2)),ie6mode&&$sel.css({overflowY:"hidden"});var xlimit,ylimit,xmin,ymin,xscale,yscale,btndown,animating,shift_down,bound=options.boundary,$trk=newTracker().width(boundx+2*bound).height(boundy+2*bound).css({position:"absolute",top:px(-bound),left:px(-bound),zIndex:290}).mousedown(newSelection),bgcolor=options.bgColor,bgopacity=options.bgOpacity;docOffset=getPos($img);var Touch=function(){function hasTouchSupport(){var i,support={},events=["touchstart","touchmove","touchend"],el=document.createElement("div");try{for(i=0;i<events.length;i++){var eventName=events[i];eventName="on"+eventName;var isSupported=eventName in el;isSupported||(el.setAttribute(eventName,"return;"),isSupported="function"==typeof el[eventName]),support[events[i]]=isSupported}return support.touchstart&&support.touchend&&support.touchmove}catch(err){return!1}}function detectSupport(){return options.touchSupport===!0||options.touchSupport===!1?options.touchSupport:hasTouchSupport()}return{createDragger:function(ord){return function(e){return options.disabled?!1:"move"!==ord||options.allowMove?(docOffset=getPos($img),btndown=!0,startDragMode(ord,mouseAbs(Touch.cfilter(e)),!0),e.stopPropagation(),e.preventDefault(),!1):!1}},newSelection:function(e){return newSelection(Touch.cfilter(e))},cfilter:function(e){return e.pageX=e.originalEvent.changedTouches[0].pageX,e.pageY=e.originalEvent.changedTouches[0].pageY,e},isSupported:hasTouchSupport,support:detectSupport()}}(),Coords=function(){function setPressed(pos){pos=rebound(pos),x2=x1=pos[0],y2=y1=pos[1]}function setCurrent(pos){pos=rebound(pos),ox=pos[0]-x2,oy=pos[1]-y2,x2=pos[0],y2=pos[1]}function getOffset(){return[ox,oy]}function moveOffset(offset){var ox=offset[0],oy=offset[1];0>x1+ox&&(ox-=ox+x1),0>y1+oy&&(oy-=oy+y1),y2+oy>boundy&&(oy+=boundy-(y2+oy)),x2+ox>boundx&&(ox+=boundx-(x2+ox)),x1+=ox,x2+=ox,y1+=oy,y2+=oy}function getCorner(ord){var c=getFixed();switch(ord){case"ne":return[c.x2,c.y];case"nw":return[c.x,c.y];case"se":return[c.x2,c.y2];case"sw":return[c.x,c.y2]}}function getFixed(){if(!options.aspectRatio)return getRect();var xx,yy,w,h,aspect=options.aspectRatio,min_x=options.minSize[0]/xscale,max_x=options.maxSize[0]/xscale,max_y=options.maxSize[1]/yscale,rw=x2-x1,rh=y2-y1,rwa=Math.abs(rw),rha=Math.abs(rh),real_ratio=rwa/rha;return 0===max_x&&(max_x=10*boundx),0===max_y&&(max_y=10*boundy),aspect>real_ratio?(yy=y2,w=rha*aspect,xx=0>rw?x1-w:w+x1,0>xx?(xx=0,h=Math.abs((xx-x1)/aspect),yy=0>rh?y1-h:h+y1):xx>boundx&&(xx=boundx,h=Math.abs((xx-x1)/aspect),yy=0>rh?y1-h:h+y1)):(xx=x2,h=rwa/aspect,yy=0>rh?y1-h:y1+h,0>yy?(yy=0,w=Math.abs((yy-y1)*aspect),xx=0>rw?x1-w:w+x1):yy>boundy&&(yy=boundy,w=Math.abs(yy-y1)*aspect,xx=0>rw?x1-w:w+x1)),xx>x1?(min_x>xx-x1?xx=x1+min_x:xx-x1>max_x&&(xx=x1+max_x),yy=yy>y1?y1+(xx-x1)/aspect:y1-(xx-x1)/aspect):x1>xx&&(min_x>x1-xx?xx=x1-min_x:x1-xx>max_x&&(xx=x1-max_x),yy=yy>y1?y1+(x1-xx)/aspect:y1-(x1-xx)/aspect),0>xx?(x1-=xx,xx=0):xx>boundx&&(x1-=xx-boundx,xx=boundx),0>yy?(y1-=yy,yy=0):yy>boundy&&(y1-=yy-boundy,yy=boundy),makeObj(flipCoords(x1,y1,xx,yy))}function rebound(p){return p[0]<0&&(p[0]=0),p[1]<0&&(p[1]=0),p[0]>boundx&&(p[0]=boundx),p[1]>boundy&&(p[1]=boundy),[Math.round(p[0]),Math.round(p[1])]}function flipCoords(x1,y1,x2,y2){var xa=x1,xb=x2,ya=y1,yb=y2;return x1>x2&&(xa=x2,xb=x1),y1>y2&&(ya=y2,yb=y1),[xa,ya,xb,yb]}function getRect(){var delta,xsize=x2-x1,ysize=y2-y1;return xlimit&&Math.abs(xsize)>xlimit&&(x2=xsize>0?x1+xlimit:x1-xlimit),ylimit&&Math.abs(ysize)>ylimit&&(y2=ysize>0?y1+ylimit:y1-ylimit),ymin/yscale&&Math.abs(ysize)<ymin/yscale&&(y2=ysize>0?y1+ymin/yscale:y1-ymin/yscale),xmin/xscale&&Math.abs(xsize)<xmin/xscale&&(x2=xsize>0?x1+xmin/xscale:x1-xmin/xscale),0>x1&&(x2-=x1,x1-=x1),0>y1&&(y2-=y1,y1-=y1),0>x2&&(x1-=x2,x2-=x2),0>y2&&(y1-=y2,y2-=y2),x2>boundx&&(delta=x2-boundx,x1-=delta,x2-=delta),y2>boundy&&(delta=y2-boundy,y1-=delta,y2-=delta),x1>boundx&&(delta=x1-boundy,y2-=delta,y1-=delta),y1>boundy&&(delta=y1-boundy,y2-=delta,y1-=delta),makeObj(flipCoords(x1,y1,x2,y2))}function makeObj(a){return{x:a[0],y:a[1],x2:a[2],y2:a[3],w:a[2]-a[0],h:a[3]-a[1]}}var ox,oy,x1=0,y1=0,x2=0,y2=0;return{flipCoords:flipCoords,setPressed:setPressed,setCurrent:setCurrent,getOffset:getOffset,moveOffset:moveOffset,getCorner:getCorner,getFixed:getFixed}}(),Shade=function(){function resizeShades(w,h){shades.left.css({height:px(h)}),shades.right.css({height:px(h)})}function updateAuto(){return updateShade(Coords.getFixed())}function updateShade(c){shades.top.css({left:px(c.x),width:px(c.w),height:px(c.y)}),shades.bottom.css({top:px(c.y2),left:px(c.x),width:px(c.w),height:px(boundy-c.y2)}),shades.right.css({left:px(c.x2),width:px(boundx-c.x2)}),shades.left.css({width:px(c.x)})}function createShade(){return $("<div />").css({position:"absolute",backgroundColor:options.shadeColor||options.bgColor}).appendTo(holder)}function enableShade(){enabled||(enabled=!0,holder.insertBefore($img),updateAuto(),Selection.setBgOpacity(1,0,1),$img2.hide(),setBgColor(options.shadeColor||options.bgColor,1),Selection.isAwake()?setOpacity(options.bgOpacity,1):setOpacity(1,1))}function setBgColor(color,now){colorChangeMacro(getShades(),color,now)}function disableShade(){enabled&&(holder.remove(),$img2.show(),enabled=!1,Selection.isAwake()?Selection.setBgOpacity(options.bgOpacity,1,1):(Selection.setBgOpacity(1,1,1),Selection.disableHandles()),colorChangeMacro($div,0,1))}function setOpacity(opacity,now){enabled&&(options.bgFade&&!now?holder.animate({opacity:1-opacity},{queue:!1,duration:options.fadeTime}):holder.css({opacity:1-opacity}))}function refreshAll(){options.shade?enableShade():disableShade(),Selection.isAwake()&&setOpacity(options.bgOpacity)}function getShades(){return holder.children()}var enabled=!1,holder=$("<div />").css({position:"absolute",zIndex:240,opacity:0}),shades={top:createShade(),left:createShade().height(boundy),right:createShade().height(boundy),bottom:createShade()};return{update:updateAuto,updateRaw:updateShade,getShades:getShades,setBgColor:setBgColor,enable:enableShade,disable:disableShade,resize:resizeShades,refresh:refreshAll,opacity:setOpacity}}(),Selection=function(){function insertBorder(type){var jq=$("<div />").css({position:"absolute",opacity:options.borderOpacity}).addClass(cssClass(type));return $img_holder.append(jq),jq}function dragDiv(ord,zi){var jq=$("<div />").mousedown(createDragger(ord)).css({cursor:ord+"-resize",position:"absolute",zIndex:zi}).addClass("ord-"+ord);return Touch.support&&jq.bind("touchstart.jcrop",Touch.createDragger(ord)),$hdl_holder.append(jq),jq}function insertHandle(ord){var hs=options.handleSize,div=dragDiv(ord,hdep++).css({opacity:options.handleOpacity}).addClass(cssClass("handle"));return hs&&div.width(hs).height(hs),div}function insertDragbar(ord){return dragDiv(ord,hdep++).addClass("jcrop-dragbar")}function createDragbars(li){var i;for(i=0;i<li.length;i++)dragbar[li[i]]=insertDragbar(li[i])}function createBorders(li){var cl,i;for(i=0;i<li.length;i++){switch(li[i]){case"n":cl="hline";break;case"s":cl="hline bottom";break;case"e":cl="vline right";break;case"w":cl="vline"}borders[li[i]]=insertBorder(cl)}}function createHandles(li){var i;for(i=0;i<li.length;i++)handle[li[i]]=insertHandle(li[i])}function moveto(x,y){options.shade||$img2.css({top:px(-y),left:px(-x)}),$sel.css({top:px(y),left:px(x)})}function resize(w,h){$sel.width(Math.round(w)).height(Math.round(h))}function refresh(){var c=Coords.getFixed();Coords.setPressed([c.x,c.y]),Coords.setCurrent([c.x2,c.y2]),updateVisible()}function updateVisible(select){return awake?update(select):void 0}function update(select){var c=Coords.getFixed();resize(c.w,c.h),moveto(c.x,c.y),options.shade&&Shade.updateRaw(c),awake||show(),select?options.onSelect.call(api,unscale(c)):options.onChange.call(api,unscale(c))}function setBgOpacity(opacity,force,now){(awake||force)&&(options.bgFade&&!now?$img.animate({opacity:opacity},{queue:!1,duration:options.fadeTime}):$img.css("opacity",opacity))}function show(){$sel.show(),options.shade?Shade.opacity(bgopacity):setBgOpacity(bgopacity,!0),awake=!0}function release(){disableHandles(),$sel.hide(),options.shade?Shade.opacity(1):setBgOpacity(1),awake=!1,options.onRelease.call(api)}function showHandles(){seehandles&&$hdl_holder.show()}function enableHandles(){return seehandles=!0,options.allowResize?($hdl_holder.show(),!0):void 0}function disableHandles(){seehandles=!1,$hdl_holder.hide()}function animMode(v){v?(animating=!0,disableHandles()):(animating=!1,enableHandles())}function done(){animMode(!1),refresh()}var awake,hdep=370,borders={},handle={},dragbar={},seehandles=!1;options.dragEdges&&$.isArray(options.createDragbars)&&createDragbars(options.createDragbars),$.isArray(options.createHandles)&&createHandles(options.createHandles),options.drawBorders&&$.isArray(options.createBorders)&&createBorders(options.createBorders),$(document).bind("touchstart.jcrop-ios",function(e){$(e.currentTarget).hasClass("jcrop-tracker")&&e.stopPropagation()});var $track=newTracker().mousedown(createDragger("move")).css({cursor:"move",position:"absolute",zIndex:360});return Touch.support&&$track.bind("touchstart.jcrop",Touch.createDragger("move")),$img_holder.append($track),disableHandles(),{updateVisible:updateVisible,update:update,release:release,refresh:refresh,isAwake:function(){return awake},setCursor:function(cursor){$track.css("cursor",cursor)},enableHandles:enableHandles,enableOnly:function(){seehandles=!0},showHandles:showHandles,disableHandles:disableHandles,animMode:animMode,setBgOpacity:setBgOpacity,done:done}}(),Tracker=function(){function toFront(touch){$trk.css({zIndex:450}),touch?$(document).bind("touchmove.jcrop",trackTouchMove).bind("touchend.jcrop",trackTouchEnd):trackDoc&&$(document).bind("mousemove.jcrop",trackMove).bind("mouseup.jcrop",trackUp)}function toBack(){$trk.css({zIndex:290}),$(document).unbind(".jcrop")}function trackMove(e){return onMove(mouseAbs(e)),!1}function trackUp(e){return e.preventDefault(),e.stopPropagation(),btndown&&(btndown=!1,onDone(mouseAbs(e)),Selection.isAwake()&&options.onSelect.call(api,unscale(Coords.getFixed())),toBack(),onMove=function(){},onDone=function(){}),!1}function activateHandlers(move,done,touch){return btndown=!0,onMove=move,onDone=done,toFront(touch),!1}function trackTouchMove(e){return onMove(mouseAbs(Touch.cfilter(e))),!1}function trackTouchEnd(e){return trackUp(Touch.cfilter(e))}function setCursor(t){$trk.css("cursor",t)}var onMove=function(){},onDone=function(){},trackDoc=options.trackDocument;return trackDoc||$trk.mousemove(trackMove).mouseup(trackUp).mouseout(trackUp),$img.before($trk),{activateHandlers:activateHandlers,setCursor:setCursor}}(),KeyManager=function(){function watchKeys(){options.keySupport&&($keymgr.show(),$keymgr.focus())}function onBlur(){$keymgr.hide()}function doNudge(e,x,y){options.allowMove&&(Coords.moveOffset([x,y]),Selection.updateVisible(!0)),e.preventDefault(),e.stopPropagation()}function parseKey(e){if(e.ctrlKey||e.metaKey)return!0;shift_down=e.shiftKey?!0:!1;var nudge=shift_down?10:1;switch(e.keyCode){case 37:doNudge(e,-nudge,0);break;case 39:doNudge(e,nudge,0);break;case 38:doNudge(e,0,-nudge);break;case 40:doNudge(e,0,nudge);break;case 27:options.allowSelect&&Selection.release();break;case 9:return!0}return!1}var $keymgr=$('<input type="radio" />').css({position:"fixed",left:"-120px",width:"12px"}).addClass("jcrop-keymgr"),$keywrap=$("<div />").css({position:"absolute",overflow:"hidden"}).append($keymgr);return options.keySupport&&($keymgr.keydown(parseKey).blur(onBlur),ie6mode||!options.fixedSupport?($keymgr.css({position:"absolute",left:"-20px"}),$keywrap.append($keymgr).insertBefore($img)):$keymgr.insertBefore($img)),{watchKeys:watchKeys}}();Touch.support&&$trk.bind("touchstart.jcrop",Touch.newSelection),$hdl_holder.hide(),interfaceUpdate(!0);var api={setImage:setImage,animateTo:animateTo,setSelect:setSelect,setOptions:setOptionsNew,tellSelect:tellSelect,tellScaled:tellScaled,setClass:setClass,disable:disableCrop,enable:enableCrop,cancel:cancelCrop,release:Selection.release,destroy:destroy,focus:KeyManager.watchKeys,getBounds:function(){return[boundx*xscale,boundy*yscale]},getWidgetSize:function(){return[boundx,boundy]},getScaleFactor:function(){return[xscale,yscale]},getOptions:function(){return options},ui:{holder:$div,selection:$sel}};return is_msie&&$div.bind("selectstart",function(){return!1}),$origimg.data("Jcrop",api),api},$.fn.Jcrop=function(options,callback){var api;return this.each(function(){if($(this).data("Jcrop")){if("api"===options)return $(this).data("Jcrop");$(this).data("Jcrop").setOptions(options)}else"IMG"==this.tagName?$.Jcrop.Loader(this,function(){$(this).css({display:"block",visibility:"hidden"}),api=$.Jcrop(this,options),$.isFunction(callback)&&callback.call(api)}):($(this).css({display:"block",visibility:"hidden"}),api=$.Jcrop(this,options),$.isFunction(callback)&&callback.call(api))}),this},$.Jcrop.Loader=function(imgobj,success,error){function completeCheck(){img.complete?($img.unbind(".jcloader"),$.isFunction(success)&&success.call(img)):window.setTimeout(completeCheck,50)}var $img=$(imgobj),img=$img[0];$img.bind("load.jcloader",completeCheck).bind("error.jcloader",function(){$img.unbind(".jcloader"),$.isFunction(error)&&error.call(img)}),img.complete&&$.isFunction(success)&&($img.unbind(".jcloader"),success.call(img))},$.Jcrop.defaults={allowSelect:!0,allowMove:!0,allowResize:!0,trackDocument:!0,baseClass:"jcrop",addClass:null,bgColor:"black",bgOpacity:.6,bgFade:!1,borderOpacity:.4,handleOpacity:.5,handleSize:null,aspectRatio:0,keySupport:!0,createHandles:["n","s","e","w","nw","ne","se","sw"],createDragbars:["n","s","e","w"],createBorders:["n","s","e","w"],drawBorders:!0,dragEdges:!0,fixedSupport:!0,touchSupport:null,shade:null,boxWidth:0,boxHeight:0,boundary:2,fadeTime:400,animationDelay:20,swingSpeed:3,minSelect:[0,0],maxSize:[0,0],minSize:[0,0],onChange:function(){},onSelect:function(){},onDblClick:function(){},onRelease:function(){}}}(jQuery);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
 /* 68 */
@@ -93358,7 +93366,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
     __webpack_require__(1),
     __webpack_require__(4),
     __webpack_require__(5),
-    __webpack_require__(8),
+    __webpack_require__(7),
     __webpack_require__(69),
 ], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, logger, registry, utils, Base, inject, Showdown) {
     var log = logger.getLogger("pat.markdown");
@@ -96615,7 +96623,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
     __webpack_require__(1),
     __webpack_require__(3),
     __webpack_require__(2),
-    __webpack_require__(8)
+    __webpack_require__(7)
 ], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, patterns, logger, Parser, inject) {
     var log = logger.getLogger("notification"),
         parser = new Parser("notification");
@@ -96976,7 +96984,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_LO
  * by David DeSandro
  */
 
-!function(t,e){ true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(i){return e(t,i)}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+!function(t,e){ true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = (function(i){return e(t,i)}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)):"object"==typeof module&&module.exports?module.exports=e(t,require("jquery")):t.jQueryBridget=e(t,t.jQuery)}(window,function(t,e){"use strict";function i(i,r,a){function h(t,e,n){var o,r="$()."+i+'("'+e+'")';return t.each(function(t,h){var u=a.data(h,i);if(!u)return void s(i+" not initialized. Cannot call methods, i.e. "+r);var d=u[e];if(!d||"_"==e.charAt(0))return void s(r+" is not a valid method");var l=d.apply(u,n);o=void 0===o?l:o}),void 0!==o?o:t}function u(t,e){t.each(function(t,n){var o=a.data(n,i);o?(o.option(e),o._init()):(o=new r(n,e),a.data(n,i,o))})}a=a||e||t.jQuery,a&&(r.prototype.option||(r.prototype.option=function(t){a.isPlainObject(t)&&(this.options=a.extend(!0,this.options,t))}),a.fn[i]=function(t){if("string"==typeof t){var e=o.call(arguments,1);return h(this,t,e)}return u(this,t),this},n(a))}function n(t){!t||t&&t.bridget||(t.bridget=i)}var o=Array.prototype.slice,r=t.console,s="undefined"==typeof r?function(){}:function(t){r.error(t)};return n(e||t.jQuery),i}),function(t,e){ true?!(__WEBPACK_LOCAL_MODULE_1__factory = (e), (__WEBPACK_LOCAL_MODULE_1__module = { id: "ev-emitter/ev-emitter", exports: {}, loaded: false }), __WEBPACK_LOCAL_MODULE_1__ = (typeof __WEBPACK_LOCAL_MODULE_1__factory === 'function' ? (__WEBPACK_LOCAL_MODULE_1__factory.call(__WEBPACK_LOCAL_MODULE_1__module.exports, __webpack_require__, __WEBPACK_LOCAL_MODULE_1__module.exports, __WEBPACK_LOCAL_MODULE_1__module)) : __WEBPACK_LOCAL_MODULE_1__factory), (__WEBPACK_LOCAL_MODULE_1__module.loaded = true), __WEBPACK_LOCAL_MODULE_1__ === undefined && (__WEBPACK_LOCAL_MODULE_1__ = __WEBPACK_LOCAL_MODULE_1__module.exports)):"object"==typeof module&&module.exports?module.exports=e():t.EvEmitter=e()}("undefined"!=typeof window?window:this,function(){function t(){}var e=t.prototype;return e.on=function(t,e){if(t&&e){var i=this._events=this._events||{},n=i[t]=i[t]||[];return-1==n.indexOf(e)&&n.push(e),this}},e.once=function(t,e){if(t&&e){this.on(t,e);var i=this._onceEvents=this._onceEvents||{},n=i[t]=i[t]||{};return n[e]=!0,this}},e.off=function(t,e){var i=this._events&&this._events[t];if(i&&i.length){var n=i.indexOf(e);return-1!=n&&i.splice(n,1),this}},e.emitEvent=function(t,e){var i=this._events&&this._events[t];if(i&&i.length){var n=0,o=i[n];e=e||[];for(var r=this._onceEvents&&this._onceEvents[t];o;){var s=r&&r[o];s&&(this.off(t,o),delete r[o]),o.apply(this,e),n+=s?0:1,o=i[n]}return this}},t}),function(t,e){"use strict"; true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_LOCAL_MODULE_2__ = ((function(){return e()}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__))):"object"==typeof module&&module.exports?module.exports=e():t.getSize=e()}(window,function(){"use strict";function t(t){var e=parseFloat(t),i=-1==t.indexOf("%")&&!isNaN(e);return i&&e}function e(){}function i(){for(var t={width:0,height:0,innerWidth:0,innerHeight:0,outerWidth:0,outerHeight:0},e=0;u>e;e++){var i=h[e];t[i]=0}return t}function n(t){var e=getComputedStyle(t);return e||a("Style returned "+e+". Are you running this code in a hidden iframe on Firefox? See http://bit.ly/getsizebug1"),e}function o(){if(!d){d=!0;var e=document.createElement("div");e.style.width="200px",e.style.padding="1px 2px 3px 4px",e.style.borderStyle="solid",e.style.borderWidth="1px 2px 3px 4px",e.style.boxSizing="border-box";var i=document.body||document.documentElement;i.appendChild(e);var o=n(e);r.isBoxSizeOuter=s=200==t(o.width),i.removeChild(e)}}function r(e){if(o(),"string"==typeof e&&(e=document.querySelector(e)),e&&"object"==typeof e&&e.nodeType){var r=n(e);if("none"==r.display)return i();var a={};a.width=e.offsetWidth,a.height=e.offsetHeight;for(var d=a.isBorderBox="border-box"==r.boxSizing,l=0;u>l;l++){var c=h[l],f=r[c],m=parseFloat(f);a[c]=isNaN(m)?0:m}var p=a.paddingLeft+a.paddingRight,g=a.paddingTop+a.paddingBottom,y=a.marginLeft+a.marginRight,v=a.marginTop+a.marginBottom,_=a.borderLeftWidth+a.borderRightWidth,E=a.borderTopWidth+a.borderBottomWidth,z=d&&s,b=t(r.width);b!==!1&&(a.width=b+(z?0:p+_));var x=t(r.height);return x!==!1&&(a.height=x+(z?0:g+E)),a.innerWidth=a.width-(p+_),a.innerHeight=a.height-(g+E),a.outerWidth=a.width+y,a.outerHeight=a.height+v,a}}var s,a="undefined"==typeof console?e:function(t){console.error(t)},h=["paddingLeft","paddingRight","paddingTop","paddingBottom","marginLeft","marginRight","marginTop","marginBottom","borderLeftWidth","borderRightWidth","borderTopWidth","borderBottomWidth"],u=h.length,d=!1;return r}),function(t,e){"use strict"; true?!(__WEBPACK_LOCAL_MODULE_3__factory = (e), (__WEBPACK_LOCAL_MODULE_3__module = { id: "desandro-matches-selector/matches-selector", exports: {}, loaded: false }), __WEBPACK_LOCAL_MODULE_3__ = (typeof __WEBPACK_LOCAL_MODULE_3__factory === 'function' ? (__WEBPACK_LOCAL_MODULE_3__factory.call(__WEBPACK_LOCAL_MODULE_3__module.exports, __webpack_require__, __WEBPACK_LOCAL_MODULE_3__module.exports, __WEBPACK_LOCAL_MODULE_3__module)) : __WEBPACK_LOCAL_MODULE_3__factory), (__WEBPACK_LOCAL_MODULE_3__module.loaded = true), __WEBPACK_LOCAL_MODULE_3__ === undefined && (__WEBPACK_LOCAL_MODULE_3__ = __WEBPACK_LOCAL_MODULE_3__module.exports)):"object"==typeof module&&module.exports?module.exports=e():t.matchesSelector=e()}(window,function(){"use strict";var t=function(){var t=Element.prototype;if(t.matches)return"matches";if(t.matchesSelector)return"matchesSelector";for(var e=["webkit","moz","ms","o"],i=0;i<e.length;i++){var n=e[i],o=n+"MatchesSelector";if(t[o])return o}}();return function(e,i){return e[t](i)}}),function(t,e){ true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__WEBPACK_LOCAL_MODULE_3__], __WEBPACK_LOCAL_MODULE_4__ = ((function(i){return e(t,i)}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__))):"object"==typeof module&&module.exports?module.exports=e(t,require("desandro-matches-selector")):t.fizzyUIUtils=e(t,t.matchesSelector)}(window,function(t,e){var i={};i.extend=function(t,e){for(var i in e)t[i]=e[i];return t},i.modulo=function(t,e){return(t%e+e)%e},i.makeArray=function(t){var e=[];if(Array.isArray(t))e=t;else if(t&&"number"==typeof t.length)for(var i=0;i<t.length;i++)e.push(t[i]);else e.push(t);return e},i.removeFrom=function(t,e){var i=t.indexOf(e);-1!=i&&t.splice(i,1)},i.getParent=function(t,i){for(;t!=document.body;)if(t=t.parentNode,e(t,i))return t},i.getQueryElement=function(t){return"string"==typeof t?document.querySelector(t):t},i.handleEvent=function(t){var e="on"+t.type;this[e]&&this[e](t)},i.filterFindElements=function(t,n){t=i.makeArray(t);var o=[];return t.forEach(function(t){if(t instanceof HTMLElement){if(!n)return void o.push(t);e(t,n)&&o.push(t);for(var i=t.querySelectorAll(n),r=0;r<i.length;r++)o.push(i[r])}}),o},i.debounceMethod=function(t,e,i){var n=t.prototype[e],o=e+"Timeout";t.prototype[e]=function(){var t=this[o];t&&clearTimeout(t);var e=arguments,r=this;this[o]=setTimeout(function(){n.apply(r,e),delete r[o]},i||100)}},i.docReady=function(t){var e=document.readyState;"complete"==e||"interactive"==e?t():document.addEventListener("DOMContentLoaded",t)},i.toDashed=function(t){return t.replace(/(.)([A-Z])/g,function(t,e,i){return e+"-"+i}).toLowerCase()};var n=t.console;return i.htmlInit=function(e,o){i.docReady(function(){var r=i.toDashed(o),s="data-"+r,a=document.querySelectorAll("["+s+"]"),h=document.querySelectorAll(".js-"+r),u=i.makeArray(a).concat(i.makeArray(h)),d=s+"-options",l=t.jQuery;u.forEach(function(t){var i,r=t.getAttribute(s)||t.getAttribute(d);try{i=r&&JSON.parse(r)}catch(a){return void(n&&n.error("Error parsing "+s+" on "+t.className+": "+a))}var h=new e(t,i);l&&l.data(t,o,h)})})},i}),function(t,e){ true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__WEBPACK_LOCAL_MODULE_1__,__WEBPACK_LOCAL_MODULE_2__], __WEBPACK_AMD_DEFINE_FACTORY__ = (e),
 				__WEBPACK_LOCAL_MODULE_5__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__)):"object"==typeof module&&module.exports?module.exports=e(require("ev-emitter"),require("get-size")):(t.Outlayer={},t.Outlayer.Item=e(t.EvEmitter,t.getSize))}(window,function(t,e){"use strict";function i(t){for(var e in t)return!1;return e=null,!0}function n(t,e){t&&(this.element=t,this.layout=e,this.position={x:0,y:0},this._create())}function o(t){return t.replace(/([A-Z])/g,function(t){return"-"+t.toLowerCase()})}var r=document.documentElement.style,s="string"==typeof r.transition?"transition":"WebkitTransition",a="string"==typeof r.transform?"transform":"WebkitTransform",h={WebkitTransition:"webkitTransitionEnd",transition:"transitionend"}[s],u={transform:a,transition:s,transitionDuration:s+"Duration",transitionProperty:s+"Property",transitionDelay:s+"Delay"},d=n.prototype=Object.create(t.prototype);d.constructor=n,d._create=function(){this._transn={ingProperties:{},clean:{},onEnd:{}},this.css({position:"absolute"})},d.handleEvent=function(t){var e="on"+t.type;this[e]&&this[e](t)},d.getSize=function(){this.size=e(this.element)},d.css=function(t){var e=this.element.style;for(var i in t){var n=u[i]||i;e[n]=t[i]}},d.getPosition=function(){var t=getComputedStyle(this.element),e=this.layout._getOption("originLeft"),i=this.layout._getOption("originTop"),n=t[e?"left":"right"],o=t[i?"top":"bottom"],r=this.layout.size,s=-1!=n.indexOf("%")?parseFloat(n)/100*r.width:parseInt(n,10),a=-1!=o.indexOf("%")?parseFloat(o)/100*r.height:parseInt(o,10);s=isNaN(s)?0:s,a=isNaN(a)?0:a,s-=e?r.paddingLeft:r.paddingRight,a-=i?r.paddingTop:r.paddingBottom,this.position.x=s,this.position.y=a},d.layoutPosition=function(){var t=this.layout.size,e={},i=this.layout._getOption("originLeft"),n=this.layout._getOption("originTop"),o=i?"paddingLeft":"paddingRight",r=i?"left":"right",s=i?"right":"left",a=this.position.x+t[o];e[r]=this.getXValue(a),e[s]="";var h=n?"paddingTop":"paddingBottom",u=n?"top":"bottom",d=n?"bottom":"top",l=this.position.y+t[h];e[u]=this.getYValue(l),e[d]="",this.css(e),this.emitEvent("layout",[this])},d.getXValue=function(t){var e=this.layout._getOption("horizontal");return this.layout.options.percentPosition&&!e?t/this.layout.size.width*100+"%":t+"px"},d.getYValue=function(t){var e=this.layout._getOption("horizontal");return this.layout.options.percentPosition&&e?t/this.layout.size.height*100+"%":t+"px"},d._transitionTo=function(t,e){this.getPosition();var i=this.position.x,n=this.position.y,o=parseInt(t,10),r=parseInt(e,10),s=o===this.position.x&&r===this.position.y;if(this.setPosition(t,e),s&&!this.isTransitioning)return void this.layoutPosition();var a=t-i,h=e-n,u={};u.transform=this.getTranslate(a,h),this.transition({to:u,onTransitionEnd:{transform:this.layoutPosition},isCleaning:!0})},d.getTranslate=function(t,e){var i=this.layout._getOption("originLeft"),n=this.layout._getOption("originTop");return t=i?t:-t,e=n?e:-e,"translate3d("+t+"px, "+e+"px, 0)"},d.goTo=function(t,e){this.setPosition(t,e),this.layoutPosition()},d.moveTo=d._transitionTo,d.setPosition=function(t,e){this.position.x=parseInt(t,10),this.position.y=parseInt(e,10)},d._nonTransition=function(t){this.css(t.to),t.isCleaning&&this._removeStyles(t.to);for(var e in t.onTransitionEnd)t.onTransitionEnd[e].call(this)},d.transition=function(t){if(!parseFloat(this.layout.options.transitionDuration))return void this._nonTransition(t);var e=this._transn;for(var i in t.onTransitionEnd)e.onEnd[i]=t.onTransitionEnd[i];for(i in t.to)e.ingProperties[i]=!0,t.isCleaning&&(e.clean[i]=!0);if(t.from){this.css(t.from);var n=this.element.offsetHeight;n=null}this.enableTransition(t.to),this.css(t.to),this.isTransitioning=!0};var l="opacity,"+o(a);d.enableTransition=function(){if(!this.isTransitioning){var t=this.layout.options.transitionDuration;t="number"==typeof t?t+"ms":t,this.css({transitionProperty:l,transitionDuration:t,transitionDelay:this.staggerDelay||0}),this.element.addEventListener(h,this,!1)}},d.onwebkitTransitionEnd=function(t){this.ontransitionend(t)},d.onotransitionend=function(t){this.ontransitionend(t)};var c={"-webkit-transform":"transform"};d.ontransitionend=function(t){if(t.target===this.element){var e=this._transn,n=c[t.propertyName]||t.propertyName;if(delete e.ingProperties[n],i(e.ingProperties)&&this.disableTransition(),n in e.clean&&(this.element.style[t.propertyName]="",delete e.clean[n]),n in e.onEnd){var o=e.onEnd[n];o.call(this),delete e.onEnd[n]}this.emitEvent("transitionEnd",[this])}},d.disableTransition=function(){this.removeTransitionStyles(),this.element.removeEventListener(h,this,!1),this.isTransitioning=!1},d._removeStyles=function(t){var e={};for(var i in t)e[i]="";this.css(e)};var f={transitionProperty:"",transitionDuration:"",transitionDelay:""};return d.removeTransitionStyles=function(){this.css(f)},d.stagger=function(t){t=isNaN(t)?0:t,this.staggerDelay=t+"ms"},d.removeElem=function(){this.element.parentNode.removeChild(this.element),this.css({display:""}),this.emitEvent("remove",[this])},d.remove=function(){return s&&parseFloat(this.layout.options.transitionDuration)?(this.once("transitionEnd",function(){this.removeElem()}),void this.hide()):void this.removeElem()},d.reveal=function(){delete this.isHidden,this.css({display:""});var t=this.layout.options,e={},i=this.getHideRevealTransitionEndProperty("visibleStyle");e[i]=this.onRevealTransitionEnd,this.transition({from:t.hiddenStyle,to:t.visibleStyle,isCleaning:!0,onTransitionEnd:e})},d.onRevealTransitionEnd=function(){this.isHidden||this.emitEvent("reveal")},d.getHideRevealTransitionEndProperty=function(t){var e=this.layout.options[t];if(e.opacity)return"opacity";for(var i in e)return i},d.hide=function(){this.isHidden=!0,this.css({display:""});var t=this.layout.options,e={},i=this.getHideRevealTransitionEndProperty("hiddenStyle");e[i]=this.onHideTransitionEnd,this.transition({from:t.visibleStyle,to:t.hiddenStyle,isCleaning:!0,onTransitionEnd:e})},d.onHideTransitionEnd=function(){this.isHidden&&(this.css({display:"none"}),this.emitEvent("hide"))},d.destroy=function(){this.css({position:"",left:"",right:"",top:"",bottom:"",transition:"",transform:""})},n}),function(t,e){"use strict"; true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__WEBPACK_LOCAL_MODULE_1__,__WEBPACK_LOCAL_MODULE_2__,__WEBPACK_LOCAL_MODULE_4__,__WEBPACK_LOCAL_MODULE_5__], __WEBPACK_LOCAL_MODULE_6__ = ((function(i,n,o,r){return e(t,i,n,o,r)}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__))):"object"==typeof module&&module.exports?module.exports=e(t,require("ev-emitter"),require("get-size"),require("fizzy-ui-utils"),require("./item")):t.Outlayer=e(t,t.EvEmitter,t.getSize,t.fizzyUIUtils,t.Outlayer.Item)}(window,function(t,e,i,n,o){"use strict";function r(t,e){var i=n.getQueryElement(t);if(!i)return void(h&&h.error("Bad element for "+this.constructor.namespace+": "+(i||t)));this.element=i,u&&(this.$element=u(this.element)),this.options=n.extend({},this.constructor.defaults),this.option(e);var o=++l;this.element.outlayerGUID=o,c[o]=this,this._create();var r=this._getOption("initLayout");r&&this.layout()}function s(t){function e(){t.apply(this,arguments)}return e.prototype=Object.create(t.prototype),e.prototype.constructor=e,e}function a(t){if("number"==typeof t)return t;var e=t.match(/(^\d*\.?\d*)(\w*)/),i=e&&e[1],n=e&&e[2];if(!i.length)return 0;i=parseFloat(i);var o=m[n]||1;return i*o}var h=t.console,u=t.jQuery,d=function(){},l=0,c={};r.namespace="outlayer",r.Item=o,r.defaults={containerStyle:{position:"relative"},initLayout:!0,originLeft:!0,originTop:!0,resize:!0,resizeContainer:!0,transitionDuration:"0.4s",hiddenStyle:{opacity:0,transform:"scale(0.001)"},visibleStyle:{opacity:1,transform:"scale(1)"}};var f=r.prototype;n.extend(f,e.prototype),f.option=function(t){n.extend(this.options,t)},f._getOption=function(t){var e=this.constructor.compatOptions[t];return e&&void 0!==this.options[e]?this.options[e]:this.options[t]},r.compatOptions={initLayout:"isInitLayout",horizontal:"isHorizontal",layoutInstant:"isLayoutInstant",originLeft:"isOriginLeft",originTop:"isOriginTop",resize:"isResizeBound",resizeContainer:"isResizingContainer"},f._create=function(){this.reloadItems(),this.stamps=[],this.stamp(this.options.stamp),n.extend(this.element.style,this.options.containerStyle);var t=this._getOption("resize");t&&this.bindResize()},f.reloadItems=function(){this.items=this._itemize(this.element.children)},f._itemize=function(t){for(var e=this._filterFindItemElements(t),i=this.constructor.Item,n=[],o=0;o<e.length;o++){var r=e[o],s=new i(r,this);n.push(s)}return n},f._filterFindItemElements=function(t){return n.filterFindElements(t,this.options.itemSelector)},f.getItemElements=function(){return this.items.map(function(t){return t.element})},f.layout=function(){this._resetLayout(),this._manageStamps();var t=this._getOption("layoutInstant"),e=void 0!==t?t:!this._isLayoutInited;this.layoutItems(this.items,e),this._isLayoutInited=!0},f._init=f.layout,f._resetLayout=function(){this.getSize()},f.getSize=function(){this.size=i(this.element)},f._getMeasurement=function(t,e){var n,o=this.options[t];o?("string"==typeof o?n=this.element.querySelector(o):o instanceof HTMLElement&&(n=o),this[t]=n?i(n)[e]:o):this[t]=0},f.layoutItems=function(t,e){t=this._getItemsForLayout(t),this._layoutItems(t,e),this._postLayout()},f._getItemsForLayout=function(t){return t.filter(function(t){return!t.isIgnored})},f._layoutItems=function(t,e){if(this._emitCompleteOnItems("layout",t),t&&t.length){var i=[];t.forEach(function(t){var n=this._getItemLayoutPosition(t);n.item=t,n.isInstant=e||t.isLayoutInstant,i.push(n)},this),this._processLayoutQueue(i)}},f._getItemLayoutPosition=function(){return{x:0,y:0}},f._processLayoutQueue=function(t){this.updateStagger(),t.forEach(function(t,e){this._positionItem(t.item,t.x,t.y,t.isInstant,e)},this)},f.updateStagger=function(){var t=this.options.stagger;return null===t||void 0===t?void(this.stagger=0):(this.stagger=a(t),this.stagger)},f._positionItem=function(t,e,i,n,o){n?t.goTo(e,i):(t.stagger(o*this.stagger),t.moveTo(e,i))},f._postLayout=function(){this.resizeContainer()},f.resizeContainer=function(){var t=this._getOption("resizeContainer");if(t){var e=this._getContainerSize();e&&(this._setContainerMeasure(e.width,!0),this._setContainerMeasure(e.height,!1))}},f._getContainerSize=d,f._setContainerMeasure=function(t,e){if(void 0!==t){var i=this.size;i.isBorderBox&&(t+=e?i.paddingLeft+i.paddingRight+i.borderLeftWidth+i.borderRightWidth:i.paddingBottom+i.paddingTop+i.borderTopWidth+i.borderBottomWidth),t=Math.max(t,0),this.element.style[e?"width":"height"]=t+"px"}},f._emitCompleteOnItems=function(t,e){function i(){o.dispatchEvent(t+"Complete",null,[e])}function n(){s++,s==r&&i()}var o=this,r=e.length;if(!e||!r)return void i();var s=0;e.forEach(function(e){e.once(t,n)})},f.dispatchEvent=function(t,e,i){var n=e?[e].concat(i):i;if(this.emitEvent(t,n),u)if(this.$element=this.$element||u(this.element),e){var o=u.Event(e);o.type=t,this.$element.trigger(o,i)}else this.$element.trigger(t,i)},f.ignore=function(t){var e=this.getItem(t);e&&(e.isIgnored=!0)},f.unignore=function(t){var e=this.getItem(t);e&&delete e.isIgnored},f.stamp=function(t){t=this._find(t),t&&(this.stamps=this.stamps.concat(t),t.forEach(this.ignore,this))},f.unstamp=function(t){t=this._find(t),t&&t.forEach(function(t){n.removeFrom(this.stamps,t),this.unignore(t)},this)},f._find=function(t){return t?("string"==typeof t&&(t=this.element.querySelectorAll(t)),t=n.makeArray(t)):void 0},f._manageStamps=function(){this.stamps&&this.stamps.length&&(this._getBoundingRect(),this.stamps.forEach(this._manageStamp,this))},f._getBoundingRect=function(){var t=this.element.getBoundingClientRect(),e=this.size;this._boundingRect={left:t.left+e.paddingLeft+e.borderLeftWidth,top:t.top+e.paddingTop+e.borderTopWidth,right:t.right-(e.paddingRight+e.borderRightWidth),bottom:t.bottom-(e.paddingBottom+e.borderBottomWidth)}},f._manageStamp=d,f._getElementOffset=function(t){var e=t.getBoundingClientRect(),n=this._boundingRect,o=i(t),r={left:e.left-n.left-o.marginLeft,top:e.top-n.top-o.marginTop,right:n.right-e.right-o.marginRight,bottom:n.bottom-e.bottom-o.marginBottom};return r},f.handleEvent=n.handleEvent,f.bindResize=function(){t.addEventListener("resize",this),this.isResizeBound=!0},f.unbindResize=function(){t.removeEventListener("resize",this),this.isResizeBound=!1},f.onresize=function(){this.resize()},n.debounceMethod(r,"onresize",100),f.resize=function(){this.isResizeBound&&this.needsResizeLayout()&&this.layout()},f.needsResizeLayout=function(){var t=i(this.element),e=this.size&&t;return e&&t.innerWidth!==this.size.innerWidth},f.addItems=function(t){var e=this._itemize(t);return e.length&&(this.items=this.items.concat(e)),e},f.appended=function(t){var e=this.addItems(t);e.length&&(this.layoutItems(e,!0),this.reveal(e))},f.prepended=function(t){var e=this._itemize(t);if(e.length){var i=this.items.slice(0);this.items=e.concat(i),this._resetLayout(),this._manageStamps(),this.layoutItems(e,!0),this.reveal(e),this.layoutItems(i)}},f.reveal=function(t){if(this._emitCompleteOnItems("reveal",t),t&&t.length){var e=this.updateStagger();t.forEach(function(t,i){t.stagger(i*e),t.reveal()})}},f.hide=function(t){if(this._emitCompleteOnItems("hide",t),t&&t.length){var e=this.updateStagger();t.forEach(function(t,i){t.stagger(i*e),t.hide()})}},f.revealItemElements=function(t){var e=this.getItems(t);this.reveal(e)},f.hideItemElements=function(t){var e=this.getItems(t);this.hide(e)},f.getItem=function(t){for(var e=0;e<this.items.length;e++){var i=this.items[e];if(i.element==t)return i}},f.getItems=function(t){t=n.makeArray(t);var e=[];return t.forEach(function(t){var i=this.getItem(t);i&&e.push(i)},this),e},f.remove=function(t){var e=this.getItems(t);this._emitCompleteOnItems("remove",e),e&&e.length&&e.forEach(function(t){t.remove(),n.removeFrom(this.items,t)},this)},f.destroy=function(){var t=this.element.style;t.height="",t.position="",t.width="",this.items.forEach(function(t){t.destroy()}),this.unbindResize();var e=this.element.outlayerGUID;delete c[e],delete this.element.outlayerGUID,u&&u.removeData(this.element,this.constructor.namespace)},r.data=function(t){t=n.getQueryElement(t);var e=t&&t.outlayerGUID;return e&&c[e]},r.create=function(t,e){var i=s(r);return i.defaults=n.extend({},r.defaults),n.extend(i.defaults,e),i.compatOptions=n.extend({},r.compatOptions),i.namespace=t,i.data=r.data,i.Item=s(o),n.htmlInit(i,t),u&&u.bridget&&u.bridget(t,i),i};var m={ms:1,s:1e3};return r.Item=o,r}),function(t,e){ true?!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__WEBPACK_LOCAL_MODULE_6__,__WEBPACK_LOCAL_MODULE_2__], __WEBPACK_AMD_DEFINE_FACTORY__ = (e),
@@ -98886,7 +98894,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
     __webpack_require__(3),
     __webpack_require__(2),
     __webpack_require__(12),
-    __webpack_require__(8)
+    __webpack_require__(7)
 ], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, registry, logging, Parser, ajax, inject) {
     var log = logging.getLogger("subform");
 
@@ -101145,7 +101153,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
     __webpack_require__(3),
     __webpack_require__(1),
     __webpack_require__(2),
-    __webpack_require__(8),
+    __webpack_require__(7),
     __webpack_require__(22)
 ], __WEBPACK_AMD_DEFINE_RESULT__ = (function($, logger, registry, Parser, inject) {
     var log = logger.getLogger("tooltip"),
@@ -103411,7 +103419,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FRO
 (function (factory) {
   if (true) {
     // AMD. Register as an anonymous module.
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = (function ($) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = (function ($) {
       return factory($);
     }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
