@@ -5,6 +5,7 @@ domain: www.patternslib.com
 media: /media
 markdown: kramdown
 permalink: /:title
+port: 4004
 sass:
   style: :compressed
   load_paths:
