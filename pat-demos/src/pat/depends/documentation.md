@@ -107,7 +107,7 @@ complex example which demonstrates the use of `and`:
     </fieldset>
 
     <em class="warning pat-depends"
-        data-pat-depends="condition:flavour=veg and custom and bacon">
+        data-pat-depends="condition:flavour=veg and flavour=custom and flavour=bacon">
       Adding bacon means your pizza is no longer vegetarian!</em>
 
 This pizza menu will show a warning if the user selects a vegetarian
