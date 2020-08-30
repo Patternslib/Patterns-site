@@ -18,7 +18,7 @@
     "patternslib": "https://github.com/Patternslib/Patterns.git"
   },
   "devDependencies": {
-    "jquery": "1.11.3",
+    "jquery": "3.5.0",
     "generator-patternslib": "0.2.1",
     "exports-loader": "",
     "expose-loader": "",
