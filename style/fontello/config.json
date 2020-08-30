@@ -155,6 +155,18 @@
       "css": "doc-text-inv",
       "code": 61788,
       "src": "fontawesome"
+    },
+    {
+      "uid": "bbd66ef66bb8fa9edde54d9a90b89150",
+      "css": "user",
+      "code": 59404,
+      "src": "entypo"
+    },
+    {
+      "uid": "ecf8edb95c3f45eb433b4cce7ba9f740",
+      "css": "users",
+      "code": 59405,
+      "src": "entypo"
     }
   ]
 }
