@@ -1,0 +1,9 @@
+[submodule "_data/patterns"]
+	path = _data/patterns
+	url = https://github.com/patternslib/patterns-ui-content.git
+[submodule "_sass/libraries/patterns"]
+	path = _sass/libraries/patterns
+	url = https://github.com/patternslib/patterns-sass.git
+[submodule "_layouts/patterns"]
+	path = _layouts/patterns
+	url = https://github.com/patternslib/patterns-layouts.git
