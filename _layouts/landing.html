@@ -29,14 +29,3 @@ layout: generic
 	</div>
 {% endunless %}
 
-<div class="swim-lane type-info-cards">
-	<div class="pat-container">
-		<div class="info-cards pat-masonry"
-			 data-pat-masonry="column-width: .grid-sizer; gutter: 0; item-selector: .info-card;">
-			<div class="grid-sizer"></div>
-			{% for card in page.cards %}
-				{% include info-card.html %}
-			{% endfor %}
-		</div>
-	</div>
-</div>

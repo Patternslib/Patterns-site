@@ -1,15 +1,6 @@
 Font license info
 
 
-## Entypo
-
-   Copyright (C) 2012 by Daniel Bruce
-
-   Author:    Daniel Bruce
-   License:   SIL (http://scripts.sil.org/OFL)
-   Homepage:  http://www.entypo.com
-
-
 ## Font Awesome
 
    Copyright (C) 2016 by Dave Gandy
@@ -17,33 +8,6 @@ Font license info
    Author:    Dave Gandy
    License:   SIL ()
    Homepage:  http://fortawesome.github.com/Font-Awesome/
-
-
-## Web Symbols
-
-   Copyright (c) 2011 by Just Be Nice studio. All rights reserved.
-
-   Author:    Just Be Nice studio
-   License:   SIL (http://scripts.sil.org/OFL)
-   Homepage:  http://www.justbenicestudio.com/
-
-
-## Typicons
-
-   (c) Stephen Hutchings 2012
-
-   Author:    Stephen Hutchings
-   License:   SIL (http://scripts.sil.org/OFL)
-   Homepage:  http://typicons.com/
-
-
-## Elusive
-
-   Copyright (C) 2013 by Aristeides Stathopoulos
-
-   Author:    Aristeides Stathopoulos
-   License:   SIL (http://scripts.sil.org/OFL)
-   Homepage:  http://aristeides.com/
 
 
 ## Iconic
@@ -55,22 +19,22 @@ Font license info
    Homepage:  http://somerandomdude.com/work/iconic/
 
 
-## Modern Pictograms
+## Entypo
 
-   Copyright (c) 2012 by John Caserta. All rights reserved.
+   Copyright (C) 2012 by Daniel Bruce
 
-   Author:    John Caserta
+   Author:    Daniel Bruce
    License:   SIL (http://scripts.sil.org/OFL)
-   Homepage:  http://thedesignoffice.org/project/modern-pictograms/
+   Homepage:  http://www.entypo.com
 
 
-## Maki
+## MFG Labs
 
-   Copyright (C) Mapbox, LCC
+   Copyright (C) 2012 by Daniel Bruce
 
-   Author:    Mapbox
-   License:   BSD (https://github.com/mapbox/maki/blob/gh-pages/LICENSE.txt)
-   Homepage:  http://mapbox.com/maki/
+   Author:    MFG Labs
+   License:   SIL (http://scripts.sil.org/OFL)
+   Homepage:  http://www.mfglabs.com/
 
 
 ## Fontelico

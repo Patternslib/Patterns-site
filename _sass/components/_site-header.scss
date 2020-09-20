@@ -3,27 +3,13 @@
 $header-animation-speed: 0.8s !default;
 
 #site-header {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     line-height: 60px;
-    border-bottom: solid 1px rgba(0,0,0,0.16);
-    transition: all $header-animation-speed;
-    z-index: 10;
-    background: rgba(255,255,255,0.72);
-    color: white;
     padding-top: 10px;
     padding-bottom: 10px;
-
-    @include screen-size(small) {
-        position: absolute;
-    }
-
-    body.layout-homepage &,
-    body.layout-contact {
-        background: rgba(255,255,255,0);
-    }
 
     #menu-toggle {
         color: black;
@@ -46,17 +32,6 @@ $header-animation-speed: 0.8s !default;
             opacity: 1;
         }
 
-        body.layout-homepage.scroll-position-top & {
-            transform: scale(0.8);
-            color: black;
-
-            @include screen-size(small) {
-                transform: scale(0.8);
-                padding: 0 40px;
-                color: transparent;
-            }
-        }
-
         &:before {
             content: '#{$glyph-icon-menu}';
             font-family: fontello;
@@ -66,123 +41,4 @@ $header-animation-speed: 0.8s !default;
         }
     }
 
-    @include screen-size(medium-large) {
-        -webkit-backdrop-filter: saturate(180%) blur(20px);
-        backdrop-filter: saturate(180%) blur(20px);
-        
-        padding-top: 0;
-        padding-bottom: 0;
-        // box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        // border-bottom: solid 1px rgba(0,0,0,0);
-        box-shadow: 0 0 40px rgba(0,0,0,0.10);
-
-        body.layout-homepage.scroll-position-top & {
-            padding-top: 50px;
-            padding-bottom: 50px;
-            // background: rgba(255,255,255,0);
-            box-shadow: 0 0 40px rgba(0,0,0,0);
-            border-bottom: solid 1px rgba(0,0,0,0);
-        } 
-
-        .scroll-down & {
-            // top: -101px;
-        }
-
-        .scroll-position-top & { 
-            // padding-top: 20px;
-            // padding-bottom: 20px;
-            top: 0;
-        }  
-    }
-
-    // @include screen-size(small) {
-    //     position: static;
-
-    //     #site-logo {
-    //         position: absolute;
-    //         top: 0;
-    //         left: $default-screen-padding;
-    //         right: $default-screen-padding;
-    //     }
-    // }
-
-    #site-logo {     
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        display: inline-block;
-        height: 50px;
-
-        body.layout-homepage.scroll-position-top & {
-            svg {
-                transform: scale(1);
-
-                @include screen-size(small) {
-                    transform: scale(0.6);
-                }
-            }
-        }
-
-        &:hover {
-            svg {
-                * {
-                    fill: black;
-                }
-            }
-        }
-
-        svg {
-            height: 50px;
-            transition: all $header-animation-speed;
-            // margin-top: 10px;
-            transform: scale(0.6);
-
-            * {
-                fill: $colour-quaive;
-
-                .layout-landing-affordances & { 
-                    fill: $colour-affordances;
-                }
-
-                .layout-landing-showcases & {   
-                    fill: $colour-showcases;
-                }
-
-                .layout-landing-topics & {      
-                    fill: $colour-topics;
-                }
-
-                &#logo-segment-cloud * {
-                    fill: $colour-accent;
-                    transition: all $header-animation-speed;
-
-                    .layout-landing-affordances & { 
-                        fill: $colour-affordances;
-                    }
-
-                    .layout-landing-showcases & {   
-                        fill: $colour-showcases;
-                    }
-
-                    .layout-landing-topics & {      
-                        fill: $colour-topics;
-                    }
-                }
-            }
-        }
-
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%,-50%);
-    }
-
-    // &:not(.variation-homepage) {
-    //     #global-nav {
-    //         @include screen-size(small) {
-    //             display: none;
-
-    //         }
-    //     }
-    // }
 }
