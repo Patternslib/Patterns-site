@@ -7,6 +7,14 @@
 	padding: 0 20px;
 	box-sizing: border-box;
 
+	@include screen-size(medium) {
+		width: 25%;
+	}
+
+	@include screen-size(small) {
+		width: 33.333332%;
+	}
+
 	&.cat-behavioural img {
 		background-color: $cat-behavioural;
 	}

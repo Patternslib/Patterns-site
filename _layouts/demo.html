@@ -16,13 +16,33 @@ layout: generic
 			   class="ueber-back-button pat-inject pat-switch">{{ page.collection | capitalize }}</a>
 		{% endif %}
 	</div>
-	<article class="pat-rich long-read">
-		<h1>{{ page.title }}</h1>
-		{% unless page.summary == nil %}
-			<p class="summary">
-				{{ page.summary }}
-			</p>
-		{% endunless %}
-		{{ content }}
+	<article class="long-read">
+
+		<div class="pat-rich">
+			<h1>
+				{{ page.title }}
+			</h1>
+
+			{% unless page.summary == nil %}
+				<p class="summary">
+					{{ page.summary }}
+				</p>
+			{% endunless %}
+		</div>
+
+		<div id="demo" 
+		     class="pattern-demo">
+		    <a href="/pat-demos/src/pat/{{ page.id | remove: '/'}}/index.html" 
+		       class="pat-inject" 
+		       data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
+		</div>
+
+		<div class="pat-rich">
+		    <a href="/pat-demos/src/pat/{{page.id }}/documentation.md#documentation"
+		       class="pat-inject" 
+		       data-pat-inject="data-type: markdown; source: ##Documentation; target: self::element; trigger: autoload">Documentation</a>
+		</div>
+
 	</article>
 </div>
+
