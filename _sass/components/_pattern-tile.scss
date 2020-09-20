@@ -1,0 +1,53 @@
+.pattern-tile {
+	float: left;
+	width: 20%;
+	margin-bottom: 30px;
+	text-decoration: none;
+	font-size: 25px;
+	padding: 0 20px;
+	box-sizing: border-box;
+
+	&.cat-behavioural img {
+		background-color: $cat-behavioural;
+	}
+
+	&.cat-form img {
+		background-color: $cat-form;
+	}
+
+	&.cat-layout img {
+		background-color: $cat-layout;
+	}
+
+	&.cat-navigation img {
+		background-color: $cat-navigation;
+	}
+
+	&.cat-fancy-stuff img {
+		background-color: $cat-fancy-stuff;
+	}
+
+	&:hover {
+		img {
+			transform: scale(1.02);
+		}
+	}
+
+	img {
+		width: 100%;
+		display: block;
+		background-color: silver;
+		background-size: cover;
+		border-radius: 50%;
+		margin: 0 0 15px;
+		transition: 0.1s all;
+	}
+
+	figcaption {
+		height: 40px;
+		overflow: hidden;
+		text-align: center;
+		color: black;
+		margin: 0 -20px;
+	}
+}
