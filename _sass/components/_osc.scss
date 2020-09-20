@@ -20,8 +20,9 @@
 		p {
 			margin: 0 -50px 0;
 			transition: all 0.5s;
-			height: 180px;
+			height: 190px;
 			pointer-events: none;
+			font-weight: 200;
 
 			body:not(.layout-homepage) & {
 				opacity: 0;
@@ -39,9 +40,9 @@
 
 			figcaption {
 				text-align: center;
-				font-size: 40px;
+				font-size: 50px;
 				padding: 10px 0;
-				font-weight: bold;
+				font-weight: 200;
 				letter-spacing: 1px;
 			}
 
