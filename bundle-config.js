@@ -6,7 +6,6 @@
  * only want to use selected patterns you will need to pull in the patterns
  * directly in your RequireJS configuration.
  */
-
 define([
     "jquery",
     "pat-registry",
@@ -14,53 +13,55 @@ define([
     // "prefixfree",
     "pat-ajax",
     "pat-autofocus",
-    "pat-autoscale",
+    // "pat-autoscale",
     "pat-autosubmit",
-    "pat-autosuggest",
-    "pat-breadcrumbs",
-    "pat-bumper",
-    "pat-calendar",
-    "pat-carousel",
+    // "pat-autosuggest",
+    // "pat-breadcrumbs",
+    // "pat-bumper",
+    // "pat-calendar",
+    // "pat-carousel",
     "pat-checklist",
     // "pat-chosen",
-    "pat-clone",
+    // "pat-clone",
     "pat-collapsible",
-    "pat-colour-picker",
-    "pat-date-picker",
+    // "pat-colour-picker",
+    "pat-content-mirror",
+    // "pat-date-picker",
     "pat-depends",
+    "pat-display-time",
     "pat-equaliser",
-    "pat-expandable",
+    // "pat-expandable",
     "pat-focus",
     "pat-form-state",
     "pat-forward",
-    "pat-gallery",
-    "pat-image-crop",
+    // "pat-gallery",
+    // "pat-image-crop",
     "pat-inject",
     "pat-input-change-events",
-    "pat-legend",
+    // "pat-legend",
     "pat-markdown",
     "pat-menu",
     "pat-modal",
     "pat-navigation",
     "pat-notification",
-    "pat-masonry",
+    // "pat-masonry",
     // "pat-placeholder",
     "pat-scroll",
     "pat-selectbox",
-    "pat-slides",
+    // "pat-slides",
     // "pat-slideshow-builder",
-    "pat-sortable",
+    // "pat-sortable",
     "pat-stacks",
     "pat-sticky",
     "pat-subform",
     "pat-switch",
-    "pat-syntax-highlight",
-    "pat-tabs",
+    // "pat-syntax-highlight",
+    // "pat-tabs",
     "pat-toggle",
     "pat-tooltip",
-    "pat-url",
-    "pat-validation",
-    "pat-zoom"
+    // "pat-url",
+    "pat-validation"
+    // "pat-zoom"
 ], function($, registry) {
     // Since we are in a non-AMD env, register a few useful utilites
     var window = require("window");
@@ -72,3 +73,4 @@ define([
     });
     return registry;
 });
+

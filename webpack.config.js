@@ -1,18 +1,19 @@
 const merge = require('webpack-merge');
 const path = require('path');
-const UglifyJsPlugin = require('webpack-uglify-js-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 var baseConfig = require(path.resolve(__dirname, 'node_modules/patternslib/webpack/base.config.js'));
 
 
 module.exports = merge(baseConfig, {
+    mode: 'production',
     entry: {
         "bundle": path.resolve(__dirname, "bundle-config.js"),
         "bundle.min": path.resolve(__dirname, "bundle-config.js")
     },
     output: {
         filename: "[name].js",
-        path: path.resolve(__dirname, 'bundles')
+        path: path.resolve(__dirname, 'assets/script')
     },
     resolve: {
         // This line is important to supply the patternslib source files
@@ -22,22 +23,15 @@ module.exports = merge(baseConfig, {
                   'node_modules'
         ],
         alias: {
-            // put any additional patterns here
+            "pat-content-mirror": "pat-content-mirror/src/pat-content-mirror"
         }
     },
     plugins: [
         new UglifyJsPlugin({
-            cacheFolder: path.resolve(__dirname, '../cache/'),
-            debug: true,
-            include: /\.min\.js$/,
-            minimize: true,
-            sourceMap: true,
-            output: {
-              comments: false
-            },
-            compressor: {
-              warnings: false
-            }
+          cache: path.resolve(__dirname, '../cache/'),
+          include: /\.min\.js$/,
+          sourceMap: true,
+          extractComments: false
         }),
     ],
 });

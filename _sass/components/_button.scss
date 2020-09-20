@@ -1,0 +1,22 @@
+@charset "UTF-8";
+
+.pat-button {
+  @include pat-button();
+  border: none;
+
+	.layout-landing-affordances & {
+		background-color: $colour-affordances;
+		color: white;	
+	}
+
+	.layout-landing-topics & {
+		background-color: $colour-topics;
+		color: white;	
+	}
+
+	.layout-landing-showcases & {
+		background-color: $colour-showcases;
+		color: white;	
+	}
+}
+

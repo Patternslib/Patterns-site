@@ -1,6 +1,10 @@
 {% if include.link %}
-	<a href="{{ include.link }}" class="pat-avatar {{ include.class }}" {{ include.attributes }} id="{{ include.id }}">
-		<img src="{{ include.img }}" alt="{{ include.name }}" />
+	<a href="{{ include.link }}" data-initials="{{ include.initials }}" class="pat-avatar {{ include.class }}" {{ include.attributes }} id="{{ include.id }}">
+		{% if include.img %}
+			<img src="{{ include.img }}" alt="{{ include.name }}" />
+		{% else %}
+			<img src="/media/defaultUser.png" class="default-user" alt="{{ include.name }}" />
+		{% endif %}
 	</a>    
 {% else %}
 	<img src="{{ include.img }}" alt="{{ include.name }}" class="pat-avatar {{ include.class }}" {{ include.attributes }} id="{{ include.id }}" />   

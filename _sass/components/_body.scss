@@ -1,52 +1,59 @@
+@charset "UTF-8";
+
+@media print {
+    @page {
+      size: A4; /* DIN A4 standard, Europe */
+      margin: 20mm 10mm;
+    }
+
+    html, 
+    body {
+        width: 210mm;
+        /* height: 297mm; */
+        height: 282mm;
+        font-size: 11px;
+        background: #FFF;
+        overflow: visible;
+    }
+}
+
 body {
-	-webkit-font-smoothing: subpixel-antialiased;
+    color: $body-font-color;
+    font-family: $body-font-family;
+    font-weight: $body-font-weight;
+    font-style: $body-font-style;
+    line-height: $base-line-height;
+    font-size: $base-font-size;
+
+    &.menu-open {
+        overflow: hidden;
+    }
+
+    background: white;
+
+    .hovermq & {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    cursor: default;
 	padding: 0;
 	margin: 0;
-	position: relative;
-	font: $base-font-size $body-font-family;
-	line-height: 1.7;
-	font-weight: $font-weight-normal;
-	min-height: 100%;
 
-	-webkit-font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: grayscale;
 
-	background-color: $felt;
-	background-image: -moz-linear-gradient(top, rgba(111,93,119,1) 0%, rgba(136,186,207,1) 100%); 
-	background-image: -webkit-linear-gradient(top, rgba(111,93,119,1) 0%,rgba(136,186,207,1) 100%); 
-	background-image: linear-gradient(to bottom, rgba(111,93,119,1) 0%,rgba(136,186,207,1) 100%); 
-	background-attachment: fixed;
-
-	background-size: cover;
-	
-	&:before,
-	&:after {		
-		content: ' ';
-		display: block;
-		transition: all 2s;
-		background-size: cover;
-		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		opacity: 0;
-		min-height: 100%;
+	[hidden="hidden"],
+	[hidden],
+	[type="hidden"] {
+		display: none;
 	}
 
-	&.state-documentation:before,
-	&.state-download:after {
-		opacity: 1;
+	.float-after {
+		float: right;
 	}
 
-	&:before {
-		background-image: -moz-linear-gradient(top, rgba(109,168,145,1) 0%, rgba(150,96,45,1) 100%); 
-		background-image: -webkit-linear-gradient(top, rgba(109,168,145,1) 0%,rgba(150,96,45,1) 100%); 
-		background-image: linear-gradient(to bottom, rgba(109,168,145,1) 0%,rgba(150,96,45,1) 100%); 
-	}
-
-	&:after {
-		background-image: -moz-linear-gradient(top, rgba(255,76,0,1) 0%, rgba(183,223,45,1) 100%); 
-		background-image: -webkit-linear-gradient(top, rgba(255,76,0,1) 0%,rgba(183,223,45,1) 100%);
-		background-image: linear-gradient(to bottom, rgba(255,76,0,1) 0%,rgba(183,223,45,1) 100%); 
+	.float-before {
+		float: left;
 	}
 }

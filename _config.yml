@@ -1,18 +1,26 @@
 title: Patterns
 author: Cornelis G. A. Kolbach
+summary: Patternslib is a free toolkit that aims to bring web design and development closer together.
 baseurl: /
 domain: www.patternslib.com
 media: /media
 markdown: kramdown
 permalink: /:title
 port: 4004
+collections_dir: content
+collections:
+  demos:
+    output: true
+  download:
+    output: true
+  showcases:
+    output: true
+  technical-guide:
+    output: true
 sass:
   style: :compressed
   load_paths:
     - "_sass"
-    - "patternslib"
-    - "patternslib/_sass"
-placeholder-1x1: 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
 exclude: 
   - Gemfile
   - Gemfile.lock

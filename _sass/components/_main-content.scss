@@ -1,0 +1,8 @@
+#main-content {
+  padding: 155px 0;
+  transition: transform $header-animation-speed;
+
+  @include screen-size(small) {
+  	padding: 100px 0;
+  }
+}

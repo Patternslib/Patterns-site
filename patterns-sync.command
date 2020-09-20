@@ -1,4 +1,4 @@
-cd ~/Sites/patterns-site
+cd ~/Sites/quaivecloud
 
 git -C _data/patterns checkout master
 git -C _data/patterns pull

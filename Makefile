@@ -1,10 +1,5 @@
 BUNDLE      ?= ./.bundle/bin/bundle
 
-patternslib::
-	@if [ ! -d "patternslib" ]; then \
-		git clone --depth=1 https://github.com/Patternslib/Patterns.git patternslib; \
-	fi;
-
 ########################################################################
 ## Install dependencies
 
@@ -21,7 +16,7 @@ stamp-bundler:
 
 clean::    ## Clean up by removing all depencencies
 	@rm -f stamp-npm
-	@rm -rf node_modules patternslib
+	@rm -rf node_modules
 	@echo "All cleaned up."
 
 ########################################################################
@@ -35,13 +30,15 @@ bundle: stamp-npm		  ## Build a custom javascript bundle
 help:
 	@grep " ## " $(MAKEFILE_LIST) | grep -v MAKEFILE_LIST | sed 's/\([^:]*\).*##/\1    /'
 
-jekyll-serve:: patternslib stamp-bundler   ## run jekyll, serve and watch
+jekyll-serve:: stamp-bundler   ## run jekyll, serve and watch
 	bundle exec jekyll serve
 
-jekyll-serve-blank:: patternslib stamp-bundler  ## run jekyll, serve and watch (ignoring the baseurl and host settings)
+jekyll-serve-blank:: stamp-bundler  ## run jekyll, serve and watch (ignoring the baseurl and host settings)
 	bundle exec jekyll serve  --baseurl "" --host "0.0.0.0" 
 
+all:: bundle jekyll-serve
 
-.PHONY: compile-all clean jekyll-serve jekyll-serve-blank bundle help
+
+.PHONY: all compile-all clean jekyll-serve jekyll-serve-blank bundle help
 
 

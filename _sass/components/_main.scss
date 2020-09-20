@@ -1,0 +1,62 @@
+#main {
+	transition: all 0.5s !important; // Overrule properties of modal for now.
+	min-height: 100vh;
+	position: relative;
+	z-index: 1;
+	box-shadow: 0 0 40px rgba(0,0,0,0.3);
+	background-color: $colour-base;
+	color: white;
+
+	.layout-homepage & { 			
+		background-color: $colour-homepage;
+		color: black;
+
+		.pat-rich a:not(.pat-button) {
+			color: $colour-link;
+		}
+	}
+
+	.layout-landing-contact & { 			
+		background-color: $colour-base-light;
+		color: black;
+
+		.pat-rich a:not(.pat-button) {
+			color: $colour-link;
+		}
+	}
+
+	.layout-landing-affordances &,
+	.layout-affordance & { 
+		background-color: $colour-affordances;
+
+		.pat-rich a:not(.pat-button) {
+			color: white;
+		}
+	}
+
+	.layout-landing-showcases &,
+	.layout-showcase & { 	
+		background-color: $colour-showcases;
+
+		.pat-rich a:not(.pat-button) {
+			color: white;
+		}
+	}
+
+	.layout-landing-topics &,
+	.layout-topic & { 		
+		background-color: $colour-topics;
+
+		.pat-rich a:not(.pat-button) {
+			color: white;
+		}
+	}
+
+	.menu-open & {
+		transform: translateX(25%);
+
+		@include screen-size(small) {
+			transform: translateX(75%);
+		}
+	}
+}

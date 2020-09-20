@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 body,
 h1,
 h2,
@@ -21,13 +23,15 @@ button,
 div,
 object,
 figure,
-table
-img {
+table,
+img,
+abbr {
 	margin: 0;
 	border: 0;
 	padding: 0;
 	list-style: none;
 	text-align: left;
+	text-decoration: none;
 	// vertical-align: top; // TODO Remove and let the browser/developer use this when required - not even https://github.com/necolas/normalize.css/blob/master/normalize.css uses it
 }
 

@@ -1,0 +1,40 @@
+#global-nav {
+	
+
+	.global-nav-item {
+		display: block;
+		color: black;
+		text-decoration: none;
+		font-weight: bold;
+		font-size: 28px;
+		padding: 15px 40px 15px 65px;
+
+		&#global-nav-item-affordances { 
+			color: $colour-affordances;
+		}
+
+		&#global-nav-item-showcases { 	
+			color: $colour-showcases;
+		}
+
+		&#global-nav-item-topics { 		
+			color: $colour-topics;
+		}
+
+		&:hover {
+			text-decoration: underline;;
+		}
+
+		&:before {
+			font-family: fontello;
+			content: '#{$glyph-angle-right-thin}';
+			position: absolute;
+			left: 40px;
+		}
+	}
+
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+
+}

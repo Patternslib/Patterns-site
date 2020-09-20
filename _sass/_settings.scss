@@ -1,72 +1,53 @@
 // Assets
-//@import url(http://fonts.googleapis.com/css?family=Sorts+Mill+Goudy:400,400italic);
 
-@import url('https://fonts.googleapis.com/css?family=Lato:200,400,900');
-@import "fontello/css/fontello.css";
+@import "assets/colours";
+@import "assets/symbols";
+@import "assets/glyphs";
+@import "assets/fonts";
+@import "assets/mixins";
 
-// @import url(fonts/font.css);
+// Parameters
 
-// Colours
-// $felt: #89AA74;
-$felt: #515151;
-$colour-alert: red;
-$colour-accent: #0198E1;
-
-// Font treatment
-$base-font-size: 18px;
-$base-line-height: 150%;
-$font-weight-light: 200;
-$font-weight-normal: 400;
-$font-weight-bold: 900;
-
-// We use these to control various global styles
-$body-font-family: 'Lato', sans-serif;
-$body-font-weight: $font-weight-normal;
+$body-font-color: black;
+$body-font-family: 'Source Sans Pro', sans-serif;
+$body-font-weight: normal;
 $body-font-style: normal;
+$base-line-height: 1.4;
+$base-font-size: 18px;
+$card-gutter: 25px;
+$border-radii: 10px;
+$default-box-shadow: 0 0 3px rgba(0, 0, 0, 0.25);
+$default-box-shadow-hover: 0 0 15px rgba(0,0,0,0.2);
+$default-box-shadow-active: inset 0 0 10px rgba(0,0,0,0.4);
+$header-animation-speed: 0.8s;
+$button-background-image: linear-gradient(bottom, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.2) 100%);
+$button-border: 1px solid transparant;
+$button-background-colour: $colour-quaive;
+$button-text-colour: white;
+$button-height: 45px;
+$button-paddings: 0 30px;
+$button-font-size: 22px;
+$button-font-weight: bold;
+$button-border-radius: $border-radii;
 
-// Categories
-$cat-behavioural: #717dd7;
-$cat-fancy-stuff: #bf9230;
-$cat-form: #9e80a1;
-$cat-layout: #80a4a7;
-$cat-navigation: #b6c16e;
+// Third party libraries
 
-// Breakpoints
-$break-small: 768px !default;
-$break-large: 769px !default;
-
-// Glyphs
-$glyph-close-thin: "\e80b";
-$glyph-angle-right: "\f105";
-$glyph-doc-text-inv: "\f15c";
-$glyph-angle-right: "\f105";
-$glyph-globe: "\e844";
-
-// Libraries
 @import "libraries/reset";
-@import "libraries/animate";
-@import "libraries/animation";
 @import "libraries/patterns/patterns";
 
 // Project components
-@import "components/article";
-@import "components/anchor";
+
 @import "components/body";
-@import "components/container";
-@import "components/content";
-@import "components/demo-block";
-@import "components/fork-me";
-@import "components/html";
-@import "components/icon";;
-@import "components/link-list";
-@import "components/pattern-tiles";
+@import "components/button";
+@import "components/canvas-toolbar";
+@import "components/global-nav";
+@import "components/main";
+@import "components/main-content";
+@import "components/info-cards";
+@import "components/info-card";
+@import "components/long-read";
+@import "components/osc";
+@import "components/rich";
 @import "components/site-header";
-@import "components/site-hero";
-@import "components/site-intro";
-@import "components/sub-nav";
-@import "components/typography";
-@import "components/well";
-@import "components/component-index";
-@import "components/download-form";
-@import "components/nav-tile";
-@import "components/grid";
+@import "components/swim-lane";
+@import "components/ueber-back-button";

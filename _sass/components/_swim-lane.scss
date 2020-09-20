@@ -1,0 +1,14 @@
+
+
+.swim-lane {
+	&.type-intro {
+		h1,
+		.summary {
+			text-align: center;
+		}
+	}
+
+	&.type-body-text {
+		margin-bottom: 60px;
+	}
+}

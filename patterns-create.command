@@ -1,4 +1,4 @@
-cd ~/Sites/patterns-site
+cd ~/Sites/quaivecloud
 
 git submodule add https://github.com/patternslib/patterns-ui-content.git _data/patterns
 git submodule add https://github.com/patternslib/patterns-includes.git _includes/patterns
