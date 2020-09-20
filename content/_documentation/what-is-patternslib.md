@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "What is Patternslib?"
-parent: Designer
+parent: For designers
 file: what-is-patternslib.md
 ---
 

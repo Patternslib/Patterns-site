@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "Markup styleguide"
-parent: Designer
+parent: For designers
 file: markup-styleguide.md
 published: false
 ---

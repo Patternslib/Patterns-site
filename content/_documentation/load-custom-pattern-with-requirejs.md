@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "Using require.js to load your custom pattern"
-parent: Developer
+parent: For developers
 file: usage-recipies.md
 ---
 

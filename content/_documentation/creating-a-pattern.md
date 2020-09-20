@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "How to create a new pattern"
-parent: Developer
+parent: For developers
 file: create-a-pattern.md
 ---
 

@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "The coding style guide"
-parent: Developer
+parent: For developers
 file: styleguide.md
 ---
 

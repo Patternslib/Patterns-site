@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "How to configure a pattern"
-parent: Designer
+parent: For designers
 file: parameters.md
 ---
 

@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "Tips and tricks when using patterns"
-parent: Designer
+parent: For designers
 file: tips-and-tricks.md
 ---
 

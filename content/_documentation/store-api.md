@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "The Patternslib storage utility API"
-parent: Developer
+parent: For developers
 file: store.md
 ---
 

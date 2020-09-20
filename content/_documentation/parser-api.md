@@ -1,7 +1,7 @@
 ---
 layout: article
 title: "The argument parser's API"
-parent: Developer
+parent: For developers
 file: parser.md
 ---
 
