@@ -3,7 +3,7 @@
 	top: 0;
 	left: 0;
 	bottom: 0;
-	background: darkgreen url(/assets/style/blackboard.svg) no-repeat center;
+	background: $colour-osc url(/assets/style/blackboard.svg) no-repeat center;
 	color: white;
 	width: $osc-width;
 	z-index: 0;
@@ -20,7 +20,7 @@
 		p {
 			margin: 0 -50px 0;
 			transition: all 0.5s;
-			height: 170px;
+			height: 180px;
 			pointer-events: none;
 
 			body:not(.layout-homepage) & {
@@ -35,7 +35,7 @@
 		}
 
 		.logo {
-			margin-bottom: 20px;
+			margin-bottom: 30px;
 
 			figcaption {
 				text-align: center;
