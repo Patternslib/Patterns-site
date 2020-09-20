@@ -8,13 +8,57 @@ $header-animation-speed: 0.8s !default;
     left: 0;
     right: 0;
     line-height: 60px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 25px;
+    padding-bottom: 25px;
+
+    #site-logo,
+    #github-logo {
+        position: absolute;
+        right: 32px;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        display: inline-block;
+        text-decoration: none;
+        top: 30px;
+        overflow: hidden;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &:before {
+            font-family: fontello;
+            font-size: 50px;
+            text-align: center;
+            display: block;
+            color: black;
+        }
+    }
+
+    #site-logo {
+        right: 32px;
+
+        &:before {
+            content: '#{$glyph-patterns-logo}';
+        }
+    }
+
+    #github-logo {
+        right: 105px;
+
+        &:before {
+            content: '#{$glyph-github-circled}';
+            font-size: 57px;
+        }
+    }
 
     #menu-toggle {
         color: black;
         font-size: 30px;
-        padding: 0 65px;
+        padding: 0 70px;
         transition-duration: $header-animation-speed;
         transition-property: transform, color;
         transform: scale(0.7);

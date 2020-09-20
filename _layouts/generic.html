@@ -10,7 +10,7 @@ class: pat-scroll-box
 	</div>
 
 	<div id="site-header" 
-         class="variation-{{ layout.template }}">
+       class="variation-{{ layout.template }}">
         <!-- <div class="pat-container"> -->
             <a href="/#main-content" 
                class="logo pat-inject pat-switch" 
@@ -18,6 +18,12 @@ class: pat-scroll-box
                data-pat-switch="selector: body; remove: layout-*; add: layout-homepage; && selector: body; remove: menu-*; add: menu-off;"
                id="site-logo">
                 Patternslib
+            </a>
+            <a href="https://github.com/patternslib/patterns" 
+               class="github" 
+               id="github-logo"
+               title="View Patterns' repository on Github">
+                Github
             </a>
             <a id="menu-toggle"
                class="pat-toggle"
@@ -27,6 +33,20 @@ class: pat-scroll-box
 </div>
 <aside id="osc">
     <nav id="global-nav">
+        <div class="summary">
+            <figure class="logo">
+                <a href="/#main-content" 
+                   class="logo pat-inject pat-switch" 
+                   data-pat-inject="history: record"
+                   data-pat-switch="selector: body; remove: layout-*; add: layout-homepage; && selector: body; remove: menu-*; add: menu-off;">
+                    {% include logo.svg %}
+                </a>
+                <figcaption>Patterns</figcaption>
+            </figure>
+            <p>
+                {{ site.summary }}
+            </p>
+        </div>
         {% include global-nav-item.html title="Download" %}
         {% include global-nav-item.html title="Demos" %}
         {% include global-nav-item.html title="Documentation" %}

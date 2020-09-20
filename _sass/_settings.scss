@@ -22,13 +22,17 @@ $default-box-shadow-active: inset 0 0 10px rgba(0,0,0,0.4);
 $header-animation-speed: 0.8s;
 $button-background-image: linear-gradient(bottom, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.2) 100%);
 $button-border: 1px solid transparant;
-$button-background-colour: $colour-quaive;
+$button-background-colour: $colour-accent	;
 $button-text-colour: white;
 $button-height: 45px;
 $button-paddings: 0 30px;
 $button-font-size: 22px;
 $button-font-weight: bold;
 $button-border-radius: $border-radii;
+$bullet-space: 40px;
+$rich-bullet-space: 40px;
+
+$osc-width: 500px;
 
 // Third party libraries
 
@@ -41,10 +45,9 @@ $button-border-radius: $border-radii;
 @import "components/button";
 @import "components/canvas-toolbar";
 @import "components/global-nav";
+@import "components/link-list";
 @import "components/main";
 @import "components/main-content";
-@import "components/info-cards";
-@import "components/info-card";
 @import "components/long-read";
 @import "components/osc";
 @import "components/rich";

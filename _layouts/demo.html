@@ -1,0 +1,28 @@
+---
+layout: generic
+---
+
+<div class="pat-container">
+	<div class="canvas-toolbar">
+		{% if page.title == 'Contact' or page.title == 'Pricing' %}
+			<a href="/#main-content" 
+			   data-pat-inject="history: record" 
+			   data-pat-switch="selector: body; remove: layout-*; add: layout-homepage"
+			   class="ueber-back-button pat-inject pat-switch">Homepage</a>
+		{% else %}
+			<a href="./index#main-content" 
+			   data-pat-inject="history: record" 
+			   data-pat-switch="selector: body; remove: layout-*; add: layout-landing-{{ page.collection }}"
+			   class="ueber-back-button pat-inject pat-switch">{{ page.collection | capitalize }}</a>
+		{% endif %}
+	</div>
+	<article class="pat-rich long-read">
+		<h1>{{ page.title }}</h1>
+		{% unless page.summary == nil %}
+			<p class="summary">
+				{{ page.summary }}
+			</p>
+		{% endunless %}
+		{{ content }}
+	</article>
+</div>

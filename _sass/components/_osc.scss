@@ -3,12 +3,65 @@
 	top: 0;
 	left: 0;
 	bottom: 0;
-	background-color: #efefef;
+	background: darkgreen url(/assets/style/blackboard.svg) no-repeat center;
 	color: white;
-	width: 25%;
+	width: $osc-width;
 	z-index: 0;
+	transition: all 0.5s;
+	background-size: 1200px;
+
+	.layout-homepage & {
+		width: 100%;
+		background-size: 1800px;
+	}
+
+	.summary {
+		
+		p {
+			margin: 0 -50px 0;
+			transition: all 0.5s;
+			height: 170px;
+			pointer-events: none;
+
+			body:not(.layout-homepage) & {
+				opacity: 0;
+				height: 0;
+			}
+		}
+
+		p {
+			text-align: center;
+			font-size: 30px;
+		}
+
+		.logo {
+			margin-bottom: 20px;
+
+			figcaption {
+				text-align: center;
+				font-size: 40px;
+				padding: 10px 0;
+				font-weight: bold;
+				letter-spacing: 1px;
+			}
+
+			svg {
+				display: block;
+				width: 150px;
+				margin: 0 auto;
+
+				* {
+					fill: white;
+				}
+			}
+		}
+	}
 
 	@include screen-size(small) {
 		width: 75%;
+
+		.layout-homepage & {
+			width: 100%;
+		}
 	}
 }

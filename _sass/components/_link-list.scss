@@ -1,0 +1,116 @@
+@charset "UTF-8";
+
+$bullet-space: 40px !default;
+
+.link-list {
+	-moz-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+
+	@include screen-size(large) {
+		&.col-2 {
+			column-count: 2;
+			overflow: hidden;
+		}
+
+		&.col-3 {
+			column-count: 3;
+			overflow: hidden;
+		}
+
+		&.col-4 {
+			column-count: 4;
+			overflow: hidden;
+		}
+	}
+
+	@include screen-size(medium) {
+		&.col-2 {
+			column-count: 2;
+			overflow: hidden;
+		}
+
+		&.col-3 {
+			column-count: 3;
+			overflow: hidden;
+		}
+
+		&.col-4 {
+			column-count: 3;
+			overflow: hidden;
+		}
+	}
+
+	.aside-block & {
+		@include screen-size(medium-large) {
+			font-size: 0.8em;
+		}
+
+		margin-bottom: 1em;
+		margin-left: 25px;
+	}
+
+	&.compact {
+		li {
+			margin: 0;
+			padding-bottom: 0.2em;
+
+			ul {
+				padding: 0 0 0.5em 0;
+			}
+		}
+	}
+	
+	li {
+		margin: 0;
+		padding: 0 0 0 $bullet-space;
+
+		-webkit-column-break-inside: avoid;
+          page-break-inside: avoid;
+               break-inside: avoid;
+
+		a,
+		.group-title {
+			display: block;
+			padding: 0;
+			text-decoration: none;
+			color: black;
+			margin-left: 0;
+
+			position: relative; // Fix for missing icons of first item in second column and on in Firefox.
+
+			.-ms- & {
+				text-decoration: none;
+			}
+
+			&:before {
+				font-family: fontello;
+				margin-left: -1 * $bullet-space;
+				margin-top: 0.25em;
+				font-weight: normal;
+				float: left;
+				text-decoration: none;
+
+				width: $bullet-space;
+				// margin-right: .2em;
+				text-align: left;
+				speak: none;
+
+				display: inline-block;
+				line-height: 1em;
+
+				position: absolute; // Fix for missing icons of first item in second column and on in Firefox.
+			}
+
+			&:not([class*="icon-"]) {
+				&:before {
+					content: '#{$glyph-angle-right}';
+				}
+			}
+		}
+
+		&:before {
+			display: none;
+		}
+	}
+}

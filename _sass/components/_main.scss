@@ -5,32 +5,25 @@
 	z-index: 1;
 	box-shadow: 0 0 40px rgba(0,0,0,0.3);
 	background-color: $colour-base;
-	color: white;
+	color: black;
 
 	.layout-homepage & { 			
 		background-color: $colour-homepage;
 		color: white;
-
-		.pat-rich a:not(.pat-button) {
-			color: $colour-link;
-		}
-	}
-
-	.layout-landing-contact & { 			
-		background-color: $colour-base-light;
-		color: black;
-
-		.pat-rich a:not(.pat-button) {
-			color: $colour-link;
-		}
-	}
-
-	.layout-landing-affordances &,
-	.layout-affordance & { 
-		background-color: $colour-affordances;
+		transform: translateX(100%);
 
 		.pat-rich a:not(.pat-button) {
 			color: white;
+		}
+	}
+
+	.layout-landing-documentation &,
+	.layout-documentation & { 
+		background-color: $colour-documentation;
+		// color: white;
+
+		.pat-rich a:not(.pat-button) {
+			// color: white;
 		}
 	}
 
@@ -43,9 +36,19 @@
 		}
 	}
 
-	.layout-landing-topics &,
-	.layout-topic & { 		
-		background-color: $colour-topics;
+	.layout-landing-demos &,
+	.layout-demo & { 		
+		background-color: $colour-demos;
+
+		.pat-rich a:not(.pat-button) {
+			color: white;
+		}
+	}
+
+	.layout-landing-download &,
+	.layout-download & { 		
+		background-color: $colour-download;
+		color: white;
 
 		.pat-rich a:not(.pat-button) {
 			color: white;
@@ -53,10 +56,18 @@
 	}
 
 	.menu-open & {
-		transform: translateX(25%);
+		transform: translateX($osc-width);
+
+		.layout-homepage & {
+			transform: translateX(100%);
+		}
 
 		@include screen-size(small) {
 			transform: translateX(75%);
+
+			.layout-homepage & {
+				transform: translateX(100%);
+			}
 		}
 	}
 }

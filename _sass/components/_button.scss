@@ -4,13 +4,13 @@
   @include pat-button();
   border: none;
 
-	.layout-landing-affordances & {
-		background-color: $colour-affordances;
+	.layout-landing-documentation & {
+		background-color: $colour-documentation;
 		color: white;	
 	}
 
-	.layout-landing-topics & {
-		background-color: $colour-topics;
+	.layout-landing-download & {
+		background-color: $colour-download;
 		color: white;	
 	}
 

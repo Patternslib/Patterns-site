@@ -15,7 +15,7 @@ collections:
     output: true
   showcases:
     output: true
-  technical-guide:
+  documentation:
     output: true
 sass:
   style: :compressed
