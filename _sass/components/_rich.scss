@@ -9,6 +9,15 @@ $bullet-space-rich: 40px !default;
 	line-height: 1.6;
 	font-size: 22px;
 
+	pre {
+		padding: 10px;
+		background-color: black;
+		color: white;
+		padding: 10px 15px;
+		overflow: auto;
+		font-size: 18px;
+	}
+
 	h1,h2,p,ul,ol,table,dl,pre,.screenshot, figure {
 		margin-bottom: 1.2em;
 	}
