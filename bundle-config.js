@@ -55,7 +55,7 @@ define([
     "pat-sticky",
     "pat-subform",
     "pat-switch",
-    // "pat-syntax-highlight",
+    "pat-syntax-highlight",
     // "pat-tabs",
     "pat-toggle",
     "pat-tooltip",

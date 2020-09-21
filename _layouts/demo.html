@@ -32,13 +32,13 @@ layout: generic
 
 		<div id="demo" 
 		     class="pattern-demo">
-		    <a href="/pat-demos/src/pat/{{ page.id | remove: '/'}}/index.html" 
+		    <a href="/code/src/pat/{{ page.title | slugify }}/index.html" 
 		       class="pat-inject" 
 		       data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
 		</div>
 
 		<div class="pat-rich">
-		    <a href="/pat-demos/src/pat/{{page.id }}/documentation.md#documentation"
+		    <a href="/code/src/pat/{{ page.title | slugify }}/documentation.md#documentation"
 		       class="pat-inject" 
 		       data-pat-inject="data-type: markdown; source: ##Documentation; target: self::element; trigger: autoload">Documentation</a>
 		</div>

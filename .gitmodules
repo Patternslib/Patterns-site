@@ -7,3 +7,6 @@
 [submodule "_layouts/patterns"]
 	path = _layouts/patterns
 	url = https://github.com/patternslib/patterns-layouts.git
+[submodule "code"]
+	path = code
+	url = https://github.com/Patternslib/Patterns.git
