@@ -14,6 +14,15 @@
 	font-weight: bold;
 	box-shadow: 0 0 20px rgba(0,0,0,0.3);
 
+	.layout-demo & {
+		box-shadow: none;
+		background: silver;
+
+		&:before {
+			border-color: transparent silver transparent transparent;
+		}
+	}
+
 	&:before {
 		content: ' ';
 		width: 0;
