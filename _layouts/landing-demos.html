@@ -7,6 +7,7 @@ layout: landing
 		{% for item in site.demos %}
 			{% if item.layout == 'demo' %}
 			    <a href="{{ item.url }}#main-content" 
+			       data-pat-inject="history: record"
 			       title="{{ item.description }}" 
 			       class="pattern-tile pat-inject cat-{{ item.category }}">
 					<figure>
