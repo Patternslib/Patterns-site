@@ -15,7 +15,7 @@
     "url": "https://github.com/url/to/your/project"
   },
   "dependencies": {
-    "patternslib": "https://github.com/Patternslib/Patterns.git#d4b969f9cbfded72a40f1c1f2dbfa806b717f126",
+    "patternslib": "https://github.com/Patternslib/Patterns.git#d3990fba66537e00a420acc73e776bc267df0178",
     "pat-content-mirror": "git+https://github.com/ploneintranet/pat-content-mirror.git#master",
     "pat-sortable-table": "git+https://github.com/Patternslib/pat-sortable-table.git#master",
     "pat-upload": "git+https://github.com/Patternslib/pat-upload.git#master"
