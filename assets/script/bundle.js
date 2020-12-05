@@ -220,7 +220,7 @@ __webpack_require__.d(__webpack_exports__, "a", function() { return /* reexport 
 
 // UNUSED EXPORTS: VERSION, restArguments, isObject, isNull, isUndefined, isBoolean, isElement, isString, isNumber, isDate, isRegExp, isError, isSymbol, isArrayBuffer, isDataView, isArray, isFunction, isArguments, isFinite, isNaN, isTypedArray, isEmpty, isMatch, isEqual, isMap, isWeakMap, isSet, isWeakSet, keys, allKeys, values, pairs, invert, functions, methods, extend, extendOwn, assign, defaults, create, clone, tap, get, has, mapObject, identity, constant, noop, toPath, property, propertyOf, matcher, matches, times, random, now, escape, unescape, templateSettings, template, result, uniqueId, chain, iteratee, partial, bind, bindAll, memoize, delay, defer, throttle, debounce, wrap, negate, compose, after, before, once, findKey, findIndex, findLastIndex, sortedIndex, indexOf, lastIndexOf, find, detect, findWhere, each, forEach, map, collect, reduce, foldl, inject, reduceRight, foldr, filter, select, reject, every, all, some, any, contains, includes, include, invoke, pluck, where, max, min, shuffle, sample, sortBy, groupBy, indexBy, countBy, partition, toArray, size, pick, omit, first, head, take, initial, last, rest, tail, drop, compact, flatten, without, uniq, unique, union, intersection, difference, unzip, transpose, zip, object, range, chunk, mixin
 
-// NAMESPACE OBJECT: ./node_modules/patternslib/node_modules/underscore/modules/index.js
+// NAMESPACE OBJECT: ./node_modules/underscore/modules/index.js
 var modules_namespaceObject = {};
 __webpack_require__.r(modules_namespaceObject);
 __webpack_require__.d(modules_namespaceObject, "VERSION", function() { return _setup["e" /* VERSION */]; });
@@ -370,10 +370,10 @@ __webpack_require__.d(modules_namespaceObject, "chunk", function() { return chun
 __webpack_require__.d(modules_namespaceObject, "mixin", function() { return mixin; });
 __webpack_require__.d(modules_namespaceObject, "default", function() { return underscore_array_methods; });
 
-// EXTERNAL MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_setup.js
+// EXTERNAL MODULE: ./node_modules/underscore/modules/_setup.js
 var _setup = __webpack_require__(5);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/restArguments.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/restArguments.js
 // Some functions take a variable number of arguments, or a few expected
 // arguments at the beginning and then a variable number of values to operate
 // on. This helper accumulates all remaining arguments past the function’s
@@ -402,26 +402,26 @@ function restArguments(func, startIndex) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isObject.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isObject.js
 // Is a given variable an object?
 function isObject(obj) {
   var type = typeof obj;
   return type === 'function' || type === 'object' && !!obj;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isNull.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isNull.js
 // Is a given value equal to null?
 function isNull(obj) {
   return obj === null;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isUndefined.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isUndefined.js
 // Is a given variable undefined?
 function isUndefined(obj) {
   return obj === void 0;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isBoolean.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isBoolean.js
 
 
 // Is a given value a boolean?
@@ -429,13 +429,13 @@ function isBoolean(obj) {
   return obj === true || obj === false || _setup["t" /* toString */].call(obj) === '[object Boolean]';
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isElement.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isElement.js
 // Is a given value a DOM element?
 function isElement(obj) {
   return !!(obj && obj.nodeType === 1);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_tagTester.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_tagTester.js
 
 
 // Internal function for creating a `toString`-based type tester.
@@ -446,42 +446,42 @@ function tagTester(name) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isString.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isString.js
 
 
 /* harmony default export */ var isString = (tagTester('String'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isNumber.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isNumber.js
 
 
 /* harmony default export */ var isNumber = (tagTester('Number'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isDate.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isDate.js
 
 
 /* harmony default export */ var isDate = (tagTester('Date'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isRegExp.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isRegExp.js
 
 
 /* harmony default export */ var isRegExp = (tagTester('RegExp'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isError.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isError.js
 
 
 /* harmony default export */ var isError = (tagTester('Error'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isSymbol.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isSymbol.js
 
 
 /* harmony default export */ var isSymbol = (tagTester('Symbol'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isArrayBuffer.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isArrayBuffer.js
 
 
 /* harmony default export */ var isArrayBuffer = (tagTester('ArrayBuffer'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isFunction.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isFunction.js
 
 
 
@@ -498,12 +498,12 @@ if ( true && typeof Int8Array != 'object' && typeof nodelist != 'function') {
 
 /* harmony default export */ var modules_isFunction = (isFunction);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_hasObjectTag.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_hasObjectTag.js
 
 
 /* harmony default export */ var _hasObjectTag = (tagTester('Object'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_stringTagBug.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_stringTagBug.js
 
 
 
@@ -515,7 +515,7 @@ var hasStringTagBug = (
     ),
     isIE11 = (typeof Map !== 'undefined' && _hasObjectTag(new Map));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isDataView.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isDataView.js
 
 
 
@@ -531,7 +531,7 @@ function ie10IsDataView(obj) {
 
 /* harmony default export */ var modules_isDataView = (hasStringTagBug ? ie10IsDataView : isDataView);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isArray.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isArray.js
 
 
 
@@ -539,7 +539,7 @@ function ie10IsDataView(obj) {
 // Delegates to ECMA5's native `Array.isArray`.
 /* harmony default export */ var isArray = (_setup["k" /* nativeIsArray */] || tagTester('Array'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_has.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_has.js
 
 
 // Internal function to check whether `key` is an own property name of `obj`.
@@ -547,7 +547,7 @@ function has(obj, key) {
   return obj != null && _setup["i" /* hasOwnProperty */].call(obj, key);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isArguments.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isArguments.js
 
 
 
@@ -565,7 +565,7 @@ var isArguments = tagTester('Arguments');
 
 /* harmony default export */ var modules_isArguments = (isArguments);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isFinite.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isFinite.js
 
 
 
@@ -574,7 +574,7 @@ function isFinite_isFinite(obj) {
   return !isSymbol(obj) && Object(_setup["f" /* _isFinite */])(obj) && !isNaN(parseFloat(obj));
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isNaN.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isNaN.js
 
 
 
@@ -583,7 +583,7 @@ function isNaN_isNaN(obj) {
   return isNumber(obj) && Object(_setup["g" /* _isNaN */])(obj);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/constant.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/constant.js
 // Predicate-generating function. Often useful outside of Underscore.
 function constant(value) {
   return function() {
@@ -591,7 +591,7 @@ function constant(value) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_createSizePropertyCheck.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_createSizePropertyCheck.js
 
 
 // Common internal logic for `isArrayLike` and `isBufferLike`.
@@ -602,7 +602,7 @@ function createSizePropertyCheck(getSizeProperty) {
   }
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_shallowProperty.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_shallowProperty.js
 // Internal helper to generate a function to obtain property `key` from `obj`.
 function shallowProperty(key) {
   return function(obj) {
@@ -610,13 +610,13 @@ function shallowProperty(key) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_getByteLength.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_getByteLength.js
 
 
 // Internal helper to obtain the `byteLength` property of an object.
 /* harmony default export */ var _getByteLength = (shallowProperty('byteLength'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_isBufferLike.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_isBufferLike.js
 
 
 
@@ -624,7 +624,7 @@ function shallowProperty(key) {
 // `ArrayBuffer` et al.
 /* harmony default export */ var _isBufferLike = (createSizePropertyCheck(_getByteLength));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isTypedArray.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isTypedArray.js
 
 
 
@@ -641,13 +641,13 @@ function isTypedArray(obj) {
 
 /* harmony default export */ var modules_isTypedArray = (_setup["r" /* supportsArrayBuffer */] ? isTypedArray : constant(false));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_getLength.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_getLength.js
 
 
 // Internal helper to obtain the `length` property of an object.
 /* harmony default export */ var _getLength = (shallowProperty('length'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_collectNonEnumProps.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_collectNonEnumProps.js
 
 
 
@@ -689,7 +689,7 @@ function collectNonEnumProps(obj, keys) {
   }
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/keys.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/keys.js
 
 
 
@@ -707,7 +707,7 @@ function keys_keys(obj) {
   return keys;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isEmpty.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isEmpty.js
 
 
 
@@ -727,7 +727,7 @@ function isEmpty(obj) {
   return _getLength(keys_keys(obj)) === 0;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isMatch.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isMatch.js
 
 
 // Returns whether an object has a given set of `key:value` pairs.
@@ -742,7 +742,7 @@ function isMatch(object, attrs) {
   return true;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/underscore.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/underscore.js
 
 
 // If Underscore is called as a function, it returns a wrapped object that can
@@ -769,7 +769,7 @@ _.prototype.toString = function() {
   return String(this._wrapped);
 };
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_toBufferView.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_toBufferView.js
 
 
 // Internal function to wrap or shallow-copy an ArrayBuffer,
@@ -782,7 +782,7 @@ function toBufferView(bufferSource) {
   );
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isEqual.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isEqual.js
 
 
 
@@ -922,7 +922,7 @@ function isEqual(a, b) {
   return eq(a, b);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/allKeys.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/allKeys.js
 
 
 
@@ -937,7 +937,7 @@ function allKeys(obj) {
   return keys;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_methodFingerprint.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_methodFingerprint.js
 
 
 
@@ -976,33 +976,33 @@ var mapMethods = commonInit.concat(forEachName, mapTail),
     weakMapMethods = commonInit.concat(mapTail),
     setMethods = ['add'].concat(commonInit, forEachName, hasName);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isMap.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isMap.js
 
 
 
 
 /* harmony default export */ var isMap = (isIE11 ? ie11fingerprint(mapMethods) : tagTester('Map'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isWeakMap.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isWeakMap.js
 
 
 
 
 /* harmony default export */ var isWeakMap = (isIE11 ? ie11fingerprint(weakMapMethods) : tagTester('WeakMap'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isSet.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isSet.js
 
 
 
 
 /* harmony default export */ var isSet = (isIE11 ? ie11fingerprint(setMethods) : tagTester('Set'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/isWeakSet.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/isWeakSet.js
 
 
 /* harmony default export */ var isWeakSet = (tagTester('WeakSet'));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/values.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/values.js
 
 
 // Retrieve the values of an object's properties.
@@ -1016,7 +1016,7 @@ function values_values(obj) {
   return values;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/pairs.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/pairs.js
 
 
 // Convert an object into a list of `[key, value]` pairs.
@@ -1031,7 +1031,7 @@ function pairs_pairs(obj) {
   return pairs;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/invert.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/invert.js
 
 
 // Invert the keys and values of an object. The values must be serializable.
@@ -1044,7 +1044,7 @@ function invert(obj) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/functions.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/functions.js
 
 
 // Return a sorted list of the function names available on the object.
@@ -1056,7 +1056,7 @@ function functions(obj) {
   return names.sort();
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_createAssigner.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_createAssigner.js
 // An internal function for creating assigner functions.
 function createAssigner(keysFunc, defaults) {
   return function(obj) {
@@ -1076,14 +1076,14 @@ function createAssigner(keysFunc, defaults) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/extend.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/extend.js
 
 
 
 // Extend a given object with all the properties in passed-in object(s).
 /* harmony default export */ var extend = (createAssigner(allKeys));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/extendOwn.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/extendOwn.js
 
 
 
@@ -1092,14 +1092,14 @@ function createAssigner(keysFunc, defaults) {
 // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
 /* harmony default export */ var extendOwn = (createAssigner(keys_keys));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/defaults.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/defaults.js
 
 
 
 // Fill in a given object with default properties.
 /* harmony default export */ var defaults = (createAssigner(allKeys, true));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_baseCreate.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_baseCreate.js
 
 
 
@@ -1119,7 +1119,7 @@ function baseCreate(prototype) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/create.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/create.js
 
 
 
@@ -1132,7 +1132,7 @@ function create(prototype, props) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/clone.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/clone.js
 
 
 
@@ -1143,7 +1143,7 @@ function clone(obj) {
   return isArray(obj) ? obj.slice() : extend({}, obj);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/tap.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/tap.js
 // Invokes `interceptor` with the `obj` and then returns `obj`.
 // The primary purpose of this method is to "tap into" a method chain, in
 // order to perform operations on intermediate results within the chain.
@@ -1152,7 +1152,7 @@ function tap(obj, interceptor) {
   return obj;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/toPath.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/toPath.js
 
 
 
@@ -1163,7 +1163,7 @@ function toPath(path) {
 }
 _.toPath = toPath;
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_toPath.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_toPath.js
 
 
 
@@ -1173,7 +1173,7 @@ function _toPath_toPath(path) {
   return _.toPath(path);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_deepGet.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_deepGet.js
 // Internal function to obtain a nested property in `obj` along `path`.
 function deepGet(obj, path) {
   var length = path.length;
@@ -1184,7 +1184,7 @@ function deepGet(obj, path) {
   return length ? obj : void 0;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/get.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/get.js
 
 
 
@@ -1198,7 +1198,7 @@ function get(object, path, defaultValue) {
   return isUndefined(value) ? defaultValue : value;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/has.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/has.js
 
 
 
@@ -1216,13 +1216,13 @@ function has_has(obj, path) {
   return !!length;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/identity.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/identity.js
 // Keep the identity function around for default iteratees.
 function identity(value) {
   return value;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/matcher.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/matcher.js
 
 
 
@@ -1235,7 +1235,7 @@ function matcher_matcher(attrs) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/property.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/property.js
 
 
 
@@ -1248,7 +1248,7 @@ function property(path) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_optimizeCb.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_optimizeCb.js
 // Internal function that returns an efficient (for current engines) version
 // of the passed-in callback, to be repeatedly applied in other Underscore
 // functions.
@@ -1271,7 +1271,7 @@ function optimizeCb(func, context, argCount) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_baseIteratee.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_baseIteratee.js
 
 
 
@@ -1290,7 +1290,7 @@ function baseIteratee(value, context, argCount) {
   return property(value);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/iteratee.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/iteratee.js
 
 
 
@@ -1302,7 +1302,7 @@ function iteratee_iteratee(value, context) {
 }
 _.iteratee = iteratee_iteratee;
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_cb.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_cb.js
 
 
 
@@ -1314,7 +1314,7 @@ function cb(value, context, argCount) {
   return baseIteratee(value, context, argCount);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/mapObject.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/mapObject.js
 
 
 
@@ -1332,11 +1332,11 @@ function mapObject(obj, iteratee, context) {
   return results;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/noop.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/noop.js
 // Predicate-generating function. Often useful outside of Underscore.
 function noop(){}
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/propertyOf.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/propertyOf.js
 
 
 
@@ -1348,7 +1348,7 @@ function propertyOf(obj) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/times.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/times.js
 
 
 // Run a function **n** times.
@@ -1359,7 +1359,7 @@ function times(n, iteratee, context) {
   return accum;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/random.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/random.js
 // Return a random integer between `min` and `max` (inclusive).
 function random(min, max) {
   if (max == null) {
@@ -1369,13 +1369,13 @@ function random(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/now.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/now.js
 // A (possibly faster) way to get the current timestamp as an integer.
 /* harmony default export */ var now = (Date.now || function() {
   return new Date().getTime();
 });
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_createEscaper.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_createEscaper.js
 
 
 // Internal helper to generate functions for escaping and unescaping strings
@@ -1394,7 +1394,7 @@ function createEscaper(map) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_escapeMap.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_escapeMap.js
 // Internal list of HTML entities for escaping.
 /* harmony default export */ var _escapeMap = ({
   '&': '&amp;',
@@ -1405,28 +1405,28 @@ function createEscaper(map) {
   '`': '&#x60;'
 });
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/escape.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/escape.js
 
 
 
 // Function for escaping strings to HTML interpolation.
 /* harmony default export */ var modules_escape = (createEscaper(_escapeMap));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_unescapeMap.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_unescapeMap.js
 
 
 
 // Internal list of HTML entities for unescaping.
 /* harmony default export */ var _unescapeMap = (invert(_escapeMap));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/unescape.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/unescape.js
 
 
 
 // Function for unescaping strings from HTML interpolation.
 /* harmony default export */ var modules_unescape = (createEscaper(_unescapeMap));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/templateSettings.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/templateSettings.js
 
 
 // By default, Underscore uses ERB-style template delimiters. Change the
@@ -1437,7 +1437,7 @@ function createEscaper(map) {
   escape: /<%-([\s\S]+?)%>/g
 });
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/template.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/template.js
 
 
 
@@ -1525,7 +1525,7 @@ function template_template(text, settings, oldSettings) {
   return template;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/result.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/result.js
 
 
 
@@ -1549,7 +1549,7 @@ function result_result(obj, path, fallback) {
   return obj;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/uniqueId.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/uniqueId.js
 // Generate a unique integer id (unique within the entire client session).
 // Useful for temporary DOM ids.
 var idCounter = 0;
@@ -1558,7 +1558,7 @@ function uniqueId(prefix) {
   return prefix ? prefix + id : id;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/chain.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/chain.js
 
 
 // Start chaining a wrapped Underscore object.
@@ -1568,7 +1568,7 @@ function chain(obj) {
   return instance;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_executeBound.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_executeBound.js
 
 
 
@@ -1583,7 +1583,7 @@ function executeBound(sourceFunc, boundFunc, context, callingContext, args) {
   return self;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/partial.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/partial.js
 
 
 
@@ -1609,7 +1609,7 @@ var partial = restArguments(function(func, boundArgs) {
 partial.placeholder = _;
 /* harmony default export */ var modules_partial = (partial);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/bind.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/bind.js
 
 
 
@@ -1624,7 +1624,7 @@ partial.placeholder = _;
   return bound;
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_isArrayLike.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_isArrayLike.js
 
 
 
@@ -1634,7 +1634,7 @@ partial.placeholder = _;
 // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
 /* harmony default export */ var _isArrayLike = (createSizePropertyCheck(_getLength));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_flatten.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_flatten.js
 
 
 
@@ -1667,7 +1667,7 @@ function flatten(input, depth, strict, output) {
   return output;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/bindAll.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/bindAll.js
 
 
 
@@ -1686,7 +1686,7 @@ function flatten(input, depth, strict, output) {
   return obj;
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/memoize.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/memoize.js
 
 
 // Memoize an expensive function by storing its results.
@@ -1701,7 +1701,7 @@ function memoize_memoize(func, hasher) {
   return memoize;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/delay.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/delay.js
 
 
 // Delays a function for the given number of milliseconds, and then calls
@@ -1712,7 +1712,7 @@ function memoize_memoize(func, hasher) {
   }, wait);
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/defer.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/defer.js
 
 
 
@@ -1721,7 +1721,7 @@ function memoize_memoize(func, hasher) {
 // cleared.
 /* harmony default export */ var defer = (modules_partial(delay, _, 1));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/throttle.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/throttle.js
 
 
 // Returns a function, that, when invoked, will only be triggered at most once
@@ -1770,7 +1770,7 @@ function throttle(func, wait, options) {
   return throttled;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/debounce.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/debounce.js
 
 
 
@@ -1807,7 +1807,7 @@ function debounce(func, wait, immediate) {
   return debounced;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/wrap.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/wrap.js
 
 
 // Returns the first function passed as an argument to the second,
@@ -1817,7 +1817,7 @@ function wrap(func, wrapper) {
   return modules_partial(wrapper, func);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/negate.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/negate.js
 // Returns a negated version of the passed-in predicate.
 function negate(predicate) {
   return function() {
@@ -1825,7 +1825,7 @@ function negate(predicate) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/compose.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/compose.js
 // Returns a function that is the composition of a list of functions, each
 // consuming the return value of the function that follows.
 function compose() {
@@ -1839,7 +1839,7 @@ function compose() {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/after.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/after.js
 // Returns a function that will only be executed on and after the Nth call.
 function after(times, func) {
   return function() {
@@ -1849,7 +1849,7 @@ function after(times, func) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/before.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/before.js
 // Returns a function that will only be executed up to (but not including) the
 // Nth call.
 function before(times, func) {
@@ -1863,7 +1863,7 @@ function before(times, func) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/once.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/once.js
 
 
 
@@ -1871,7 +1871,7 @@ function before(times, func) {
 // often you call it. Useful for lazy initialization.
 /* harmony default export */ var once = (modules_partial(before, 2));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/findKey.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/findKey.js
 
 
 
@@ -1885,7 +1885,7 @@ function findKey(obj, predicate, context) {
   }
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_createPredicateIndexFinder.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_createPredicateIndexFinder.js
 
 
 
@@ -1902,19 +1902,19 @@ function createPredicateIndexFinder(dir) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/findIndex.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/findIndex.js
 
 
 // Returns the first index on an array-like that passes a truth test.
 /* harmony default export */ var findIndex = (createPredicateIndexFinder(1));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/findLastIndex.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/findLastIndex.js
 
 
 // Returns the last index on an array-like that passes a truth test.
 /* harmony default export */ var findLastIndex = (createPredicateIndexFinder(-1));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/sortedIndex.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/sortedIndex.js
 
 
 
@@ -1931,7 +1931,7 @@ function sortedIndex_sortedIndex(array, obj, iteratee, context) {
   return low;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_createIndexFinder.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_createIndexFinder.js
 
 
 
@@ -1961,7 +1961,7 @@ function createIndexFinder(dir, predicateFind, sortedIndex) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/indexOf.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/indexOf.js
 
 
 
@@ -1972,7 +1972,7 @@ function createIndexFinder(dir, predicateFind, sortedIndex) {
 // for **isSorted** to use binary search.
 /* harmony default export */ var indexOf = (createIndexFinder(1, findIndex, sortedIndex_sortedIndex));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/lastIndexOf.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/lastIndexOf.js
 
 
 
@@ -1980,7 +1980,7 @@ function createIndexFinder(dir, predicateFind, sortedIndex) {
 // or -1 if the item is not included in the array.
 /* harmony default export */ var lastIndexOf = (createIndexFinder(-1, findLastIndex));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/find.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/find.js
 
 
 
@@ -1992,7 +1992,7 @@ function find(obj, predicate, context) {
   if (key !== void 0 && key !== -1) return obj[key];
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/findWhere.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/findWhere.js
 
 
 
@@ -2002,7 +2002,7 @@ function findWhere(obj, attrs) {
   return find(obj, matcher_matcher(attrs));
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/each.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/each.js
 
 
 
@@ -2027,7 +2027,7 @@ function each(obj, iteratee, context) {
   return obj;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/map.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/map.js
 
 
 
@@ -2045,7 +2045,7 @@ function map_map(obj, iteratee, context) {
   return results;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_createReduce.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_createReduce.js
 
 
 
@@ -2075,20 +2075,20 @@ function createReduce(dir) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/reduce.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/reduce.js
 
 
 // **Reduce** builds up a single result from a list of values, aka `inject`,
 // or `foldl`.
 /* harmony default export */ var reduce = (createReduce(1));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/reduceRight.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/reduceRight.js
 
 
 // The right-associative version of reduce, also known as `foldr`.
 /* harmony default export */ var reduceRight = (createReduce(-1));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/filter.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/filter.js
 
 
 
@@ -2102,7 +2102,7 @@ function filter(obj, predicate, context) {
   return results;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/reject.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/reject.js
 
 
 
@@ -2112,7 +2112,7 @@ function reject(obj, predicate, context) {
   return filter(obj, negate(cb(predicate)), context);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/every.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/every.js
 
 
 
@@ -2129,7 +2129,7 @@ function every(obj, predicate, context) {
   return true;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/some.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/some.js
 
 
 
@@ -2146,7 +2146,7 @@ function some(obj, predicate, context) {
   return false;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/contains.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/contains.js
 
 
 
@@ -2158,7 +2158,7 @@ function contains(obj, item, fromIndex, guard) {
   return indexOf(obj, item, fromIndex) >= 0;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/invoke.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/invoke.js
 
 
 
@@ -2188,7 +2188,7 @@ function contains(obj, item, fromIndex, guard) {
   });
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/pluck.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/pluck.js
 
 
 
@@ -2197,7 +2197,7 @@ function pluck(obj, key) {
   return map_map(obj, property(key));
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/where.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/where.js
 
 
 
@@ -2207,7 +2207,7 @@ function where(obj, attrs) {
   return filter(obj, matcher_matcher(attrs));
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/max.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/max.js
 
 
 
@@ -2238,7 +2238,7 @@ function max(obj, iteratee, context) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/min.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/min.js
 
 
 
@@ -2269,7 +2269,7 @@ function min(obj, iteratee, context) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/sample.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/sample.js
 
 
 
@@ -2298,7 +2298,7 @@ function sample_sample(obj, n, guard) {
   return sample.slice(0, n);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/shuffle.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/shuffle.js
 
 
 // Shuffle a collection.
@@ -2306,7 +2306,7 @@ function shuffle(obj) {
   return sample_sample(obj, Infinity);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/sortBy.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/sortBy.js
 
 
 
@@ -2332,7 +2332,7 @@ function sortBy(obj, iteratee, context) {
   }), 'value');
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_group.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_group.js
 
 
 
@@ -2349,7 +2349,7 @@ function group(behavior, partition) {
   };
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/groupBy.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/groupBy.js
 
 
 
@@ -2359,7 +2359,7 @@ function group(behavior, partition) {
   if (has(result, key)) result[key].push(value); else result[key] = [value];
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/indexBy.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/indexBy.js
 
 
 // Indexes the object's values by a criterion, similar to `_.groupBy`, but for
@@ -2368,7 +2368,7 @@ function group(behavior, partition) {
   result[key] = value;
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/countBy.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/countBy.js
 
 
 
@@ -2379,7 +2379,7 @@ function group(behavior, partition) {
   if (has(result, key)) result[key]++; else result[key] = 1;
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/partition.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/partition.js
 
 
 // Split a collection into two arrays: one whose elements all pass the given
@@ -2388,7 +2388,7 @@ function group(behavior, partition) {
   result[pass ? 0 : 1].push(value);
 }, true));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/toArray.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/toArray.js
 
 
 
@@ -2410,7 +2410,7 @@ function toArray(obj) {
   return values_values(obj);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/size.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/size.js
 
 
 
@@ -2420,14 +2420,14 @@ function size(obj) {
   return _isArrayLike(obj) ? obj.length : keys_keys(obj).length;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_keyInObj.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_keyInObj.js
 // Internal `_.pick` helper function to determine whether `key` is an enumerable
 // property name of `obj`.
 function keyInObj(value, key, obj) {
   return key in obj;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/pick.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/pick.js
 
 
 
@@ -2455,7 +2455,7 @@ function keyInObj(value, key, obj) {
   return result;
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/omit.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/omit.js
 
 
 
@@ -2479,7 +2479,7 @@ function keyInObj(value, key, obj) {
   return pick(obj, iteratee, context);
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/initial.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/initial.js
 
 
 // Returns everything but the last entry of the array. Especially useful on
@@ -2489,7 +2489,7 @@ function initial_initial(array, n, guard) {
   return _setup["q" /* slice */].call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/first.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/first.js
 
 
 // Get the first element of an array. Passing **n** will return the first N
@@ -2500,7 +2500,7 @@ function first(array, n, guard) {
   return initial_initial(array, array.length - n);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/rest.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/rest.js
 
 
 // Returns everything but the first entry of the `array`. Especially useful on
@@ -2510,7 +2510,7 @@ function rest_rest(array, n, guard) {
   return _setup["q" /* slice */].call(array, n == null || guard ? 1 : n);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/last.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/last.js
 
 
 // Get the last element of an array. Passing **n** will return the last N
@@ -2521,7 +2521,7 @@ function last_last(array, n, guard) {
   return rest_rest(array, Math.max(0, array.length - n));
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/compact.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/compact.js
 
 
 // Trim out all falsy values from an array.
@@ -2529,7 +2529,7 @@ function compact(array) {
   return filter(array, Boolean);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/flatten.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/flatten.js
 
 
 // Flatten out an array, either recursively (by default), or up to `depth`.
@@ -2538,7 +2538,7 @@ function flatten_flatten(array, depth) {
   return flatten(array, depth, false);
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/difference.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/difference.js
 
 
 
@@ -2553,7 +2553,7 @@ function flatten_flatten(array, depth) {
   });
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/without.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/without.js
 
 
 
@@ -2562,7 +2562,7 @@ function flatten_flatten(array, depth) {
   return difference(array, otherArrays);
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/uniq.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/uniq.js
 
 
 
@@ -2600,7 +2600,7 @@ function uniq(array, isSorted, iteratee, context) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/union.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/union.js
 
 
 
@@ -2611,7 +2611,7 @@ function uniq(array, isSorted, iteratee, context) {
   return uniq(flatten(arrays, true, true));
 }));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/intersection.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/intersection.js
 
 
 
@@ -2632,7 +2632,7 @@ function intersection(array) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/unzip.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/unzip.js
 
 
 
@@ -2649,7 +2649,7 @@ function unzip(array) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/zip.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/zip.js
 
 
 
@@ -2657,7 +2657,7 @@ function unzip(array) {
 // an index go together.
 /* harmony default export */ var zip = (restArguments(unzip));
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/object.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/object.js
 
 
 // Converts lists into objects. Pass either a single array of `[key, value]`
@@ -2675,7 +2675,7 @@ function object_object(list, values) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/range.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/range.js
 // Generate an integer Array containing an arithmetic progression. A port of
 // the native Python `range()` function. See
 // [the Python documentation](https://docs.python.org/library/functions.html#range).
@@ -2698,7 +2698,7 @@ function range(start, stop, step) {
   return range;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/chunk.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/chunk.js
 
 
 // Chunk a single array into multiple arrays, each containing `count` or fewer
@@ -2713,7 +2713,7 @@ function chunk(array, count) {
   return result;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/_chainResult.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/_chainResult.js
 
 
 // Helper function to continue chaining intermediate results.
@@ -2721,7 +2721,7 @@ function chainResult(instance, obj) {
   return instance._chain ? _(obj).chain() : obj;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/mixin.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/mixin.js
 
 
 
@@ -2741,7 +2741,7 @@ function mixin(obj) {
   return _;
 }
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/underscore-array-methods.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/underscore-array-methods.js
 
 
 
@@ -2774,7 +2774,7 @@ each(['concat', 'join', 'slice'], function(name) {
 
 /* harmony default export */ var underscore_array_methods = (_);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/index.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/index.js
 // Named Exports
 // =============
 
@@ -2956,7 +2956,7 @@ each(['concat', 'join', 'slice'], function(name) {
 
 
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/index-default.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/index-default.js
 // Default Export
 // ==============
 // In this module, we mix our bundled exports into the `_` object and export
@@ -2985,7 +2985,7 @@ index_default_._ = index_default_;
 // Export the Underscore API.
 /* harmony default export */ var index_default = (index_default_);
 
-// CONCATENATED MODULE: ./node_modules/patternslib/node_modules/underscore/modules/index-all.js
+// CONCATENATED MODULE: ./node_modules/underscore/modules/index-all.js
 // ESM Exports
 // ===========
 // This module is the package entry point for ES module users. In other words,
@@ -40544,7 +40544,7 @@ var patternslib_src_core_base = __webpack_require__(4);
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/parser.js
 var node_modules_patternslib_src_core_parser = __webpack_require__(3);
 
-// EXTERNAL MODULE: ./node_modules/patternslib/node_modules/underscore/modules/index-all.js + 159 modules
+// EXTERNAL MODULE: ./node_modules/underscore/modules/index-all.js + 159 modules
 var index_all = __webpack_require__(10);
 
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/utils.js
@@ -47125,7 +47125,7 @@ tooltip_parser.addArgument("arrow-padding", null);
     var _this5 = this;
 
     return tooltip_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
-      var _this5$get_url_parts, url, selector, modifier, content, handler, response, text;
+      var _this5$get_url_parts, url, selector, content, handler, response, text, _content;
 
       return regeneratorRuntime.wrap(function _callee3$(_context3) {
         while (1) {
@@ -47139,7 +47139,7 @@ tooltip_parser.addArgument("arrow-padding", null);
               return _context3.abrupt("return", undefined);
 
             case 2:
-              _this5$get_url_parts = _this5.get_url_parts(_this5.el.getAttribute("href")), url = _this5$get_url_parts.url, selector = _this5$get_url_parts.selector, modifier = _this5$get_url_parts.modifier;
+              _this5$get_url_parts = _this5.get_url_parts(_this5.el.getAttribute("href")), url = _this5$get_url_parts.url, selector = _this5$get_url_parts.selector;
 
               if (!url) {
                 _context3.next = 24;
@@ -47164,7 +47164,7 @@ tooltip_parser.addArgument("arrow-padding", null);
             case 12:
               text = _context3.sent;
               _context3.next = 15;
-              return handler(text, url, selector, modifier);
+              return handler(text, url, selector);
 
             case 15:
               content = _context3.sent;
@@ -47185,7 +47185,7 @@ tooltip_parser.addArgument("arrow-padding", null);
               if (selector) {
                 // Tooltip content from current DOM tree.
                 content = document.querySelector(selector);
-                content = content ? content[modifier] : undefined;
+                content = ((_content = content) === null || _content === void 0 ? void 0 : _content.innerHTML) || undefined;
               }
 
             case 25:
@@ -47205,44 +47205,38 @@ tooltip_parser.addArgument("arrow-padding", null);
     }))();
   },
   get_url_parts: function get_url_parts(href) {
-    // Return the URL, a CSS ID selector and a DOM query modifier.
-    // The modifier is a as defined in pat-inject:
-    // ::element selects the element itself and not it's children.
-    var url, selector, modifier;
+    // Return the URL and a CSS ID selector.
+    var url, selector;
 
     if (!href) {
       return {
         url: url,
-        selector: selector,
-        modifier: modifier
+        selector: selector
       };
     }
 
-    url = (href.split("#")[0] || "").split("::")[0] || undefined;
-    selector = (href.split("#")[1] || "").split("::")[0] || undefined;
+    url = href.split("#")[0] || undefined;
+    selector = href.split("#")[1] || undefined;
     selector = selector ? "#".concat(selector) : undefined;
-    modifier = (href.split("#")[1] || "").split("::")[1] || undefined;
-    modifier = modifier === "element" ? "outerHTML" : "innerHTML";
     return {
       url: url,
-      selector: selector,
-      modifier: modifier
+      selector: selector
     };
   },
   _ajaxDataTypeHandlers: {
-    html: function html(text, url, selector, modifier) {
+    html: function html(text, url, selector) {
+      var _tmp;
+
       var tmp = document.createElement("div");
       tmp.innerHTML = text;
 
       if (selector) {
-        var el = tmp.querySelector(selector);
-        return el ? el[modifier] : "";
+        tmp = tmp.querySelector(selector);
       }
 
-      return tmp.innerHTML;
+      return ((_tmp = tmp) === null || _tmp === void 0 ? void 0 : _tmp.innerHTML) || "";
     },
-    // eslint-disable-next-line no-unused-vars
-    markdown: function markdown(text, url, selector, modifier) {
+    markdown: function markdown(text, url, selector) {
       return tooltip_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
         var pat_markdown, pat, cfg, ret;
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
