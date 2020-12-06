@@ -6,5 +6,13 @@
 	#demo,
 	#documentation {
 		margin-bottom: 40px;
+
+		.pat-button {
+			line-height: 35px;
+
+			&.small {
+				line-height: 23px;
+			}
+		}
 	}
 }
