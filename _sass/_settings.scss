@@ -24,7 +24,7 @@ $button-background-image: linear-gradient(bottom, rgba(0,0,0,0.1) 0%, rgba(255,2
 $button-border: 1px solid transparant;
 $button-background-colour: $colour-accent	;
 $button-text-colour: white;
-$button-height: 45px;
+$button-height: 35px;
 $button-paddings: 0 30px;
 $button-font-size: 22px;
 $button-font-weight: bold;
@@ -54,3 +54,4 @@ $osc-width: 500px;
 @import "components/site-header";
 @import "components/swim-lane";
 @import "components/ueber-back-button";
+@import "components/ueber-toolbar";

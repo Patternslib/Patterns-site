@@ -1,25 +1,38 @@
+$ueber-back-button-border-radius: $border-radii;
+$ueber-back-button-border-radius-left: 8px !default;
+
+$ueber-back-button-background-colour: $button-background-colour-subdued;
+$ueber-back-button-text-colour: $button-text-colour-subdued;
+$ueber-back-button-text-colour-hover: $button-text-colour-subdued-hover;
+
 .ueber-back-button {
 	display: inline-block;
 	line-height: $button-height;
 	height: $button-height;
-	background: white;
-	color: black;
-	border-radius: $button-border-radius;
-	font-size: $button-font-size;
-	padding: 0 2em 0 1.5em;
+	// background: $colour-button;
+	color: $ueber-back-button-text-colour;
+	font-size: 18px;
+	padding: 0 1.5em 0 2em;
 	position: relative;
-	margin-left: $button-font-size;
-	opacity: 0.5;
-	text-decoration: none;
+	margin-left: 0;
 	font-weight: bold;
-	box-shadow: 0 0 20px rgba(0,0,0,0.3);
+	max-width: 100%;
+	white-space: nowrap !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	box-sizing: border-box;
+	text-decoration: none;
 
-	.layout-demo & {
-		box-shadow: none;
-		background: silver;
+	.overflow-protector {
+		width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: block;
+	}
 
-		&:before {
-			border-color: transparent silver transparent transparent;
+	@include screen-size(small) {
+		#app-space & {
+			display: none; // Use level up back button instead.
 		}
 	}
 
@@ -28,15 +41,31 @@
 		width: 0;
 		height: 0;
 		border-style: solid;
-		border-width: $button-font-size - 1.5px 20px $button-font-size - 1.5px 0;
-		border-color: transparent white transparent transparent;
+		border-width: 15px 15px 15px 0;
+		border-color: transparent $ueber-back-button-background-colour transparent transparent;
 		position: absolute;
-		left: -16.5px;
-		top: 2px;
+		left: 0;
+		top: 2.5px;
+	}
+
+	&:after {
+		content: ' ';
+		background: $ueber-back-button-background-colour;
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 13px;
+		clip-path: inset(0 0 0 2px);
+		display: block;
+		border-top-right-radius: $ueber-back-button-border-radius;
+		border-bottom-right-radius: $ueber-back-button-border-radius;
+		border-top-left-radius: $ueber-back-button-border-radius-left;
+		border-bottom-left-radius: $ueber-back-button-border-radius-left;
 	}
 
 	&:hover {
+		color: black;
 		text-decoration: none;
-		opacity: 0.8;
 	}
 }
