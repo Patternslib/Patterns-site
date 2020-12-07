@@ -30,15 +30,20 @@ bundle: stamp-npm		  ## Build a custom javascript bundle
 help:
 	@grep " ## " $(MAKEFILE_LIST) | grep -v MAKEFILE_LIST | sed 's/\([^:]*\).*##/\1    /'
 
+jekyll-build:: stamp-bundler
+	bundle exec jekyll build
+	cd _site && ln -s code/src src
+
+
 jekyll-serve:: stamp-bundler   ## run jekyll, serve and watch
 	bundle exec jekyll serve
 
 jekyll-serve-blank:: stamp-bundler  ## run jekyll, serve and watch (ignoring the baseurl and host settings)
-	bundle exec jekyll serve  --baseurl "" --host "0.0.0.0" 
+	bundle exec jekyll serve  --baseurl "" --host "0.0.0.0"
 
 all:: bundle jekyll-serve
 
 
-.PHONY: all compile-all clean jekyll-serve jekyll-serve-blank bundle help
+.PHONY: all compile-all clean jekyll-build jekyll-serve jekyll-serve-blank bundle help
 
 
