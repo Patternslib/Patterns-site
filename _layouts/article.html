@@ -9,12 +9,12 @@ layout: generic
 			<a href="/#main-content" 
 			   data-pat-inject="history: record" 
 			   data-pat-switch="selector: body; remove: layout-*; add: layout-homepage"
-			   class="ueber-back-button pat-inject pat-switch">Homepage</a>
+			   class="pat-back-button pat-inject pat-switch">Homepage</a>
 		{% else %}
 			<a href="./index#main-content" 
 			   data-pat-inject="history: record" 
 			   data-pat-switch="selector: body; remove: layout-*; add: layout-landing-{{ page.collection }}"
-			   class="ueber-back-button pat-inject pat-switch">{{ page.collection | capitalize }}</a>
+			   class="pat-back-button pat-inject pat-switch">{{ page.collection | capitalize }}</a>
 		{% endif %}
 	</div>
 	<article class="pat-rich long-read">
