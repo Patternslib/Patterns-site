@@ -32,7 +32,6 @@ help:
 
 jekyll-build:: stamp-bundler
 	bundle exec jekyll build
-	cd _site && ln -s code/src src
 
 
 jekyll-serve:: stamp-bundler   ## run jekyll, serve and watch
