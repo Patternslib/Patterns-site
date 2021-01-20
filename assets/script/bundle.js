@@ -206,11 +206,255 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {module.exports = global["$"] = __webpack_require__(308);
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(36)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
 
 /***/ }),
 
-/***/ 10:
+/***/ 12:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(25);
+/* harmony import */ var _logging__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(2);
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+/**
+ * Patterns registry - Central registry and scan logic for patterns
+ *
+ * Copyright 2012-2013 Simplon B.V.
+ * Copyright 2012-2013 Florian Friesdorf
+ * Copyright 2013 Marko Durkovic
+ * Copyright 2013 Rok Garbas
+ * Copyright 2014-2015 Syslab.com GmBH, JC Brand
+ */
+
+/*
+ * changes to previous patterns.register/scan mechanism
+ * - if you want initialised class, do it in init
+ * - init returns set of elements actually initialised
+ * - handle once within init
+ * - no turnstile anymore
+ * - set pattern.jquery_plugin if you want it
+ */
+
+
+
+
+var log = _logging__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].getLogger("registry");
+var disable_re = /patterns-disable=([^&]+)/g;
+var dont_catch_re = /patterns-dont-catch/g;
+var disabled = {};
+var dont_catch = false;
+var match;
+
+while ((match = disable_re.exec(window.location.search)) !== null) {
+  disabled[match[1]] = true;
+  log.info("Pattern disabled via url config:", match[1]);
+}
+
+while ((match = dont_catch_re.exec(window.location.search)) !== null) {
+  dont_catch = true;
+  log.info("I will not catch init exceptions");
+}
+
+var registry = {
+  patterns: {},
+  // as long as the registry is not initialized, pattern
+  // registration just registers a pattern. Once init is called,
+  // the DOM is scanned. After that registering a new pattern
+  // results in rescanning the DOM only for this pattern.
+  initialized: false,
+  init: function init() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).ready(function () {
+      log.info("loaded: " + Object.keys(registry.patterns).sort().join(", "));
+      registry.scan(document.body);
+      registry.initialized = true;
+      log.info("finished initial scan.");
+    });
+  },
+  clear: function clear() {
+    // Removes all patterns from the registry. Currently only being
+    // used in tests.
+    this.patterns = {};
+  },
+  transformPattern: function transformPattern(name, content) {
+    var _pattern$prototype;
+
+    /* Call the transform method on the pattern with the given name, if
+     * it exists.
+     */
+    if (disabled[name]) {
+      log.debug("Skipping disabled pattern:", name);
+      return;
+    }
+
+    var pattern = registry.patterns[name];
+    var transform = pattern.transform || ((_pattern$prototype = pattern.prototype) === null || _pattern$prototype === void 0 ? void 0 : _pattern$prototype.transform);
+
+    if (transform) {
+      try {
+        transform(jquery__WEBPACK_IMPORTED_MODULE_0___default()(content));
+      } catch (e) {
+        if (dont_catch) {
+          throw e;
+        }
+
+        log.error("Transform error for pattern" + name, e);
+      }
+    }
+  },
+  initPattern: function initPattern(name, el, trigger) {
+    /* Initialize the pattern with the provided name and in the context
+     * of the passed in DOM element.
+     */
+    var $el = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el);
+    var pattern = registry.patterns[name];
+
+    if (pattern.init) {
+      var plog = _logging__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].getLogger("pat." + name);
+
+      if ($el.is(pattern.trigger)) {
+        plog.debug("Initialising:", $el);
+
+        try {
+          pattern.init($el, null, trigger);
+          plog.debug("done.");
+        } catch (e) {
+          if (dont_catch) {
+            throw e;
+          }
+
+          plog.error("Caught error:", e);
+        }
+      }
+    }
+  },
+  orderPatterns: function orderPatterns(patterns) {
+    // XXX: Bit of a hack. We need the validation pattern to be
+    // parsed and initiated before the inject pattern. So we make
+    // sure here, that it appears first. Not sure what would be
+    // the best solution. Perhaps some kind of way to register
+    // patterns "before" or "after" other patterns.
+    if (patterns.includes("validation") && patterns.includes("inject")) {
+      patterns.splice(patterns.indexOf("validation"), 1);
+      patterns.unshift("validation");
+    }
+
+    return patterns;
+  },
+  scan: function scan(content, patterns, trigger) {
+    if (typeof content === "string") {
+      content = document.querySelector(content);
+    } else if (content.jquery) {
+      content = content[0];
+    }
+
+    var selectors = [];
+    patterns = this.orderPatterns(patterns || Object.keys(registry.patterns));
+
+    var _iterator = _createForOfIteratorHelper(patterns),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var name = _step.value;
+        this.transformPattern(name, content);
+        var pattern = registry.patterns[name];
+
+        if (pattern.trigger) {
+          selectors.unshift(pattern.trigger);
+        }
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+
+    var matches = _dom__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].querySelectorAllAndMe(content, selectors.map(function (it) {
+      return it.trim().replace(/,$/, "");
+    }).join(","));
+    matches = matches.filter(function (el) {
+      // Filter out code examples wrapped in <pre> elements.
+      // Also filter special class ``.cant-touch-this``
+      return _dom__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].find_parents(el, "pre").length === 0 && !el.matches(".cant-touch-this");
+    }); // walk list backwards and initialize patterns inside-out.
+
+    var _iterator2 = _createForOfIteratorHelper(matches.reverse()),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var el = _step2.value;
+
+        var _iterator3 = _createForOfIteratorHelper(patterns),
+            _step3;
+
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var _name = _step3.value;
+            this.initPattern(_name, el, trigger);
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+
+    document.body.classList.add("patterns-loaded");
+  },
+  register: function register(pattern, name) {
+    name = name || pattern.name;
+
+    if (!name) {
+      log.error("Pattern lacks a name:", pattern);
+      return false;
+    }
+
+    if (registry.patterns[name]) {
+      log.error("Already have a pattern called: " + name);
+      return false;
+    } // register pattern to be used for scanning new content
+
+
+    registry.patterns[name] = pattern; // register pattern as jquery plugin
+
+    if (pattern.jquery_plugin) {
+      var plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
+        return p1.toUpperCase();
+      });
+      jquery__WEBPACK_IMPORTED_MODULE_0___default.a.fn[plugin_name] = _utils__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].jqueryPlugin(pattern); // BBB 2012-12-10 and also for Mockup patterns.
+
+      jquery__WEBPACK_IMPORTED_MODULE_0___default.a.fn[plugin_name.replace(/^pat/, "pattern")] = jquery__WEBPACK_IMPORTED_MODULE_0___default.a.fn[plugin_name];
+    }
+
+    log.debug("Registered pattern:", name, pattern);
+
+    if (registry.initialized) {
+      registry.scan(document.body, [name]);
+    }
+
+    return true;
+  }
+};
+/* harmony default export */ __webpack_exports__["a"] = (registry);
+
+/***/ }),
+
+/***/ 13:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3008,206 +3252,6 @@ index_default_._ = index_default_;
 
 /***/ }),
 
-/***/ 13:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(10);
-/* harmony import */ var _logging__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(2);
-/* harmony import */ var _jquery_ext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(77);
-/**
- * Patterns registry - Central registry and scan logic for patterns
- *
- * Copyright 2012-2013 Simplon B.V.
- * Copyright 2012-2013 Florian Friesdorf
- * Copyright 2013 Marko Durkovic
- * Copyright 2013 Rok Garbas
- * Copyright 2014-2015 Syslab.com GmBH, JC Brand
- */
-
-/*
- * changes to previous patterns.register/scan mechanism
- * - if you want initialised class, do it in init
- * - init returns set of elements actually initialised
- * - handle once within init
- * - no turnstile anymore
- * - set pattern.jquery_plugin if you want it
- */
-
-
-
- // below here modules that are only loaded
-
-
-var log = _logging__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].getLogger("registry"),
-    disable_re = /patterns-disable=([^&]+)/g,
-    dont_catch_re = /patterns-dont-catch/g,
-    dont_catch = false,
-    disabled = {},
-    match;
-
-while ((match = disable_re.exec(window.location.search)) !== null) {
-  disabled[match[1]] = true;
-  log.info("Pattern disabled via url config:", match[1]);
-}
-
-while ((match = dont_catch_re.exec(window.location.search)) !== null) {
-  dont_catch = true;
-  log.info("I will not catch init exceptions");
-}
-
-var registry = {
-  patterns: {},
-  // as long as the registry is not initialized, pattern
-  // registration just registers a pattern. Once init is called,
-  // the DOM is scanned. After that registering a new pattern
-  // results in rescanning the DOM only for this pattern.
-  initialized: false,
-  init: function registry_init() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).ready(function () {
-      log.info("loaded: " + Object.keys(registry.patterns).sort().join(", "));
-      registry.scan(document.body);
-      registry.initialized = true;
-      log.info("finished initial scan.");
-    });
-  },
-  clear: function clearRegistry() {
-    // Removes all patterns from the registry. Currently only being
-    // used in tests.
-    this.patterns = {};
-  },
-  transformPattern: function transformPattern(name, content) {
-    var _pattern$prototype;
-
-    /* Call the transform method on the pattern with the given name, if
-     * it exists.
-     */
-    if (disabled[name]) {
-      log.debug("Skipping disabled pattern:", name);
-      return;
-    }
-
-    var pattern = registry.patterns[name];
-    var transform = pattern.transform || ((_pattern$prototype = pattern.prototype) === null || _pattern$prototype === void 0 ? void 0 : _pattern$prototype.transform);
-
-    if (transform) {
-      try {
-        transform(jquery__WEBPACK_IMPORTED_MODULE_0___default()(content));
-      } catch (e) {
-        if (dont_catch) {
-          throw e;
-        }
-
-        log.error("Transform error for pattern" + name, e);
-      }
-    }
-  },
-  initPattern: function initPattern(name, el, trigger) {
-    /* Initialize the pattern with the provided name and in the context
-     * of the passed in DOM element.
-     */
-    var $el = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el);
-    var pattern = registry.patterns[name];
-
-    if (pattern.init) {
-      var plog = _logging__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].getLogger("pat." + name);
-
-      if ($el.is(pattern.trigger)) {
-        plog.debug("Initialising:", $el);
-
-        try {
-          pattern.init($el, null, trigger);
-          plog.debug("done.");
-        } catch (e) {
-          if (dont_catch) {
-            throw e;
-          }
-
-          plog.error("Caught error:", e);
-        }
-      }
-    }
-  },
-  orderPatterns: function orderPatterns(patterns) {
-    // XXX: Bit of a hack. We need the validation pattern to be
-    // parsed and initiated before the inject pattern. So we make
-    // sure here, that it appears first. Not sure what would be
-    // the best solution. Perhaps some kind of way to register
-    // patterns "before" or "after" other patterns.
-    if (underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].contains(patterns, "validation") && underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].contains(patterns, "inject")) {
-      patterns.splice(patterns.indexOf("validation"), 1);
-      patterns.unshift("validation");
-    }
-
-    return patterns;
-  },
-  scan: function registryScan(content, patterns, trigger) {
-    var selectors = [],
-        $match;
-    patterns = this.orderPatterns(patterns || Object.keys(registry.patterns));
-    patterns.forEach(underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].partial(this.transformPattern, underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"], content));
-    patterns = underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].each(patterns, function (name) {
-      var pattern = registry.patterns[name];
-
-      if (pattern.trigger) {
-        selectors.unshift(pattern.trigger);
-      }
-    });
-    $match = jquery__WEBPACK_IMPORTED_MODULE_0___default()(content).findInclusive(selectors.join(",")); // Find all DOM elements belonging to a pattern
-
-    $match = $match.filter(function () {
-      // Filter out code examples wrapped in <pre> elements.
-      return jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).parents("pre").length === 0;
-    });
-    $match = $match.filter(":not(.cant-touch-this)"); // walk list backwards and initialize patterns inside-out.
-
-    $match.toArray().reduceRight(function registryInitPattern(acc, el) {
-      patterns.forEach(underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].partial(this.initPattern, underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"], el, trigger));
-    }.bind(this), null);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()("body").addClass("patterns-loaded");
-  },
-  register: function registry_register(pattern, name) {
-    var plugin_name;
-    name = name || pattern.name;
-
-    if (!name) {
-      log.error("Pattern lacks a name:", pattern);
-      return false;
-    }
-
-    if (registry.patterns[name]) {
-      log.error("Already have a pattern called: " + name);
-      return false;
-    } // register pattern to be used for scanning new content
-
-
-    registry.patterns[name] = pattern; // register pattern as jquery plugin
-
-    if (pattern.jquery_plugin) {
-      plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
-        return p1.toUpperCase();
-      });
-      jquery__WEBPACK_IMPORTED_MODULE_0___default.a.fn[plugin_name] = _utils__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].jqueryPlugin(pattern); // BBB 2012-12-10 and also for Mockup patterns.
-
-      jquery__WEBPACK_IMPORTED_MODULE_0___default.a.fn[plugin_name.replace(/^pat/, "pattern")] = jquery__WEBPACK_IMPORTED_MODULE_0___default.a.fn[plugin_name];
-    }
-
-    log.debug("Registered pattern:", name, pattern);
-
-    if (registry.initialized) {
-      registry.scan(document.body, [name]);
-    }
-
-    return true;
-  }
-};
-/* harmony default export */ __webpack_exports__["a"] = (registry);
-
-/***/ }),
-
 /***/ 169:
 /***/ (function(module, exports) {
 
@@ -3243,8 +3287,8 @@ module.exports = function(module) {
 "use strict";
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(10);
-/* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(45);
+/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(13);
+/* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(25);
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -3823,11 +3867,12 @@ var debounce = function debounce(func, ms) {
   // From: https://underscorejs.org/#debounce
   var timer = null;
   return function () {
+    var _this = this;
+
     clearTimeout(timer);
     var args = arguments;
-    var context = this;
     timer = setTimeout(function () {
-      func.apply(context, args);
+      func.apply(_this, args);
     }, ms);
   };
 };
@@ -3839,6 +3884,15 @@ var isIE = function isIE() {
     /*@cc_on!@*/
      false || !!document.documentMode
   );
+};
+
+var jqToNode = function jqToNode(el) {
+  // Return a DOM node if a jQuery node was passed.
+  if (el.jquery) {
+    el = el[0];
+  }
+
+  return el;
 };
 
 var utils = {
@@ -3864,7 +3918,8 @@ var utils = {
   checkCSSFeature: checkCSSFeature,
   timeout: timeout,
   debounce: debounce,
-  isIE: isIE
+  isIE: isIE,
+  jqToNode: jqToNode
 };
 /* harmony default export */ __webpack_exports__["a"] = (utils);
 
@@ -4625,1625 +4680,713 @@ try {
 
 /***/ }),
 
+/***/ 25:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+/* Utilities for DOM traversal or navigation */
+var DATA_STYLE_DISPLAY = "__patternslib__style__display";
+
+var toNodeArray = function toNodeArray(nodes) {
+  // Return an array of DOM nodes
+  if (nodes.jquery || nodes instanceof NodeList) {
+    // jQuery or document.querySelectorAll
+    nodes = _toConsumableArray(nodes);
+  } else if (nodes instanceof Array === false) {
+    nodes = [nodes];
+  }
+
+  return nodes;
+};
+
+var querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
+  // Like querySelectorAll but including the element where it starts from.
+  // Returns an Array, not a NodeList
+  var all = _toConsumableArray(el.querySelectorAll(selector));
+
+  if (el.matches(selector)) {
+    all.unshift(el); // start element should be first.
+  }
+
+  return all;
+};
+
+var wrap = function wrap(el, wrapper) {
+  // Wrap a element with a wrapper element.
+  // See: https://stackoverflow.com/a/13169465/1337474
+  el.parentNode.insertBefore(wrapper, el);
+  wrapper.appendChild(el);
+};
+
+var hide = function hide(el) {
+  // Hides the element with ``display: none``
+  if (el.style.display === "none") {
+    // Nothing to do.
+    return;
+  }
+
+  if (el.style.display) {
+    el[DATA_STYLE_DISPLAY] = el.style.display;
+  }
+
+  el.style.display = "none";
+};
+
+var show = function show(el) {
+  // Shows element by removing ``display: none`` and restoring the display
+  // value to whatever it was before.
+  var val = el[DATA_STYLE_DISPLAY] || null;
+  el.style.display = val;
+  delete el[DATA_STYLE_DISPLAY];
+};
+
+var find_parents = function find_parents(el, selector) {
+  var _el$parentNode;
+
+  // Return all direct parents of ``el`` matching ``selector``.
+  // This matches against all parents but not the element itself.
+  // The order of elements is from the search starting point up to higher
+  // DOM levels.
+  var parent = (el === null || el === void 0 ? void 0 : (_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest) && el.parentNode.closest(selector) || null;
+  var ret = [];
+
+  while (parent) {
+    var _parent$parentNode;
+
+    ret.push(parent);
+    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
+  }
+
+  return ret;
+};
+
+var find_scoped = function find_scoped(el, selector) {
+  // If the selector starts with an object id do a global search,
+  // otherwise do a local search.
+  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
+};
+
+var is_visible = function is_visible(el) {
+  // Check, if element is visible in DOM.
+  // https://stackoverflow.com/a/19808107/1337474
+  return el.offsetWidth > 0 && el.offsetHeight > 0;
+};
+
+var create_from_string = function create_from_string(string) {
+  // Create a DOM element from a string.
+  var div = document.createElement("div");
+  div.innerHTML = string.trim();
+  return div.firstChild;
+};
+
+var dom = {
+  toNodeArray: toNodeArray,
+  querySelectorAllAndMe: querySelectorAllAndMe,
+  wrap: wrap,
+  hide: hide,
+  show: show,
+  find_parents: find_parents,
+  find_scoped: find_scoped,
+  is_visible: is_visible,
+  create_from_string: create_from_string
+};
+/* harmony default export */ __webpack_exports__["a"] = (dom);
+
+/***/ }),
+
 /***/ 3:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(10);
-/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2);
-/* harmony import */ var _logging__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9);
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
+/* harmony import */ var _logging__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9);
+function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
-/**
- * Patterns parser - Argument parser
- *
- * Copyright 2012-2013 Florian Friesdorf
- * Copyright 2012-2013 Simplon B.V. - Wichert Akkerman
- */
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function ArgumentParser(name) {
-  this.order = [];
-  this.parameters = {};
-  this.attribute = "data-pat-" + name;
-  this.enum_values = {};
-  this.enum_conflicts = [];
-  this.groups = {};
-  this.possible_groups = {};
-  this.log = _logging__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].getLogger(name + ".parser");
-}
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-ArgumentParser.prototype = {
-  group_pattern: /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i,
-  json_param_pattern: /^\s*{/i,
-  named_param_pattern: /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i,
-  token_pattern: /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g,
-  _camelCase: function _camelCase(str) {
-    return str.replace(/\-([a-z])/g, function (_, p1) {
-      return p1.toUpperCase();
-    });
-  },
-  addAlias: function argParserAddAlias(alias, original) {
-    /* Add an alias for a previously added parser argument.
-     *
-     * Useful when you want to support both US and UK english argument
-     * names.
-     */
-    if (this.parameters[original]) {
-      this.parameters[original].alias = alias;
-    } else {
-      throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
-    }
-  },
-  addGroupToSpec: function argParserAddGroupToSpec(spec) {
-    /* Determine wether an argument being parsed can be grouped and
-     * update its specifications object accordingly.
-     *
-     * Internal method used by addArgument and addJSONArgument
-     */
-    var m = spec.name.match(this.group_pattern);
+// Patterns argument parser
 
-    if (m) {
-      var group = m[1],
-          field = m[2];
 
-      if (group in this.possible_groups) {
-        var first_spec = this.possible_groups[group],
-            first_name = first_spec.name.match(this.group_pattern)[2];
-        first_spec.group = group;
-        first_spec.dest = first_name;
-        this.groups[group] = new ArgumentParser();
-        this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
-        delete this.possible_groups[group];
-      }
 
-      if (group in this.groups) {
-        this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
-        spec.group = group;
-        spec.dest = field;
-      } else {
-        this.possible_groups[group] = spec;
-        spec.dest = this._camelCase(spec.name);
-      }
-    }
 
-    return spec;
-  },
-  addJSONArgument: function argParserAddJSONArgument(name, default_value) {
-    /* Add an argument where the value is provided in JSON format.
-     *
-     * This is a different usecase than specifying all arguments to
-     * the data-pat-... attributes in JSON format, and instead is part
-     * of the normal notation except that a value is in JSON instead of
-     * for example a string.
-     */
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec({
-      name: name,
-      value: default_value,
-      dest: name,
-      group: null,
-      type: "json"
-    });
-  },
-  addArgument: function ArgParserAddArgument(name, default_value, choices, multiple) {
-    var spec = {
-      name: name,
-      value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
-      multiple: multiple,
-      dest: name,
-      group: null
-    };
+var ArgumentParser = /*#__PURE__*/function () {
+  function ArgumentParser(name) {
+    _classCallCheck(this, ArgumentParser);
 
-    if (choices && Array.isArray(choices) && choices.length) {
-      spec.choices = choices;
-      spec.type = this._typeof(choices[0]);
-
-      for (var i = 0; i < choices.length; i++) {
-        if (this.enum_conflicts.indexOf(choices[i]) !== -1) {
-          continue;
-        } else if (choices[i] in this.enum_values) {
-          this.enum_conflicts.push(choices[i]);
-          delete this.enum_values[choices[i]];
-        } else {
-          this.enum_values[choices[i]] = name;
-        }
-      }
-    } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
-      spec.type = this.parameters[spec.value.slice(1)].type;
-    } else {
-      // Note that this will get reset by _defaults if default_value is a function.
-      spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
-    }
-
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec(spec);
-  },
-  _typeof: function argParserTypeof(obj) {
-    var type = _typeof(obj);
-
-    if (obj === null) return "null";
-    return type;
-  },
-  _coerce: function argParserCoerce(name, value) {
-    var spec = this.parameters[name];
-    if (_typeof(value) !== spec.type) try {
-      switch (spec.type) {
-        case "json":
-          value = JSON.parse(value);
-          break;
-
-        case "boolean":
-          if (typeof value === "string") {
-            value = value.toLowerCase();
-            var num = parseInt(value, 10);
-            if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
-          } else if (typeof value === "number") value = !!value;else throw "Cannot convert value for " + name + " to boolean";
-
-          break;
-
-        case "number":
-          if (typeof value === "string") {
-            value = parseInt(value, 10);
-            if (isNaN(value)) throw "Cannot convert value for " + name + " to number";
-          } else if (typeof value === "boolean") value = value + 0;else throw "Cannot convert value for " + name + " to number";
-
-          break;
-
-        case "string":
-          value = value.toString();
-          break;
-
-        case "null": // Missing default values
-
-        case "undefined":
-          break;
-
-        default:
-          throw "Do not know how to convert value for " + name + " to " + spec.type;
-      }
-    } catch (e) {
-      this.log.warn(e);
-      return null;
-    }
-
-    if (spec.choices && spec.choices.indexOf(value) === -1) {
-      this.log.warn("Illegal value for " + name + ": " + value);
-      return null;
-    }
-
-    return value;
-  },
-  _set: function argParserSet(opts, name, value) {
-    if (!(name in this.parameters)) {
-      this.log.debug("Ignoring value for unknown argument " + name);
-      return;
-    }
-
-    var spec = this.parameters[name],
-        parts,
-        i,
-        v;
-
-    if (spec.multiple) {
-      if (typeof value === "string") {
-        parts = value.split(/,+/);
-      } else {
-        parts = value;
-      }
-
-      value = [];
-
-      for (i = 0; i < parts.length; i++) {
-        v = this._coerce(name, parts[i].trim());
-        if (v !== null) value.push(v);
-      }
-    } else {
-      value = this._coerce(name, value);
-      if (value === null) return;
-    }
-
-    opts[name] = value;
-  },
-  _split: function argParserSplit(text) {
-    var tokens = [];
-    text.replace(this.token_pattern, function (match, quoted, _, simple) {
-      if (quoted) tokens.push(quoted);else if (simple) tokens.push(simple);
-    });
-    return tokens;
-  },
-  _parseExtendedNotation: function argParserParseExtendedNotation(argstring) {
-    var opts = {};
-    var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
-      return el.replace(new RegExp("\0x1f", "g"), ";");
-    });
-
-    underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].each(parts, function (part) {
-      if (!part) {
-        return;
-      }
-
-      var matches = part.match(this.named_param_pattern);
-
-      if (!matches) {
-        this.log.warn("Invalid parameter: " + part + ": " + argstring);
-        return;
-      }
-
-      var name = matches[1],
-          value = matches[2].trim(),
-          arg = underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].chain(this.parameters).where({
-        alias: name
-      }).value(),
-          is_alias = arg.length === 1;
-
-      if (is_alias) {
-        this._set(opts, arg[0].name, value);
-      } else if (name in this.parameters) {
-        this._set(opts, name, value);
-      } else if (name in this.groups) {
-        var subopt = this.groups[name]._parseShorthandNotation(value);
-
-        for (var field in subopt) {
-          this._set(opts, name + "-" + field, subopt[field]);
-        }
-      } else {
-        this.log.warn("Unknown named parameter " + matches[1]);
-        return;
-      }
-    }.bind(this));
-
-    return opts;
-  },
-  _parseShorthandNotation: function argParserParseShorthandNotation(parameter) {
-    var parts = this._split(parameter),
-        opts = {},
-        positional = true,
-        i = 0,
-        part,
-        flag,
-        sense;
-
-    while (parts.length) {
-      part = parts.shift().trim();
-
-      if (part.slice(0, 3) === "no-") {
-        sense = false;
-        flag = part.slice(3);
-      } else {
-        sense = true;
-        flag = part;
-      }
-
-      if (flag in this.parameters && this.parameters[flag].type === "boolean") {
-        positional = false;
-
-        this._set(opts, flag, sense);
-      } else if (flag in this.enum_values) {
-        positional = false;
-
-        this._set(opts, this.enum_values[flag], flag);
-      } else if (positional) this._set(opts, this.order[i], part);else {
-        parts.unshift(part);
-        break;
-      }
-
-      i++;
-
-      if (i >= this.order.length) {
-        break;
-      }
-    }
-
-    if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
-    return opts;
-  },
-  _parse: function argParser_parse(parameter) {
-    var opts, extended, sep;
-
-    if (!parameter) {
-      return {};
-    }
-
-    if (parameter.match(this.json_param_pattern)) {
-      try {
-        return JSON.parse(parameter);
-      } catch (e) {
-        this.log.warn("Invalid JSON argument found: " + parameter);
-      }
-    }
-
-    if (parameter.match(this.named_param_pattern)) {
-      return this._parseExtendedNotation(parameter);
-    }
-
-    sep = parameter.indexOf(";");
-
-    if (sep === -1) {
-      return this._parseShorthandNotation(parameter);
-    }
-
-    opts = this._parseShorthandNotation(parameter.slice(0, sep));
-    extended = this._parseExtendedNotation(parameter.slice(sep + 1));
-
-    for (var name in extended) {
-      opts[name] = extended[name];
-    }
-
-    return opts;
-  },
-  _defaults: function argParserDefaults($el) {
-    var result = {};
-
-    for (var name in this.parameters) {
-      if (typeof this.parameters[name].value === "function") try {
-        result[name] = this.parameters[name].value($el, name);
-        this.parameters[name].type = _typeof(result[name]);
-      } catch (e) {
-        this.log.error("Default function for " + name + " failed.");
-      } else result[name] = this.parameters[name].value;
-    }
-
-    return result;
-  },
-  _cleanupOptions: function argParserCleanupOptions(options) {
-    var keys = Object.keys(options),
-        i,
-        spec,
-        name,
-        target; // Resolve references
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-      if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
-    } // Move options into groups and do renames
-
-
-    keys = Object.keys(options);
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-
-      if (spec.group) {
-        if (_typeof(options[spec.group]) !== "object") options[spec.group] = {};
-        target = options[spec.group];
-      } else {
-        target = options;
-      }
-
-      if (spec.dest !== name) {
-        target[spec.dest] = options[name];
-        delete options[name];
-      }
-    }
-
-    return options;
-  },
-  parse: function argParserParse($el, options, multiple, inherit) {
-    if (!$el.jquery) {
-      $el = jquery__WEBPACK_IMPORTED_MODULE_0___default()($el);
-    }
-
-    if (typeof options === "boolean" && multiple === undefined) {
-      multiple = options;
-      options = {};
-    }
-
-    inherit = inherit !== false;
-    var stack = inherit ? [[this._defaults($el)]] : [[{}]];
-    var $possible_config_providers;
-    var final_length = 1;
-    /*
-     * XXX this is a workaround for:
-     * - https://github.com/Patternslib/Patterns/issues/393
-     *
-     * Prevents the parser to pollute the pat-modal configuration
-     * with data-pat-inject elements define in a `.pat-modal` parent element.
-     *
-     *  Probably this function should be completely revisited, see:
-     * - https://github.com/Patternslib/Patterns/issues/627
-     *
-     */
-
-    if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
-      $possible_config_providers = $el;
-    } else {
-      $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
-    }
-
-    underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].each($possible_config_providers, function (provider) {
-      var data, frame, _parse;
-
-      data = jquery__WEBPACK_IMPORTED_MODULE_0___default()(provider).attr(this.attribute);
-
-      if (!data) {
-        return;
-      }
-
-      _parse = this._parse.bind(this);
-      if (data.match(/&&/)) frame = data.split(/\s*&&\s*/).map(_parse);else frame = [_parse(data)];
-      final_length = Math.max(frame.length, final_length);
-      stack.push(frame);
-    }.bind(this));
-
-    if (_typeof(options) === "object") {
-      if (Array.isArray(options)) {
-        stack.push(options);
-        final_length = Math.max(options.length, final_length);
-      } else stack.push([options]);
-    }
-
-    if (!multiple) {
-      final_length = 1;
-    }
-
-    var results = underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].map(underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].compose(_utils_js__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].removeDuplicateObjects, underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].partial(_utils_js__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].mergeStack, underscore__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"], final_length))(stack), this._cleanupOptions.bind(this));
-
-    return multiple ? results : results[0];
+    this.order = [];
+    this.parameters = {};
+    this.attribute = "data-pat-" + name;
+    this.enum_values = {};
+    this.enum_conflicts = [];
+    this.groups = {};
+    this.possible_groups = {};
+    this.log = _logging__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].getLogger(name + ".parser");
+    this.group_pattern = /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i;
+    this.json_param_pattern = /^\s*{/i;
+    this.named_param_pattern = /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i;
+    this.token_pattern = /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g;
   }
-}; // BBB
+
+  _createClass(ArgumentParser, [{
+    key: "_camelCase",
+    value: function _camelCase(str) {
+      return str.replace(/\-([a-z])/g, function (__, p1) {
+        return p1.toUpperCase();
+      });
+    }
+  }, {
+    key: "addAlias",
+    value: function addAlias(alias, original) {
+      /* Add an alias for a previously added parser argument.
+       *
+       * Useful when you want to support both US and UK english argument
+       * names.
+       */
+      if (this.parameters[original]) {
+        this.parameters[original].alias = alias;
+      } else {
+        throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
+      }
+    }
+  }, {
+    key: "addGroupToSpec",
+    value: function addGroupToSpec(spec) {
+      /* Determine wether an argument being parsed can be grouped and
+       * update its specifications object accordingly.
+       *
+       * Internal method used by addArgument and addJSONArgument
+       */
+      var m = spec.name.match(this.group_pattern);
+
+      if (m) {
+        var group = m[1];
+        var field = m[2];
+
+        if (group in this.possible_groups) {
+          var first_spec = this.possible_groups[group];
+          var first_name = first_spec.name.match(this.group_pattern)[2];
+          first_spec.group = group;
+          first_spec.dest = first_name;
+          this.groups[group] = new ArgumentParser();
+          this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
+          delete this.possible_groups[group];
+        }
+
+        if (group in this.groups) {
+          this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
+          spec.group = group;
+          spec.dest = field;
+        } else {
+          this.possible_groups[group] = spec;
+          spec.dest = this._camelCase(spec.name);
+        }
+      }
+
+      return spec;
+    }
+  }, {
+    key: "addJSONArgument",
+    value: function addJSONArgument(name, default_value) {
+      /* Add an argument where the value is provided in JSON format.
+       *
+       * This is a different usecase than specifying all arguments to
+       * the data-pat-... attributes in JSON format, and instead is part
+       * of the normal notation except that a value is in JSON instead of
+       * for example a string.
+       */
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec({
+        name: name,
+        value: default_value,
+        dest: name,
+        group: null,
+        type: "json"
+      });
+    }
+  }, {
+    key: "addArgument",
+    value: function addArgument(name, default_value, choices, multiple) {
+      var spec = {
+        name: name,
+        value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
+        multiple: multiple,
+        dest: name,
+        group: null
+      };
+
+      if (choices && Array.isArray(choices) && choices.length) {
+        spec.choices = choices;
+        spec.type = this._typeof(choices[0]);
+
+        var _iterator = _createForOfIteratorHelper(choices),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var choice = _step.value;
+
+            if (this.enum_conflicts.indexOf(choice) !== -1) {
+              continue;
+            } else if (choice in this.enum_values) {
+              this.enum_conflicts.push(choice);
+              delete this.enum_values[choice];
+            } else {
+              this.enum_values[choice] = name;
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
+        spec.type = this.parameters[spec.value.slice(1)].type;
+      } else {
+        // Note that this will get reset by _defaults if default_value is a function.
+        spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
+      }
+
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec(spec);
+    }
+  }, {
+    key: "_typeof",
+    value: function _typeof(obj) {
+      if (obj === null) {
+        return "null";
+      }
+
+      return _typeof2(obj);
+    }
+  }, {
+    key: "_coerce",
+    value: function _coerce(name, value) {
+      var spec = this.parameters[name];
+      if (_typeof2(value) !== spec.type) try {
+        switch (spec.type) {
+          case "json":
+            value = JSON.parse(value);
+            break;
+
+          case "boolean":
+            if (typeof value === "string") {
+              value = value.toLowerCase();
+              var num = parseInt(value, 10);
+              if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
+            } else if (typeof value === "number") {
+              value = !!value;
+            } else {
+              throw "Cannot convert value for " + name + " to boolean";
+            }
+
+            break;
+
+          case "number":
+            if (typeof value === "string") {
+              value = parseInt(value, 10);
+
+              if (isNaN(value)) {
+                throw "Cannot convert value for " + name + " to number";
+              }
+            } else if (typeof value === "boolean") {
+              value = value + 0;
+            } else {
+              throw "Cannot convert value for " + name + " to number";
+            }
+
+            break;
+
+          case "string":
+            value = value.toString();
+            break;
+
+          case "null": // Missing default values
+
+          case "undefined":
+            break;
+
+          default:
+            throw "Do not know how to convert value for " + name + " to " + spec.type;
+        }
+      } catch (e) {
+        this.log.warn(e);
+        return null;
+      }
+
+      if (spec.choices && spec.choices.indexOf(value) === -1) {
+        this.log.warn("Illegal value for " + name + ": " + value);
+        return null;
+      }
+
+      return value;
+    }
+  }, {
+    key: "_set",
+    value: function _set(opts, name, value) {
+      if (!(name in this.parameters)) {
+        this.log.debug("Ignoring value for unknown argument " + name);
+        return;
+      }
+
+      var spec = this.parameters[name];
+      var parts;
+
+      if (spec.multiple) {
+        if (typeof value === "string") {
+          parts = value.split(/,+/);
+        } else {
+          parts = value;
+        }
+
+        value = [];
+
+        var _iterator2 = _createForOfIteratorHelper(parts),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var part = _step2.value;
+
+            var v = this._coerce(name, part.trim());
+
+            if (v !== null) {
+              value.push(v);
+            }
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      } else {
+        value = this._coerce(name, value);
+
+        if (value === null) {
+          return;
+        }
+      }
+
+      opts[name] = value;
+    }
+  }, {
+    key: "_split",
+    value: function _split(text) {
+      var tokens = [];
+      text.replace(this.token_pattern, function (match, quoted, __, simple) {
+        if (quoted) {
+          tokens.push(quoted);
+        } else if (simple) {
+          tokens.push(simple);
+        }
+      });
+      return tokens;
+    }
+  }, {
+    key: "_parseExtendedNotation",
+    value: function _parseExtendedNotation(argstring) {
+      var _this = this;
+
+      var opts = {};
+      var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
+        return el.replace(new RegExp("\0x1f", "g"), ";");
+      });
+
+      var _iterator3 = _createForOfIteratorHelper(parts),
+          _step3;
+
+      try {
+        var _loop = function _loop() {
+          var part = _step3.value;
+
+          if (!part) {
+            return "continue";
+          }
+
+          var matches = part.match(_this.named_param_pattern);
+
+          if (!matches) {
+            _this.log.warn("Invalid parameter: " + part + ": " + argstring);
+
+            return "continue";
+          }
+
+          var name = matches[1];
+          var value = matches[2].trim();
+          var arg = Object.values(_this.parameters).filter(function (it) {
+            return it.alias === name;
+          });
+          var is_alias = arg.length === 1;
+
+          if (is_alias) {
+            _this._set(opts, arg[0].name, value);
+          } else if (name in _this.parameters) {
+            _this._set(opts, name, value);
+          } else if (name in _this.groups) {
+            var subopt = _this.groups[name]._parseShorthandNotation(value);
+
+            for (var field in subopt) {
+              _this._set(opts, name + "-" + field, subopt[field]);
+            }
+          } else {
+            _this.log.warn("Unknown named parameter " + matches[1]);
+
+            return "continue";
+          }
+        };
+
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _ret = _loop();
+
+          if (_ret === "continue") continue;
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_parseShorthandNotation",
+    value: function _parseShorthandNotation(parameter) {
+      var parts = this._split(parameter);
+
+      var opts = {};
+      var i = 0;
+
+      while (parts.length) {
+        var part = parts.shift().trim();
+        var sense = void 0;
+        var flag = void 0;
+        var positional = true;
+
+        if (part.slice(0, 3) === "no-") {
+          sense = false;
+          flag = part.slice(3);
+        } else {
+          sense = true;
+          flag = part;
+        }
+
+        if (flag in this.parameters && this.parameters[flag].type === "boolean") {
+          positional = false;
+
+          this._set(opts, flag, sense);
+        } else if (flag in this.enum_values) {
+          positional = false;
+
+          this._set(opts, this.enum_values[flag], flag);
+        } else if (positional) this._set(opts, this.order[i], part);else {
+          parts.unshift(part);
+          break;
+        }
+
+        i++;
+
+        if (i >= this.order.length) {
+          break;
+        }
+      }
+
+      if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
+      return opts;
+    }
+  }, {
+    key: "_parse",
+    value: function _parse(parameter) {
+      if (!parameter) {
+        return {};
+      }
+
+      if (parameter.match(this.json_param_pattern)) {
+        try {
+          return JSON.parse(parameter);
+        } catch (e) {
+          this.log.warn("Invalid JSON argument found: " + parameter);
+        }
+      }
+
+      if (parameter.match(this.named_param_pattern)) {
+        return this._parseExtendedNotation(parameter);
+      }
+
+      var sep = parameter.indexOf(";");
+
+      if (sep === -1) {
+        return this._parseShorthandNotation(parameter);
+      }
+
+      var opts = this._parseShorthandNotation(parameter.slice(0, sep));
+
+      var extended = this._parseExtendedNotation(parameter.slice(sep + 1));
+
+      for (var name in extended) {
+        opts[name] = extended[name];
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_defaults",
+    value: function _defaults($el) {
+      var result = {};
+
+      for (var name in this.parameters) {
+        if (typeof this.parameters[name].value === "function") try {
+          result[name] = this.parameters[name].value($el, name);
+          this.parameters[name].type = _typeof2(result[name]);
+        } catch (e) {
+          this.log.error("Default function for " + name + " failed.");
+        } else result[name] = this.parameters[name].value;
+      }
+
+      return result;
+    }
+  }, {
+    key: "_cleanupOptions",
+    value: function _cleanupOptions(options) {
+      // Resolve references
+      for (var _i = 0, _Object$keys = Object.keys(options); _i < _Object$keys.length; _i++) {
+        var name = _Object$keys[_i];
+        var spec = this.parameters[name];
+        if (spec === undefined) continue;
+        if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
+      } // Move options into groups and do renames
+
+
+      for (var _i2 = 0, _Object$keys2 = Object.keys(options); _i2 < _Object$keys2.length; _i2++) {
+        var _name = _Object$keys2[_i2];
+        var _spec = this.parameters[_name];
+        var target = void 0;
+        if (_spec === undefined) continue;
+
+        if (_spec.group) {
+          if (_typeof2(options[_spec.group]) !== "object") options[_spec.group] = {};
+          target = options[_spec.group];
+        } else {
+          target = options;
+        }
+
+        if (_spec.dest !== _name) {
+          target[_spec.dest] = options[_name];
+          delete options[_name];
+        }
+      }
+
+      return options;
+    }
+  }, {
+    key: "parse",
+    value: function parse($el, options, multiple, inherit) {
+      if (!$el.jquery) {
+        $el = jquery__WEBPACK_IMPORTED_MODULE_0___default()($el);
+      }
+
+      if (typeof options === "boolean" && multiple === undefined) {
+        // Fix argument order: ``multiple`` passed instead of ``options``.
+        multiple = options;
+        options = {};
+      }
+
+      inherit = inherit !== false;
+      var stack = inherit ? [[this._defaults($el)]] : [[{}]];
+      var $possible_config_providers;
+      var final_length = 1;
+      /*
+       * XXX this is a workaround for:
+       * - https://github.com/Patternslib/Patterns/issues/393
+       *
+       * Prevents the parser to pollute the pat-modal configuration
+       * with data-pat-inject elements define in a `.pat-modal` parent element.
+       *
+       *  Probably this function should be completely revisited, see:
+       * - https://github.com/Patternslib/Patterns/issues/627
+       *
+       */
+
+      if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
+        $possible_config_providers = $el;
+      } else {
+        $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
+      }
+
+      var _iterator4 = _createForOfIteratorHelper($possible_config_providers),
+          _step4;
+
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var provider = _step4.value;
+          var frame = void 0;
+          var data = jquery__WEBPACK_IMPORTED_MODULE_0___default()(provider).attr(this.attribute);
+
+          if (!data) {
+            continue;
+          }
+
+          var _parse = this._parse.bind(this);
+
+          if (data.match(/&&/)) {
+            frame = data.split(/\s*&&\s*/).map(_parse);
+          } else {
+            frame = [_parse(data)];
+          }
+
+          final_length = Math.max(frame.length, final_length);
+          stack.push(frame);
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+
+      if (_typeof2(options) === "object") {
+        if (Array.isArray(options)) {
+          stack.push(options);
+          final_length = Math.max(options.length, final_length);
+        } else stack.push([options]);
+      }
+
+      if (!multiple) {
+        final_length = 1;
+      }
+
+      var results = _utils_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].removeDuplicateObjects(_utils_js__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].mergeStack(stack, final_length)).map(this._cleanupOptions.bind(this));
+      return multiple ? results : results[0];
+    }
+  }]);
+
+  return ArgumentParser;
+}(); // BBB
+
 
 ArgumentParser.prototype.add_argument = ArgumentParser.prototype.addArgument;
 /* harmony default export */ __webpack_exports__["a"] = (ArgumentParser);
-
-/***/ }),
-
-/***/ 30:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(23);
-/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(10);
-/* harmony import */ var _ajax_ajax__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(60);
-/* harmony import */ var _core_parser__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(3);
-/* harmony import */ var _core_logging__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9);
-/* harmony import */ var _core_registry__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(13);
-/* harmony import */ var _core_utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(2);
-/* harmony import */ var _core_jquery_ext__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(77);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
- // needed for ``await`` support
-
-
-
-
-
-
-
-
- // for :scrollable for autoLoading-visible
-
-var log = _core_logging__WEBPACK_IMPORTED_MODULE_5__[/* default */ "a"].getLogger("pat.inject");
-var parser = new _core_parser__WEBPACK_IMPORTED_MODULE_4__[/* default */ "a"]("inject");
-var TEXT_NODE = 3;
-var COMMENT_NODE = 8;
-parser.addArgument("default-selector");
-parser.addArgument("target");
-parser.addArgument("data-type", "html");
-parser.addArgument("next-href");
-parser.addArgument("source");
-parser.addArgument("trigger", "default", ["default", "autoload", "autoload-visible", "idle"]);
-parser.addArgument("delay"); // only used in autoload
-
-parser.addArgument("confirm", "class", ["never", "always", "form-data", "class"]);
-parser.addArgument("confirm-message", "Are you sure you want to leave this page?");
-parser.addArgument("hooks", [], ["raptor"], true); // After injection, pat-inject will trigger an event for each hook: pat-inject-hook-$(hook)
-
-parser.addArgument("loading-class", "injecting"); // Add a class to the target while content is still loading.
-
-parser.addArgument("executing-class", "executing"); // Add a class to the element while content is still loading.
-
-parser.addArgument("executed-class", "executed"); // Add a class to the element when content is loaded.
-
-parser.addArgument("class"); // Add a class to the injected content.
-
-parser.addArgument("history");
-parser.addArgument("push-marker");
-parser.addArgument("scroll"); // XXX: this should not be here but the parser would bail on
-// unknown parameters and expand/collapsible need to pass the url
-// to us
-
-parser.addArgument("url");
-var inject = {
-  name: "inject",
-  trigger: ".raptor-ui .ui-button.pat-inject, a.pat-inject, form.pat-inject, .pat-subform.pat-inject",
-  init: function inject_init($el, opts) {
-    var cfgs = inject.extractConfig($el, opts);
-
-    if (cfgs.some(function (e) {
-      return e.history === "record";
-    }) && !("pushState" in history)) {
-      // if the injection shall add a history entry and HTML5 pushState
-      // is missing, then don't initialize the injection.
-      return $el;
-    }
-
-    $el.data("pat-inject", cfgs);
-
-    if (cfgs[0].nextHref && cfgs[0].nextHref.indexOf("#") === 0) {
-      // In case the next href is an anchor, and it already
-      // exists in the page, we do not activate the injection
-      // but instead just change the anchors href.
-      // XXX: This is used in only one project for linked
-      // fullcalendars, it's sanity is wonky and we should
-      // probably solve it differently.
-      if ($el.is("a") && jquery__WEBPACK_IMPORTED_MODULE_1___default()(cfgs[0].nextHref).length > 0) {
-        log.debug("Skipping as next href is anchor, which already exists", cfgs[0].nextHref); // XXX: reconsider how the injection enters exhausted state
-
-        return $el.attr({
-          href: (window.location.href.split("#")[0] || "") + cfgs[0].nextHref
-        });
-      }
-    }
-
-    if (cfgs[0].pushMarker) {
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()("body").on("push", function (event, data) {
-        console.log("received push message: " + data);
-
-        if (data == cfgs[0].pushMarker) {
-          console.log("re-injecting " + data);
-          inject.onTrigger.apply($el[0], []);
-        }
-      });
-    }
-
-    if (cfgs[0].idleTrigger) {
-      // XXX TODO: handle item removed from DOM
-      var timeout = parseInt(cfgs[0].idleTrigger, 10);
-      var timer;
-
-      var onTimeout = function onTimeout() {
-        inject.onTrigger.apply($el[0], []);
-        unsub();
-        clearTimeout(timer);
-      };
-
-      var onInteraction = _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].debounce(function onInteraction() {
-        clearTimeout(timer);
-        timer = setTimeout(onTimeout, cfgs[0].trigger);
-      }, timeout);
-
-      var unsub = function unsub() {
-        ["scroll", "resize"].forEach(function (e) {
-          window.removeEventListener(e, onInteraction);
-        });
-        ["click", "keypress", "keyup", "mousemove", "touchstart", "touchend"].forEach(function (e) {
-          document.removeEventListener(e, onInteraction);
-        });
-      };
-
-      onInteraction();
-      ["scroll", "resize"].forEach(function (e) {
-        window.addEventListener(e, onInteraction);
-      });
-      ["click", "keypress", "keyup", "mousemove", "touchstart", "touchend"].forEach(function (e) {
-        document.addEventListener(e, onInteraction);
-      });
-    } else {
-      switch (cfgs[0].trigger) {
-        case "default":
-          cfgs.forEach(function (cfg) {
-            if (cfg.delay) {
-              cfg.processDelay = cfg.delay;
-            }
-          }); // setup event handlers
-
-          if ($el.is("form")) {
-            $el.on("submit.pat-inject", inject.onTrigger).on("click.pat-inject", "[type=submit]", _ajax_ajax__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].onClickSubmit).on("click.pat-inject", "[type=submit][formaction], [type=image][formaction]", inject.onFormActionSubmit);
-          } else if ($el.is(".pat-subform")) {
-            log.debug("Initializing subform with injection");
-          } else {
-            $el.on("click.pat-inject", inject.onTrigger);
-          }
-
-          break;
-
-        case "autoload":
-          if (!cfgs[0].delay) {
-            inject.onTrigger.apply($el[0], []);
-          } else {
-            // generate UID
-            var uid = Math.random().toString(36);
-            $el.attr("data-pat-inject-uid", uid); // function to trigger the autoload and mark as triggered
-
-            var delayed_trigger = function delayed_trigger(uid) {
-              // Check if the element has been removed from the dom
-              var still_there = jquery__WEBPACK_IMPORTED_MODULE_1___default()("[data-pat-inject-uid='" + uid + "']");
-              if (still_there.length == 0) return false;
-              $el.data("pat-inject-autoloaded", true);
-              inject.onTrigger.apply($el[0], []);
-              return true;
-            };
-
-            window.setTimeout(delayed_trigger.bind(null, uid), cfgs[0].delay);
-          }
-
-          break;
-
-        case "autoload-visible":
-          inject._initAutoloadVisible($el, cfgs);
-
-          break;
-
-        case "idle":
-          inject._initIdleTrigger($el, cfgs[0].delay);
-
-          break;
-      }
-    }
-
-    log.debug("initialised:", $el);
-    return $el;
-  },
-  destroy: function inject_destroy($el) {
-    $el.off(".pat-inject");
-    $el.data("pat-inject", null);
-    return $el;
-  },
-  onTrigger: function inject_onTrigger(ev) {
-    /* Injection has been triggered, either via form submission or a
-     * link has been clicked.
-     */
-    var cfgs = jquery__WEBPACK_IMPORTED_MODULE_1___default()(this).data("pat-inject"),
-        $el = jquery__WEBPACK_IMPORTED_MODULE_1___default()(this);
-
-    if ($el.is("form")) {
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()(cfgs).each(function (i, v) {
-        v.params = jquery__WEBPACK_IMPORTED_MODULE_1___default.a.param($el.serializeArray());
-      });
-    }
-
-    ev && ev.preventDefault();
-    $el.trigger("patterns-inject-triggered");
-    inject.execute(cfgs, $el);
-  },
-  onFormActionSubmit: function inject_onFormActionSubmit(ev) {
-    _ajax_ajax__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].onClickSubmit(ev); // make sure the submitting button is sent with the form
-
-    var $button = jquery__WEBPACK_IMPORTED_MODULE_1___default()(ev.target),
-        formaction = $button.attr("formaction"),
-        $form = $button.parents(".pat-inject").first(),
-        opts = {
-      url: formaction
-    },
-        $cfg_node = $button.closest("[data-pat-inject]"),
-        cfgs = inject.extractConfig($cfg_node, opts);
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()(cfgs).each(function (i, v) {
-      v.params = jquery__WEBPACK_IMPORTED_MODULE_1___default.a.param($form.serializeArray());
-    });
-    ev.preventDefault();
-    $form.trigger("patterns-inject-triggered");
-    inject.execute(cfgs, $form);
-  },
-  submitSubform: function inject_submitSubform($sub) {
-    /* This method is called from pat-subform
-     */
-    var $el = $sub.parents("form"),
-        cfgs = $sub.data("pat-inject"); // store the params of the subform in the config, to be used by history
-
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()(cfgs).each(function (i, v) {
-      v.params = jquery__WEBPACK_IMPORTED_MODULE_1___default.a.param($sub.serializeArray());
-    });
-
-    try {
-      $el.trigger("patterns-inject-triggered");
-    } catch (e) {
-      log.error("patterns-inject-triggered", e);
-    }
-
-    inject.execute(cfgs, $el);
-  },
-  extractConfig: function inject_extractConfig($el, opts) {
-    opts = jquery__WEBPACK_IMPORTED_MODULE_1___default.a.extend({}, opts);
-    var cfgs = parser.parse($el, opts, true);
-    cfgs.forEach(function inject_extractConfig_each(cfg) {
-      // opts and cfg have priority, fallback to href/action
-      cfg.url = opts.url || cfg.url || $el.attr("href") || $el.attr("action") || $el.parents("form").attr("action") || ""; // separate selector from url
-
-      var urlparts = cfg.url.split("#");
-      cfg.url = urlparts[0]; // if no selector, check for selector as part of original url
-
-      var defaultSelector = urlparts[1] && "#" + urlparts[1] || "body";
-
-      if (urlparts.length > 2) {
-        log.warn("Ignoring additional source ids:", urlparts.slice(2));
-      }
-
-      cfg.defaultSelector = cfg.defaultSelector || defaultSelector;
-
-      if (cfg.delay) {
-        try {
-          cfg.delay = _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].parseTime(cfg.delay);
-        } catch (e) {
-          log.warn("Invalid delay value: ", cfg.delay);
-          cfg.delay = null;
-        }
-      }
-
-      cfg.processDelay = 0;
-    });
-    return cfgs;
-  },
-  elementIsDirty: function elementIsDirty(m) {
-    /* Check whether the passed in form element contains a value.
-     */
-    var data = jquery__WEBPACK_IMPORTED_MODULE_1___default.a.map(m.find(":input:not(select)"), function (i) {
-      var val = jquery__WEBPACK_IMPORTED_MODULE_1___default()(i).val();
-      return Boolean(val) && val !== jquery__WEBPACK_IMPORTED_MODULE_1___default()(i).attr("placeholder");
-    });
-    return jquery__WEBPACK_IMPORTED_MODULE_1___default.a.inArray(true, data) !== -1;
-  },
-  askForConfirmation: function inject_askForConfirmation(cfgs) {
-    /* If configured to do so, show a confirmation dialog to the user.
-     * This is done before attempting to perform injection.
-     */
-    var should_confirm = false,
-        message;
-
-    underscore__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].each(cfgs, function (cfg) {
-      var _confirm = false;
-
-      if (cfg.confirm == "always") {
-        _confirm = true;
-      } else if (cfg.confirm === "form-data") {
-        if (cfg.target != "none") _confirm = inject.elementIsDirty(cfg.$target);
-      } else if (cfg.confirm === "class") {
-        if (cfg.target != "none") _confirm = cfg.$target.hasClass("is-dirty");
-      }
-
-      if (_confirm) {
-        should_confirm = true;
-        message = cfg.confirmMessage;
-      }
-    });
-
-    if (should_confirm) {
-      if (!window.confirm(message)) {
-        return false;
-      }
-    }
-
-    return true;
-  },
-  ensureTarget: function inject_ensureTarget(cfg, $el) {
-    /* Make sure that a target element exists and that it's assigned to
-     * cfg.$target.
-     */
-    // make sure target exist
-    if (cfg.target === "none") // special case, we don't want to inject anything
-      return true;
-    cfg.$target = cfg.$target || (cfg.target === "self" ? $el : jquery__WEBPACK_IMPORTED_MODULE_1___default()(cfg.target));
-
-    if (cfg.$target.length === 0) {
-      if (!cfg.target) {
-        log.error("Need target selector", cfg);
-        return false;
-      }
-
-      cfg.$target = inject.createTarget(cfg.target);
-      cfg.$injected = cfg.$target;
-    }
-
-    return true;
-  },
-  verifySingleConfig: function inject_verifySingleonfig($el, url, cfg) {
-    /* Verify one of potentially multiple configs (i.e. argument lists).
-     *
-     * Extract modifiers such as ::element or ::after.
-     * Ensure that a target element exists.
-     */
-    if (cfg.url !== url) {
-      // in case of multi-injection, all injections need to use
-      // the same url
-      log.error("Unsupported different urls for multi-inject");
-      return false;
-    } // defaults
-
-
-    cfg.source = cfg.source || cfg.defaultSelector;
-    cfg.target = cfg.target || cfg.defaultSelector;
-
-    if (!inject.extractModifiers(cfg)) {
-      return false;
-    }
-
-    if (!inject.ensureTarget(cfg, $el)) {
-      return false;
-    }
-
-    inject.listenForFormReset(cfg);
-    return true;
-  },
-  verifyConfig: function inject_verifyConfig(cfgs, $el) {
-    /* Verify and post-process all the configurations.
-     * Each "config" is an arguments list separated by the &&
-     * combination operator.
-     *
-     * In case of multi-injection, only one URL is allowed, which
-     * should be specified in the first config (i.e. arguments list).
-     *
-     * Verification for each cfg in the array needs to succeed.
-     */
-    return cfgs.every(underscore__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].partial(inject.verifySingleConfig, $el, cfgs[0].url));
-  },
-  listenForFormReset: function listenForFormReset(cfg) {
-    /* if pat-inject is used to populate target in some form and when
-     * Cancel button is pressed (this triggers reset event on the
-     * form) you would expect to populate with initial placeholder
-     */
-    if (cfg.target === "none") // Special case, we don't want to display any return value.
-      return;
-    var $form = cfg.$target.parents("form");
-
-    if ($form.length !== 0 && cfg.$target.data("initial-value") === undefined) {
-      cfg.$target.data("initial-value", cfg.$target.html());
-      $form.on("reset", function () {
-        cfg.$target.html(cfg.$target.data("initial-value"));
-      });
-    }
-  },
-  extractModifiers: function inject_extractModifiers(cfg) {
-    /* The user can add modifiers to the source and target arguments.
-     * Modifiers such as ::element, ::before and ::after.
-     * We identifiy and extract these modifiers here.
-     */
-    var source_re = /^(.*?)(::element)?$/,
-        target_re = /^(.*?)(::element)?(::after|::before)?$/,
-        source_match = source_re.exec(cfg.source),
-        target_match = target_re.exec(cfg.target),
-        targetMod,
-        targetPosition;
-    cfg.source = source_match[1];
-    cfg.sourceMod = source_match[2] ? "element" : "content";
-    cfg.target = target_match[1];
-    targetMod = target_match[2] ? "element" : "content";
-    targetPosition = (target_match[3] || "::").slice(2); // position relative to target
-
-    if (cfg.loadingClass) {
-      cfg.loadingClass += " " + cfg.loadingClass + "-" + targetMod;
-
-      if (targetPosition && cfg.loadingClass) {
-        cfg.loadingClass += " " + cfg.loadingClass + "-" + targetPosition;
-      }
-    }
-
-    cfg.action = targetMod + targetPosition; // Once we start detecting illegal combinations, we'll
-    // return false in case of error
-
-    return true;
-  },
-  createTarget: function inject_createTarget(selector) {
-    /* create a target that matches the selector
-     *
-     * XXX: so far we only support #target and create a div with
-     * that id appended to the body.
-     */
-    var $target;
-
-    if (selector.slice(0, 1) !== "#") {
-      log.error("only id supported for non-existing target");
-      return null;
-    }
-
-    $target = jquery__WEBPACK_IMPORTED_MODULE_1___default()("<div />").attr({
-      id: selector.slice(1)
-    });
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()("body").append($target);
-    return $target;
-  },
-  stopBubblingFromRemovedElement: function stopBubblingFromRemovedElement($el, cfgs, ev) {
-    /* IE8 fix. Stop event from propagating IF $el will be removed
-     * from the DOM. With pat-inject, often $el is the target that
-     * will itself be replaced with injected content.
-     *
-     * IE8 cannot handle events bubbling up from an element removed
-     * from the DOM.
-     *
-     * See: http://stackoverflow.com/questions/7114368/why-is-jquery-remove-throwing-attr-exception-in-ie8
-     */
-    var s; // jquery selector
-
-    for (var i = 0; i < cfgs.length; i++) {
-      s = cfgs[i].target;
-
-      if ($el.parents(s).addBack(s) && !ev.isPropagationStopped()) {
-        ev.stopPropagation();
-        return;
-      }
-    }
-  },
-  _performInjection: function _performInjection($el, $source, cfg, trigger, title) {
-    /* Called after the XHR has succeeded and we have a new $source
-     * element to inject.
-     */
-    if (cfg.sourceMod === "content") {
-      $source = $source.contents();
-    }
-
-    var $src; // $source.clone() does not work with shived elements in IE8
-
-    if (document.all && document.querySelector && !document.addEventListener) {
-      $src = $source.map(function () {
-        return jquery__WEBPACK_IMPORTED_MODULE_1___default()(this.outerHTML)[0];
-      });
-    } else {
-      $src = $source.safeClone();
-    }
-
-    var $target = jquery__WEBPACK_IMPORTED_MODULE_1___default()(this),
-        $injected = cfg.$injected || $src;
-    $src.findInclusive("img").on("load", function () {
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()(this).trigger("pat-inject-content-loaded");
-    }); // Now the injection actually happens.
-
-    if (inject._inject(trigger, $src, $target, cfg)) {
-      inject._afterInjection($el, $injected, cfg);
-    } // History support. if subform is submitted, append form params
-
-
-    var glue = "?";
-
-    if (cfg.history === "record" && "pushState" in history) {
-      if (cfg.params) {
-        if (cfg.url.indexOf("?") > -1) glue = "&";
-        history.pushState({
-          url: cfg.url + glue + cfg.params
-        }, "", cfg.url + glue + cfg.params);
-      } else {
-        history.pushState({
-          url: cfg.url
-        }, "", cfg.url);
-      } // Also inject title element if we have one
-
-
-      if (title) inject._inject(trigger, title, jquery__WEBPACK_IMPORTED_MODULE_1___default()("title"), {
-        action: "element"
-      });
-    }
-  },
-  _afterInjection: function _afterInjection($el, $injected, cfg) {
-    /* Set a class on the injected elements and fire the
-     * patterns-injected event.
-     */
-    $injected.filter(function () {
-      // setting data on textnode fails in IE8
-      return this.nodeType !== TEXT_NODE;
-    }).data("pat-injected", {
-      origin: cfg.url
-    });
-
-    if ($injected.length === 1 && $injected[0].nodeType == TEXT_NODE) {
-      // Only one element injected, and it was a text node.
-      // So we trigger "patterns-injected" on the parent.
-      // The event handler should check whether the
-      // injected element and the triggered element are
-      // the same.
-      $injected.parent().trigger("patterns-injected", [cfg, $el[0], $injected[0]]);
-    } else {
-      $injected.each(function () {
-        // patterns-injected event will be triggered for each injected (non-text) element.
-        if (this.nodeType !== TEXT_NODE) {
-          jquery__WEBPACK_IMPORTED_MODULE_1___default()(this).addClass(cfg["class"]).trigger("patterns-injected", [cfg, $el[0], this]);
-        }
-      });
-    }
-
-    if (cfg.scroll && cfg.scroll !== "none") {
-      var scroll_container = cfg.$target.parents().addBack().filter(":scrollable");
-      scroll_container = scroll_container.length ? scroll_container[0] : window; // default for scroll===top
-
-      var top = 0;
-      var left = 0;
-
-      if (cfg.scroll !== "top") {
-        var scroll_target;
-
-        if (cfg.scroll === "target") {
-          scroll_target = cfg.$target[0];
-        } else {
-          scroll_target = $injected.filter(cfg.scroll)[0];
-        } // Get the reference element to which against we calculate
-        // the relative position of the target.
-        // In case of a scroll container of window, we do not have
-        // getBoundingClientRect method, so get the body instead.
-
-
-        var scroll_container_ref = scroll_container;
-
-        if (scroll_container_ref === window) {
-          scroll_container_ref = document.body;
-        } // Calculate absolute [¹] position difference between
-        // scroll_container and scroll_target.
-        // Substract the container's border from the scrolling
-        // value, as this one isn't respected by
-        // getBoundingClientRect [²] and would lead to covered
-        // items [³].
-        // ¹) so that it doesn't make a difference, if the element
-        // is below or above the scrolling container. We just need
-        // to know the absolute difference.
-        // ²) Calculations are based from the viewport.
-        // ³) See:
-        //      https://docs.microsoft.com/en-us/previous-versions//hh781509(v=vs.85)
-        //      https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-
-
-        left = Math.abs(scroll_target.getBoundingClientRect().left + scroll_container_ref.scrollLeft - scroll_container_ref.getBoundingClientRect().left - _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].getCSSValue(scroll_container_ref, "border-left-width", true));
-        top = Math.abs(scroll_target.getBoundingClientRect().top + scroll_container_ref.scrollTop - scroll_container_ref.getBoundingClientRect().top - _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].getCSSValue(scroll_container_ref, "border-top-width", true));
-      }
-
-      if (scroll_container === window) {
-        scroll_container.scrollTo(left, top);
-      } else {
-        scroll_container.scrollLeft = left;
-        scroll_container.scrollTop = top;
-      }
-    }
-
-    $el.trigger("pat-inject-success");
-  },
-  _onInjectSuccess: function _onInjectSuccess($el, cfgs, ev) {
-    return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-      var sources$, data, title;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              data = ev && ev.jqxhr && ev.jqxhr.responseText;
-
-              if (data) {
-                _context.next = 4;
-                break;
-              }
-
-              log.warn("No response content, aborting", ev);
-              return _context.abrupt("return");
-
-            case 4:
-              if (cfgs[0].source === "none") {
-                // Special case, we want to call something, but we don't want to inject anything
-                data = "";
-              }
-
-              jquery__WEBPACK_IMPORTED_MODULE_1___default.a.each(cfgs[0].hooks || [], function (idx, hook) {
-                $el.trigger("pat-inject-hook-" + hook);
-              });
-              inject.stopBubblingFromRemovedElement($el, cfgs, ev);
-              _context.next = 9;
-              return inject.callTypeHandler(cfgs[0].dataType, "sources", $el, [cfgs, data, ev]);
-
-            case 9:
-              sources$ = _context.sent;
-
-              if (sources$ && sources$[sources$.length - 1] && sources$[sources$.length - 1][0] && sources$[sources$.length - 1][0].nodeName == "TITLE") {
-                title = sources$[sources$.length - 1];
-              }
-
-              cfgs.forEach(function (cfg, idx) {
-                function perform_inject() {
-                  if (cfg.target != "none") cfg.$target.each(function () {
-                    inject._performInjection.apply(this, [$el, sources$[idx], cfg, ev.target, title]);
-                  });
-                }
-
-                if (cfg.processDelay) {
-                  setTimeout(function () {
-                    perform_inject();
-                  }, cfg.processDelay);
-                } else {
-                  perform_inject();
-                }
-              });
-
-              if (cfgs[0].nextHref && $el.is("a")) {
-                // In case next-href is specified the anchor's href will
-                // be set to it after the injection is triggered.
-                $el.attr({
-                  href: cfgs[0].nextHref.replace(/&amp;/g, "&")
-                });
-                inject.destroy($el);
-              }
-
-              $el.off("pat-ajax-success.pat-inject");
-              $el.off("pat-ajax-error.pat-inject");
-
-            case 15:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee);
-    }))();
-  },
-  _onInjectError: function _onInjectError($el, cfgs, event) {
-    var explanation = "";
-    var timestamp = new Date();
-
-    if (event.jqxhr.status % 100 == 4) {
-      explanation = "Sorry! We couldn't find the page to load. Please make a screenshot and send it to support. Thank you!";
-    } else if (event.jqxhr.status % 100 == 5) {
-      explanation = "I am very sorry! There was an error at the server. Please make a screenshot and contact support. Thank you!";
-    } else if (event.jqxhr.status == 0) {
-      explanation = "It seems, the server is down. Please make a screenshot and contact support. Thank you!";
-    }
-
-    var msg_attr = explanation + " Status is " + event.jqxhr.status + " " + event.jqxhr.statusText + ", time was " + timestamp + ". You can click to close this.";
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()("body").attr("data-error-message", msg_attr);
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()("body").on("click", function () {
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()("body").removeAttr("data-error-message");
-      window.location.href = window.location.href;
-    });
-    cfgs.forEach(function (cfg) {
-      if ("$injected" in cfg) cfg.$injected.remove();
-    });
-    $el.off("pat-ajax-success.pat-inject");
-    $el.off("pat-ajax-error.pat-inject");
-  },
-  execute: function inject_execute(cfgs, $el) {
-    /* Actually execute the injection.
-     *
-     * Either by making an ajax request or by spoofing an ajax
-     * request when the content is readily available in the current page.
-     */
-    // get a kinda deep copy, we scribble on it
-    cfgs = cfgs.map(function (cfg) {
-      return jquery__WEBPACK_IMPORTED_MODULE_1___default.a.extend({}, cfg);
-    });
-
-    if (!inject.verifyConfig(cfgs, $el)) {
-      return;
-    }
-
-    if (!inject.askForConfirmation(cfgs)) {
-      return;
-    }
-
-    if ($el.data("pat-inject-triggered")) {
-      // Prevent double triggers;
-      return;
-    }
-
-    $el.data("pat-inject-triggered", true); // possibility for spinners on targets
-
-    underscore__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].chain(cfgs).filter(underscore__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].property("loadingClass")).each(function (cfg) {
-      if (cfg.target != "none") cfg.$target.addClass(cfg.loadingClass);
-    }); // Put the execute class on the elem that has pat inject on it
-
-
-    underscore__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].chain(cfgs).filter(underscore__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"].property("loadingClass")).each(function (cfg) {
-      $el.addClass(cfg.executingClass);
-    });
-
-    $el.on("pat-ajax-success.pat-inject", this._onInjectSuccess.bind(this, $el, cfgs));
-    $el.on("pat-ajax-error.pat-inject", this._onInjectError.bind(this, $el, cfgs));
-    $el.on("pat-ajax-success.pat-inject pat-ajax-error.pat-inject", function () {
-      $el.removeData("pat-inject-triggered");
-    });
-
-    if (cfgs[0].url.length) {
-      _ajax_ajax__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].request($el, {
-        url: cfgs[0].url
-      });
-    } else {
-      // If there is no url specified, then content is being fetched
-      // from the same page.
-      // No need to do an ajax request for this, so we spoof the ajax
-      // event.
-      $el.trigger({
-        type: "pat-ajax-success",
-        jqxhr: {
-          responseText: jquery__WEBPACK_IMPORTED_MODULE_1___default()("body").html()
-        }
-      });
-    }
-  },
-  _inject: function inject_inject(trigger, $source, $target, cfg) {
-    // action to jquery method mapping, except for "content"
-    // and "element"
-    var method = {
-      contentbefore: "prepend",
-      contentafter: "append",
-      elementbefore: "before",
-      elementafter: "after"
-    }[cfg.action];
-
-    if (cfg.source === "none") {
-      $target.replaceWith("");
-      return true;
-    }
-
-    if ($source.length === 0) {
-      log.warn("Aborting injection, source not found:", $source);
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()(trigger).trigger("pat-inject-missingSource", {
-        url: cfg.url,
-        selector: cfg.source
-      });
-      return false;
-    }
-
-    if (cfg.target === "none") // Special case. Don't do anything, we don't want any result
-      return true;
-
-    if ($target.length === 0) {
-      log.warn("Aborting injection, target not found:", $target);
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()(trigger).trigger("pat-inject-missingTarget", {
-        selector: cfg.target
-      });
-      return false;
-    }
-
-    if (cfg.action === "content") {
-      $target.empty().append($source);
-    } else if (cfg.action === "element") {
-      $target.replaceWith($source);
-    } else {
-      $target[method]($source);
-    }
-
-    return true;
-  },
-  _sourcesFromHtml: function inject_sourcesFromHtml(html, url, sources) {
-    var $html = inject._parseRawHtml(html, url);
-
-    return sources.map(function inject_sourcesFromHtml_map(source) {
-      if (source === "body") {
-        source = "#__original_body";
-      }
-
-      if (source === "none") {
-        return jquery__WEBPACK_IMPORTED_MODULE_1___default()("<!-- -->");
-      }
-
-      var $source = $html.find(source);
-
-      if ($source.length === 0) {
-        if (source != "title") {
-          log.warn("No source elements for selector:", source, $html);
-        }
-      }
-
-      $source.find('a[href^="#"]').each(function () {
-        var href = this.getAttribute("href");
-
-        if (href.indexOf("#{1}") !== -1) {
-          // We ignore hrefs containing #{1} because they're not
-          // valid and only applicable in the context of
-          // pat-clone.
-          return;
-        } // Skip in-document links pointing to an id that is inside
-        // this fragment.
-
-
-        if (href.length === 1) {
-          // Special case for top-of-page links
-          this.href = url;
-        } else if (!$source.find(href).length) {
-          this.href = url + href;
-        }
-      });
-      return $source;
-    });
-  },
-  _rebaseAttrs: {
-    A: "href",
-    FORM: "action",
-    IMG: "data-pat-inject-rebase-src",
-    OBJECT: "data",
-    SOURCE: "data-pat-inject-rebase-src",
-    VIDEO: "data-pat-inject-rebase-src"
-  },
-  _rebaseHTML: function inject_rebaseHTML(base, html) {
-    if (html === "") {
-      // Special case, source is none
-      return "";
-    }
-
-    var $page = jquery__WEBPACK_IMPORTED_MODULE_1___default()(html.replace(/(\s)(src\s*)=/gi, '$1src="" data-pat-inject-rebase-$2=').trim()).wrapAll("<div>").parent();
-    $page.find(Object.keys(inject._rebaseAttrs).join(",")).each(function () {
-      var $this = jquery__WEBPACK_IMPORTED_MODULE_1___default()(this),
-          attrName = inject._rebaseAttrs[this.tagName],
-          value = $this.attr(attrName);
-
-      if (value && value.slice(0, 2) !== "@@" && value[0] !== "#" && value.slice(0, 7) !== "mailto:" && value.slice(0, 11) !== "javascript:") {
-        value = _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].rebaseURL(base, value);
-        $this.attr(attrName, value);
-      }
-    }); // XXX: IE8 changes the order of attributes in html. The following
-    // lines move data-pat-inject-rebase-src to src.
-
-    $page.find("[data-pat-inject-rebase-src]").each(function () {
-      var $el = jquery__WEBPACK_IMPORTED_MODULE_1___default()(this);
-      $el.attr("src", $el.attr("data-pat-inject-rebase-src")).removeAttr("data-pat-inject-rebase-src");
-    });
-    return $page.html().replace(/src="" data-pat-inject-rebase-/g, "").trim();
-  },
-  _parseRawHtml: function inject_parseRawHtml(html, url) {
-    url = url || ""; // remove script tags and head and replace body by a div
-
-    var title = html.match(/\<title\>(.*)\<\/title\>/);
-    var clean_html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").replace(/<head\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/head>/gi, "").replace(/<body([^>]*?)>/gi, '<div id="__original_body">').replace(/<\/body([^>]*?)>/gi, "</div>");
-
-    if (title && title.length == 2) {
-      clean_html = title[0] + clean_html;
-    }
-
-    try {
-      clean_html = inject._rebaseHTML(url, clean_html);
-    } catch (e) {
-      log.error("Error rebasing urls", e);
-    }
-
-    var $html = jquery__WEBPACK_IMPORTED_MODULE_1___default()("<div/>").html(clean_html);
-
-    if ($html.children().length === 0) {
-      log.warn("Parsing html resulted in empty jquery object:", clean_html);
-    }
-
-    return $html;
-  },
-  // XXX: hack
-  _initAutoloadVisible: function inject_initAutoloadVisible($el, cfgs) {
-    if ($el.data("pat-inject-autoloaded")) {
-      // ignore executed autoloads
-      return false;
-    }
-
-    var $scrollable = $el.parents(":scrollable"),
-        checkVisibility; // function to trigger the autoload and mark as triggered
-
-    function trigger(event) {
-      if ($el.data("pat-inject-autoloaded")) {
-        return false;
-      }
-
-      $el.data("pat-inject-autoloaded", true);
-      inject.onTrigger.apply($el[0], []);
-      event && event.preventDefault();
-      return true;
-    }
-
-    $el.click(trigger); // Use case 1: a (heigh-constrained) scrollable parent
-
-    if ($scrollable.length) {
-      // if scrollable parent and visible -> trigger it
-      // we only look at the closest scrollable parent, no nesting
-      checkVisibility = _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].debounce(function inject_checkVisibility_scrollable() {
-        if ($el.data("patterns.autoload") || !jquery__WEBPACK_IMPORTED_MODULE_1___default.a.contains(document, $el[0])) {
-          return false;
-        }
-
-        if (!$el.is(":visible")) {
-          return false;
-        } // check if the target element still exists. Otherwise halt and catch fire
-
-
-        var target = ($el.data("pat-inject")[0].target || cfgs[0].defaultSelector).replace(/::element/, "");
-
-        if (target && target !== "self" && jquery__WEBPACK_IMPORTED_MODULE_1___default()(target).length === 0) {
-          return false;
-        }
-
-        var reltop = $el.safeOffset().top - $scrollable.safeOffset().top - 1000,
-            doTrigger = reltop <= $scrollable.innerHeight();
-
-        if (doTrigger) {
-          // checkVisibility was possibly installed as a scroll
-          // handler and has now served its purpose -> remove
-          jquery__WEBPACK_IMPORTED_MODULE_1___default()($scrollable[0]).off("scroll", checkVisibility);
-          jquery__WEBPACK_IMPORTED_MODULE_1___default()(window).off("resize.pat-autoload", checkVisibility);
-          return trigger();
-        }
-
-        return false;
-      }, 100);
-
-      if (checkVisibility()) {
-        return true;
-      } // wait to become visible - again only immediate scrollable parent
-
-
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()($scrollable[0]).on("scroll", checkVisibility);
-      jquery__WEBPACK_IMPORTED_MODULE_1___default()(window).on("resize.pat-autoload", checkVisibility);
-    } else {
-      // Use case 2: scrolling the entire page
-      checkVisibility = _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].debounce(function inject_checkVisibility_not_scrollable() {
-        if ($el.parents(":scrollable").length) {
-          // Because of a resize the element has now a scrollable parent
-          // and we should reset the correct event
-          jquery__WEBPACK_IMPORTED_MODULE_1___default()(window).off(".pat-autoload", checkVisibility);
-          return inject._initAutoloadVisible($el);
-        }
-
-        if ($el.data("patterns.autoload")) {
-          return false;
-        }
-
-        if (!$el.is(":visible")) {
-          return false;
-        }
-
-        if (!_core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].elementInViewport($el[0])) {
-          return false;
-        } // check if the target element still exists. Otherwise halt and catch fire
-
-
-        var target = ($el.data("pat-inject")[0].target || cfgs[0].defaultSelector).replace(/::element/, "");
-
-        if (target && target !== "self" && jquery__WEBPACK_IMPORTED_MODULE_1___default()(target).length === 0) {
-          return false;
-        }
-
-        jquery__WEBPACK_IMPORTED_MODULE_1___default()(window).off(".pat-autoload", checkVisibility);
-        return trigger();
-      }, 100);
-
-      if (checkVisibility()) {
-        return true;
-      } // https://github.com/w3c/IntersectionObserver/tree/master/polyfill
-
-
-      if (IntersectionObserver) {
-        var observer = new IntersectionObserver(checkVisibility);
-        $el.each(function (idx, el) {
-          observer.observe(el);
-        });
-      } else {
-        jquery__WEBPACK_IMPORTED_MODULE_1___default()(window).on("resize.pat-autoload scroll.pat-autoload", checkVisibility);
-      }
-    }
-
-    return false;
-  },
-  _initIdleTrigger: function inject_initIdleTrigger($el, delay) {
-    // XXX TODO: handle item removed from DOM
-    var timeout = parseInt(delay, 10);
-    var timer;
-
-    function onTimeout() {
-      inject.onTrigger.apply($el[0], []);
-      unsub();
-      clearTimeout(timer);
-    }
-
-    var onInteraction = _core_utils__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"].debounce(function onInteraction() {
-      if (!document.body.contains($el[0])) {
-        unsub();
-        return;
-      }
-
-      clearTimeout(timer);
-      timer = setTimeout(onTimeout, timeout);
-    }, timeout);
-
-    function unsub() {
-      ["scroll", "resize"].forEach(function (e) {
-        window.removeEventListener(e, onInteraction);
-      });
-      ["click", "keypress", "keyup", "mousemove", "touchstart", "touchend"].forEach(function (e) {
-        document.removeEventListener(e, onInteraction);
-      });
-    }
-
-    onInteraction();
-    ["scroll", "resize"].forEach(function (e) {
-      window.addEventListener(e, onInteraction);
-    });
-    ["click", "keypress", "keyup", "mousemove", "touchstart", "touchend"].forEach(function (e) {
-      document.addEventListener(e, onInteraction);
-    });
-  },
-  // XXX: simple so far to see what the team thinks of the idea
-  registerTypeHandler: function inject_registerTypeHandler(type, handler) {
-    inject.handlers[type] = handler;
-  },
-  callTypeHandler: function callTypeHandler(type, fn, context, params) {
-    return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-      return regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              type = type || "html";
-
-              if (!(inject.handlers[type] && jquery__WEBPACK_IMPORTED_MODULE_1___default.a.isFunction(inject.handlers[type][fn]))) {
-                _context2.next = 7;
-                break;
-              }
-
-              _context2.next = 4;
-              return inject.handlers[type][fn].apply(context, params);
-
-            case 4:
-              return _context2.abrupt("return", _context2.sent);
-
-            case 7:
-              return _context2.abrupt("return", null);
-
-            case 8:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2);
-    }))();
-  },
-  handlers: {
-    html: {
-      sources: function sources(cfgs, data) {
-        var sources = cfgs.map(function (cfg) {
-          return cfg.source;
-        });
-        sources.push("title");
-        return inject._sourcesFromHtml(data, cfgs[0].url, sources);
-      }
-    }
-  }
-};
-jquery__WEBPACK_IMPORTED_MODULE_1___default()(document).on("patterns-injected.inject", function onInjected(ev, cfg, trigger, injected) {
-  /* Listen for the patterns-injected event.
-   *
-   * Remove the "loading-class" classes from all injection targets and
-   * then scan the injected content for new patterns.
-   */
-  if (cfg && cfg.skipPatInjectHandler) {
-    // Allow skipping this handler but still have other handlers in other
-    // patterns listen to ``patterns-injected``.
-    return;
-  }
-
-  if (cfg) {
-    cfg.$target.removeClass(cfg.loadingClass); // Remove the executing class, add the executed class to the element with pat.inject on it.
-
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()(trigger).removeClass(cfg.executingClass).addClass(cfg.executedClass);
-  }
-
-  if (injected.nodeType !== TEXT_NODE && injected !== COMMENT_NODE) {
-    _core_registry__WEBPACK_IMPORTED_MODULE_6__[/* default */ "a"].scan(injected, null, {
-      type: "injection",
-      element: trigger
-    });
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()(injected).trigger("patterns-injected-scanned");
-  }
-});
-jquery__WEBPACK_IMPORTED_MODULE_1___default()(window).on("popstate", function (event) {
-  // popstate also triggers on traditional anchors
-  if (!event.originalEvent.state && "replaceState" in history) {
-    try {
-      history.replaceState("anchor", "", document.location.href);
-    } catch (e) {
-      log.debug(e);
-    }
-
-    return;
-  } // Not only change the URL, also reload the page.
-
-
-  window.location.reload();
-}); // this entry ensures that the initally loaded page can be reached with
-// the back button
-
-if ("replaceState" in history) {
-  try {
-    history.replaceState("pageload", "", document.location.href);
-  } catch (e) {
-    log.debug(e);
-  }
-}
-
-_core_registry__WEBPACK_IMPORTED_MODULE_6__[/* default */ "a"].register(inject);
-/* harmony default export */ __webpack_exports__["a"] = (inject);
 
 /***/ }),
 
@@ -12103,7 +11246,7 @@ __webpack_require__.p = "/assets/script/"; // eslint-disable-line no-undef
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {module.exports = global["jQuery"] = __webpack_require__(309);
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(36)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
 
 /***/ }),
 
@@ -22987,6 +22130,1303 @@ return jQuery;
 
 /***/ }),
 
+/***/ 31:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _core_jquery_ext__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(55);
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(23);
+/* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(0);
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(13);
+/* harmony import */ var _ajax_ajax__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(61);
+/* harmony import */ var _core_dom__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(25);
+/* harmony import */ var _core_logging__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(9);
+/* harmony import */ var _core_parser__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(3);
+/* harmony import */ var _core_registry__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(12);
+/* harmony import */ var _core_utils__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(2);
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+ // for :scrollable for autoLoading-visible
+
+ // needed for ``await`` support
+
+
+
+
+
+
+
+
+
+var log = _core_logging__WEBPACK_IMPORTED_MODULE_6__[/* default */ "a"].getLogger("pat.inject");
+var parser = new _core_parser__WEBPACK_IMPORTED_MODULE_7__[/* default */ "a"]("inject");
+var TEXT_NODE = 3;
+var COMMENT_NODE = 8;
+parser.addArgument("default-selector");
+parser.addArgument("target");
+parser.addArgument("data-type", "html");
+parser.addArgument("next-href");
+parser.addArgument("source");
+parser.addArgument("trigger", "default", ["default", "autoload", "autoload-visible", "idle"]);
+parser.addArgument("delay"); // only used in autoload
+
+parser.addArgument("confirm", "class", ["never", "always", "form-data", "class"]);
+parser.addArgument("confirm-message", "Are you sure you want to leave this page?");
+parser.addArgument("hooks", [], ["raptor"], true); // After injection, pat-inject will trigger an event for each hook: pat-inject-hook-$(hook)
+
+parser.addArgument("loading-class", "injecting"); // Add a class to the target while content is still loading.
+
+parser.addArgument("executing-class", "executing"); // Add a class to the element while content is still loading.
+
+parser.addArgument("executed-class", "executed"); // Add a class to the element when content is loaded.
+
+parser.addArgument("class"); // Add a class to the injected content.
+
+parser.addArgument("history");
+parser.addArgument("push-marker");
+parser.addArgument("scroll"); // XXX: this should not be here but the parser would bail on
+// unknown parameters and expand/collapsible need to pass the url
+// to us
+
+parser.addArgument("url");
+var inject = {
+  name: "inject",
+  trigger: ".raptor-ui .ui-button.pat-inject, a.pat-inject, form.pat-inject, .pat-subform.pat-inject",
+  parser: parser,
+  init: function init($el, opts) {
+    var _this = this;
+
+    var cfgs = this.extractConfig($el, opts);
+
+    if (cfgs.some(function (e) {
+      return e.history === "record";
+    }) && !("pushState" in history)) {
+      // if the injection shall add a history entry and HTML5 pushState
+      // is missing, then don't initialize the injection.
+      return $el;
+    }
+
+    $el.data("pat-inject", cfgs);
+
+    if (cfgs[0].nextHref && cfgs[0].nextHref.indexOf("#") === 0) {
+      // In case the next href is an anchor, and it already
+      // exists in the page, we do not activate the injection
+      // but instead just change the anchors href.
+      // XXX: This is used in only one project for linked
+      // fullcalendars, it's sanity is wonky and we should
+      // probably solve it differently.
+      if ($el.is("a") && jquery__WEBPACK_IMPORTED_MODULE_2___default()(cfgs[0].nextHref).length > 0) {
+        log.debug("Skipping as next href is anchor, which already exists", cfgs[0].nextHref); // XXX: reconsider how the injection enters exhausted state
+
+        return $el.attr({
+          href: (window.location.href.split("#")[0] || "") + cfgs[0].nextHref
+        });
+      }
+    }
+
+    if (cfgs[0].pushMarker) {
+      jquery__WEBPACK_IMPORTED_MODULE_2___default()("body").on("push", function (event, data) {
+        log.debug("received push message: " + data);
+
+        if (data == cfgs[0].pushMarker) {
+          log.debug("re-injecting " + data);
+
+          _this.onTrigger({
+            currentTarget: $el[0]
+          });
+        }
+      });
+    }
+
+    if (cfgs[0].idleTrigger) {
+      this._initIdleTrigger($el, cfgs[0].idleTrigger);
+    } else {
+      switch (cfgs[0].trigger) {
+        case "default":
+          cfgs.forEach(function (cfg) {
+            if (cfg.delay) {
+              cfg.processDelay = cfg.delay;
+            }
+          }); // setup event handlers
+
+          if ($el.is("form")) {
+            $el.on("submit.pat-inject", this.onTrigger.bind(this)).on("click.pat-inject", "[type=submit]", _ajax_ajax__WEBPACK_IMPORTED_MODULE_4__[/* default */ "a"].onClickSubmit).on("click.pat-inject", "[type=submit][formaction], [type=image][formaction]", this.onFormActionSubmit.bind(this));
+          } else if ($el.is(".pat-subform")) {
+            log.debug("Initializing subform with injection");
+          } else {
+            $el.on("click.pat-inject", this.onTrigger.bind(this));
+          }
+
+          break;
+
+        case "autoload":
+          if (!cfgs[0].delay) {
+            this.onTrigger({
+              currentTarget: $el[0]
+            });
+          } else {
+            // generate UID
+            var uid = Math.random().toString(36);
+            $el.attr("data-pat-inject-uid", uid); // function to trigger the autoload and mark as triggered
+
+            var delayed_trigger = function delayed_trigger(uid_) {
+              // Check if the element has been removed from the dom
+              var still_there = jquery__WEBPACK_IMPORTED_MODULE_2___default()("[data-pat-inject-uid='" + uid_ + "']");
+              if (still_there.length == 0) return false;
+              $el.data("pat-inject-autoloaded", true);
+
+              _this.onTrigger({
+                currentTarget: $el[0]
+              });
+
+              return true;
+            };
+
+            window.setTimeout(delayed_trigger.bind(null, uid), cfgs[0].delay);
+          }
+
+          break;
+
+        case "autoload-visible":
+          this._initAutoloadVisible($el, cfgs);
+
+          break;
+
+        case "idle":
+          this._initIdleTrigger($el, cfgs[0].delay);
+
+          break;
+      }
+    }
+
+    log.debug("initialised:", $el);
+    return $el;
+  },
+  destroy: function destroy($el) {
+    $el.off(".pat-inject");
+    $el.data("pat-inject", null);
+    return $el;
+  },
+  onTrigger: function onTrigger(e) {
+    /* Injection has been triggered, either via form submission or a
+     * link has been clicked.
+     */
+    var $el = jquery__WEBPACK_IMPORTED_MODULE_2___default()(e.currentTarget);
+    var cfgs = $el.data("pat-inject");
+
+    if ($el.is("form")) {
+      jquery__WEBPACK_IMPORTED_MODULE_2___default()(cfgs).each(function (i, v) {
+        v.params = jquery__WEBPACK_IMPORTED_MODULE_2___default.a.param($el.serializeArray());
+      });
+    }
+
+    e.preventDefault && e.preventDefault();
+    $el.trigger("patterns-inject-triggered");
+    this.execute(cfgs, $el);
+  },
+  onFormActionSubmit: function onFormActionSubmit(e) {
+    _ajax_ajax__WEBPACK_IMPORTED_MODULE_4__[/* default */ "a"].onClickSubmit(e); // make sure the submitting button is sent with the form
+
+    var $button = jquery__WEBPACK_IMPORTED_MODULE_2___default()(e.target);
+    var formaction = $button.attr("formaction");
+    var $form = $button.parents(".pat-inject").first();
+    var opts = {
+      url: formaction
+    };
+    var $cfg_node = $button.closest("[data-pat-inject]");
+    var cfgs = this.extractConfig($cfg_node, opts);
+    jquery__WEBPACK_IMPORTED_MODULE_2___default()(cfgs).each(function (i, v) {
+      v.params = jquery__WEBPACK_IMPORTED_MODULE_2___default.a.param($form.serializeArray());
+    });
+    e.preventDefault();
+    $form.trigger("patterns-inject-triggered");
+    this.execute(cfgs, $form);
+  },
+  submitSubform: function submitSubform($sub) {
+    /* This method is called from pat-subform
+     */
+    var $el = $sub.parents("form");
+    var cfgs = $sub.data("pat-inject"); // store the params of the subform in the config, to be used by history
+
+    jquery__WEBPACK_IMPORTED_MODULE_2___default()(cfgs).each(function (i, v) {
+      v.params = jquery__WEBPACK_IMPORTED_MODULE_2___default.a.param($sub.serializeArray());
+    });
+
+    try {
+      $el.trigger("patterns-inject-triggered");
+    } catch (e) {
+      log.error("patterns-inject-triggered", e);
+    }
+
+    this.execute(cfgs, $el);
+  },
+  extractConfig: function extractConfig($el, opts) {
+    opts = jquery__WEBPACK_IMPORTED_MODULE_2___default.a.extend({}, opts);
+    var cfgs = parser.parse($el, opts, true);
+    cfgs.forEach(function (cfg) {
+      // opts and cfg have priority, fallback to href/action
+      cfg.url = opts.url || cfg.url || $el.attr("href") || $el.attr("action") || $el.parents("form").attr("action") || ""; // separate selector from url
+
+      var urlparts = cfg.url.split("#");
+      cfg.url = urlparts[0];
+
+      if (urlparts.length > 2) {
+        log.warn("Ignoring additional source ids:", urlparts.slice(2));
+      }
+
+      if (!cfg.defaultSelector) {
+        // if no selector, check for selector as part of original url
+        cfg.defaultSelector = urlparts[1] && "#" + urlparts[1] || "body";
+      }
+
+      if (cfg.delay) {
+        try {
+          cfg.delay = _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].parseTime(cfg.delay);
+        } catch (e) {
+          log.warn("Invalid delay value: ", cfg.delay);
+          cfg.delay = null;
+        }
+      }
+
+      cfg.processDelay = 0;
+    });
+    return cfgs;
+  },
+  elementIsDirty: function elementIsDirty(m) {
+    /* Check whether the passed in form element contains a value.
+     */
+    var data = jquery__WEBPACK_IMPORTED_MODULE_2___default.a.map(m.find(":input:not(select)"), function (i) {
+      var val = jquery__WEBPACK_IMPORTED_MODULE_2___default()(i).val();
+      return Boolean(val) && val !== jquery__WEBPACK_IMPORTED_MODULE_2___default()(i).attr("placeholder");
+    });
+    return jquery__WEBPACK_IMPORTED_MODULE_2___default.a.inArray(true, data) !== -1;
+  },
+  askForConfirmation: function askForConfirmation(cfgs) {
+    var _this2 = this;
+
+    /* If configured to do so, show a confirmation dialog to the user.
+     * This is done before attempting to perform injection.
+     */
+    var should_confirm = false;
+    var message;
+
+    underscore__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].each(cfgs, function (cfg) {
+      var _confirm = false;
+
+      if (cfg.confirm == "always") {
+        _confirm = true;
+      } else if (cfg.confirm === "form-data") {
+        if (cfg.target != "none") _confirm = _this2.elementIsDirty(cfg.$target);
+      } else if (cfg.confirm === "class") {
+        if (cfg.target != "none") _confirm = cfg.$target.hasClass("is-dirty");
+      }
+
+      if (_confirm) {
+        should_confirm = true;
+        message = cfg.confirmMessage;
+      }
+    });
+
+    if (should_confirm) {
+      if (!window.confirm(message)) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+  ensureTarget: function ensureTarget(cfg, $el) {
+    /* Make sure that a target element exists and that it's assigned to
+     * cfg.$target.
+     */
+    // make sure target exist
+    if (cfg.target === "none") // special case, we don't want to inject anything
+      return true;
+    cfg.$target = cfg.$target || (cfg.target === "self" ? $el : jquery__WEBPACK_IMPORTED_MODULE_2___default()(cfg.target));
+
+    if (cfg.$target.length === 0) {
+      if (!cfg.target) {
+        log.error("Need target selector", cfg);
+        return false;
+      }
+
+      cfg.$target = this.createTarget(cfg.target);
+      cfg.$injected = cfg.$target;
+    }
+
+    return true;
+  },
+  verifySingleConfig: function verifySingleConfig($el, url, cfg) {
+    /* Verify one of potentially multiple configs (i.e. argument lists).
+     *
+     * Extract modifiers such as ::element or ::after.
+     * Ensure that a target element exists.
+     */
+    if (cfg.url !== url) {
+      // in case of multi-injection, all injections need to use
+      // the same url
+      log.error("Unsupported different urls for multi-inject");
+      return false;
+    } // defaults
+
+
+    cfg.source = cfg.source || cfg.defaultSelector;
+    cfg.target = cfg.target || cfg.defaultSelector;
+
+    if (!this.extractModifiers(cfg)) {
+      return false;
+    }
+
+    if (!this.ensureTarget(cfg, $el)) {
+      return false;
+    }
+
+    this.listenForFormReset(cfg);
+    return true;
+  },
+  verifyConfig: function verifyConfig(cfgs, $el) {
+    /* Verify and post-process all the configurations.
+     * Each "config" is an arguments list separated by the &&
+     * combination operator.
+     *
+     * In case of multi-injection, only one URL is allowed, which
+     * should be specified in the first config (i.e. arguments list).
+     *
+     * Verification for each cfg in the array needs to succeed.
+     */
+    return cfgs.every(underscore__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].partial(this.verifySingleConfig.bind(this), $el, cfgs[0].url));
+  },
+  listenForFormReset: function listenForFormReset(cfg) {
+    /* if pat-inject is used to populate target in some form and when
+     * Cancel button is pressed (this triggers reset event on the
+     * form) you would expect to populate with initial placeholder
+     */
+    if (cfg.target === "none") // Special case, we don't want to display any return value.
+      return;
+    var $form = cfg.$target.parents("form");
+
+    if ($form.length !== 0 && cfg.$target.data("initial-value") === undefined) {
+      cfg.$target.data("initial-value", cfg.$target.html());
+      $form.on("reset", function () {
+        cfg.$target.html(cfg.$target.data("initial-value"));
+      });
+    }
+  },
+  extractModifiers: function extractModifiers(cfg) {
+    /* The user can add modifiers to the source and target arguments.
+     * Modifiers such as ::element, ::before and ::after.
+     * We identifiy and extract these modifiers here.
+     */
+    var source_re = /^(.*?)(::element)?$/;
+    var target_re = /^(.*?)(::element)?(::after|::before)?$/;
+    var source_match = source_re.exec(cfg.source);
+    var target_match = target_re.exec(cfg.target);
+    cfg.source = source_match[1];
+    cfg.sourceMod = source_match[2] ? "element" : "content";
+    cfg.target = target_match[1];
+    var targetMod = target_match[2] ? "element" : "content";
+    var targetPosition = (target_match[3] || "::").slice(2); // position relative to target
+
+    if (cfg.loadingClass) {
+      cfg.loadingClass += " " + cfg.loadingClass + "-" + targetMod;
+
+      if (targetPosition && cfg.loadingClass) {
+        cfg.loadingClass += " " + cfg.loadingClass + "-" + targetPosition;
+      }
+    }
+
+    cfg.action = targetMod + targetPosition; // Once we start detecting illegal combinations, we'll
+    // return false in case of error
+
+    return true;
+  },
+  createTarget: function createTarget(selector) {
+    /* create a target that matches the selector
+     *
+     * XXX: so far we only support #target and create a div with
+     * that id appended to the body.
+     */
+    if (selector.slice(0, 1) !== "#") {
+      log.error("only id supported for non-existing target");
+      return null;
+    }
+
+    var $target = jquery__WEBPACK_IMPORTED_MODULE_2___default()("<div />").attr({
+      id: selector.slice(1)
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_2___default()("body").append($target);
+    return $target;
+  },
+  stopBubblingFromRemovedElement: function stopBubblingFromRemovedElement($el, cfgs, ev) {
+    /* IE8 fix. Stop event from propagating IF $el will be removed
+     * from the DOM. With pat-inject, often $el is the target that
+     * will itself be replaced with injected content.
+     *
+     * IE8 cannot handle events bubbling up from an element removed
+     * from the DOM.
+     *
+     * See: http://stackoverflow.com/questions/7114368/why-is-jquery-remove-throwing-attr-exception-in-ie8
+     */
+    var _iterator = _createForOfIteratorHelper(cfgs),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var cfg = _step.value;
+        var sel = cfg.target;
+
+        if ($el.parents(sel).addBack(sel) && !ev.isPropagationStopped()) {
+          ev.stopPropagation();
+          return;
+        }
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+  },
+  _performInjection: function _performInjection(target, $el, $source, cfg, trigger, title) {
+    /* Called after the XHR has succeeded and we have a new $source
+     * element to inject.
+     */
+    if (cfg.sourceMod === "content") {
+      $source = $source.contents();
+    }
+
+    var $src; // $source.clone() does not work with shived elements in IE8
+
+    if (document.all && document.querySelector && !document.addEventListener) {
+      $src = $source.map(function (idx, el) {
+        return jquery__WEBPACK_IMPORTED_MODULE_2___default()(el.outerHTML)[0];
+      });
+    } else {
+      $src = $source.safeClone();
+    }
+
+    $src.findInclusive("img").on("load", function (e) {
+      jquery__WEBPACK_IMPORTED_MODULE_2___default()(e.currentTarget).trigger("pat-inject-content-loaded");
+    });
+    var $injected = cfg.$injected || $src; // Now the injection actually happens.
+
+    if (this._inject(trigger, $src, jquery__WEBPACK_IMPORTED_MODULE_2___default()(target), cfg)) {
+      this._afterInjection($el, $injected, cfg);
+    } // History support. if subform is submitted, append form params
+
+
+    var glue = cfg.url.indexOf("?") > -1 ? "&" : "?";
+
+    if (cfg.history === "record" && "pushState" in history) {
+      if (cfg.params) {
+        history.pushState({
+          url: cfg.url + glue + cfg.params
+        }, "", cfg.url + glue + cfg.params);
+      } else {
+        history.pushState({
+          url: cfg.url
+        }, "", cfg.url);
+      } // Also inject title element if we have one
+
+
+      if (title) this._inject(trigger, title, jquery__WEBPACK_IMPORTED_MODULE_2___default()("title"), {
+        action: "element"
+      });
+    }
+  },
+  _afterInjection: function _afterInjection($el, $injected, cfg) {
+    /* Set a class on the injected elements and fire the
+     * patterns-injected event.
+     */
+    $injected.filter(function (idx, el_) {
+      // setting data on textnode fails in IE8
+      return el_.nodeType !== TEXT_NODE;
+    }).data("pat-injected", {
+      origin: cfg.url
+    });
+
+    if ($injected.length === 1 && $injected[0].nodeType == TEXT_NODE) {
+      // Only one element injected, and it was a text node.
+      // So we trigger "patterns-injected" on the parent.
+      // The event handler should check whether the
+      // injected element and the triggered element are
+      // the same.
+      $injected.parent().trigger("patterns-injected", [cfg, $el[0], $injected[0]]);
+    } else {
+      $injected.each(function (idx, el_) {
+        // patterns-injected event will be triggered for each injected (non-text) element.
+        if (el_.nodeType !== TEXT_NODE) {
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(el_).addClass(cfg["class"]).trigger("patterns-injected", [cfg, $el[0], el_]);
+        }
+      });
+    }
+
+    if (cfg.scroll && cfg.scroll !== "none") {
+      var scroll_container = cfg.$target.parents().addBack().filter(":scrollable");
+      scroll_container = scroll_container.length ? scroll_container[0] : window; // default for scroll===top
+
+      var top = 0;
+      var left = 0;
+
+      if (cfg.scroll !== "top") {
+        var scroll_target = cfg.scroll === "target" ? cfg.$target[0] : $injected.filter(cfg.scroll)[0]; // Get the reference element to which against we calculate
+        // the relative position of the target.
+        // In case of a scroll container of window, we do not have
+        // getBoundingClientRect method, so get the body instead.
+
+        var scroll_container_ref = scroll_container === window ? document.body : scroll_container; // Calculate absolute [¹] position difference between
+        // scroll_container and scroll_target.
+        // Substract the container's border from the scrolling
+        // value, as this one isn't respected by
+        // getBoundingClientRect [²] and would lead to covered
+        // items [³].
+        // ¹) so that it doesn't make a difference, if the element
+        // is below or above the scrolling container. We just need
+        // to know the absolute difference.
+        // ²) Calculations are based from the viewport.
+        // ³) See:
+        //      https://docs.microsoft.com/en-us/previous-versions//hh781509(v=vs.85)
+        //      https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+
+        left = Math.abs(scroll_target.getBoundingClientRect().left + scroll_container_ref.scrollLeft - scroll_container_ref.getBoundingClientRect().left - _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].getCSSValue(scroll_container_ref, "border-left-width", true));
+        top = Math.abs(scroll_target.getBoundingClientRect().top + scroll_container_ref.scrollTop - scroll_container_ref.getBoundingClientRect().top - _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].getCSSValue(scroll_container_ref, "border-top-width", true));
+      }
+
+      if (scroll_container === window) {
+        scroll_container.scrollTo(left, top);
+      } else {
+        scroll_container.scrollLeft = left;
+        scroll_container.scrollTop = top;
+      }
+    }
+
+    $el.trigger("pat-inject-success");
+  },
+  _onInjectSuccess: function _onInjectSuccess($el, cfgs, ev) {
+    var _this3 = this;
+
+    return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+      var data, sources$, title;
+      return regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              data = ev && ev.jqxhr && ev.jqxhr.responseText;
+
+              if (data) {
+                _context.next = 4;
+                break;
+              }
+
+              log.warn("No response content, aborting", ev);
+              return _context.abrupt("return");
+
+            case 4:
+              if (cfgs[0].source === "none") {
+                // Special case, we want to call something, but we don't want to inject anything
+                data = "";
+              }
+
+              jquery__WEBPACK_IMPORTED_MODULE_2___default.a.each(cfgs[0].hooks || [], function (idx, hook) {
+                return $el.trigger("pat-inject-hook-" + hook);
+              });
+
+              _this3.stopBubblingFromRemovedElement($el, cfgs, ev);
+
+              _context.next = 9;
+              return _this3.callTypeHandler(cfgs[0].dataType, "sources", $el, [cfgs, data, ev]);
+
+            case 9:
+              sources$ = _context.sent;
+
+              if (sources$ && sources$[sources$.length - 1] && sources$[sources$.length - 1][0] && sources$[sources$.length - 1][0].nodeName == "TITLE") {
+                title = sources$[sources$.length - 1];
+              }
+
+              cfgs.forEach(function (cfg, idx1) {
+                var perform_inject = function perform_inject() {
+                  if (cfg.target != "none") cfg.$target.each(function (idx2, target) {
+                    _this3._performInjection(target, $el, sources$[idx1], cfg, ev.target, title);
+                  });
+                };
+
+                if (cfg.processDelay) {
+                  setTimeout(function () {
+                    return perform_inject();
+                  }, cfg.processDelay);
+                } else {
+                  perform_inject();
+                }
+              });
+
+              if (cfgs[0].nextHref && $el.is("a")) {
+                // In case next-href is specified the anchor's href will
+                // be set to it after the injection is triggered.
+                $el.attr({
+                  href: cfgs[0].nextHref.replace(/&amp;/g, "&")
+                });
+
+                _this3.destroy($el);
+              }
+
+              $el.off("pat-ajax-success.pat-inject");
+              $el.off("pat-ajax-error.pat-inject");
+
+            case 15:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }))();
+  },
+  _onInjectError: function _onInjectError($el, cfgs, event) {
+    return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+      var _document$querySelect;
+
+      var explanation, fallback, status, timestamp, url_params, fallback_url, fallback_response, msg_attr;
+      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              explanation = "";
+              status = event.jqxhr.status;
+              timestamp = new Date();
+
+              if (status % 100 == 4) {
+                explanation = "Sorry! We couldn't find the page to load. Please make a screenshot and send it to support. Thank you!";
+              } else if (status % 100 == 5) {
+                explanation = "I am very sorry! There was an error at the server. Please make a screenshot and contact support. Thank you!";
+              } else if (status == 0) {
+                explanation = "It seems, the server is down. Please make a screenshot and contact support. Thank you!";
+              }
+
+              url_params = new URLSearchParams(window.location.search);
+              fallback_url = (_document$querySelect = document.querySelector("meta[name=pat-inject-".concat(status, "]"))) === null || _document$querySelect === void 0 ? void 0 : _document$querySelect.getAttribute("content", false);
+
+              if (!(fallback_url && url_params.get("pat-inject-errorhandler.off") === null)) {
+                _context2.next = 20;
+                break;
+              }
+
+              _context2.prev = 7;
+              _context2.next = 10;
+              return fetch(fallback_url, {
+                method: "GET"
+              });
+
+            case 10:
+              fallback_response = _context2.sent;
+              fallback = document.createElement("html");
+              _context2.next = 14;
+              return fallback_response.text();
+
+            case 14:
+              fallback.innerHTML = _context2.sent;
+              fallback = fallback.querySelector("body");
+              _context2.next = 20;
+              break;
+
+            case 18:
+              _context2.prev = 18;
+              _context2.t0 = _context2["catch"](7);
+
+            case 20:
+              // clean up
+              cfgs.forEach(function (cfg) {
+                if ("$injected" in cfg) cfg.$injected.remove();
+              });
+              $el.off("pat-ajax-success.pat-inject");
+              $el.off("pat-ajax-error.pat-inject");
+
+              if (fallback) {
+                document.body.innerHTML = fallback.innerHTML;
+              } else {
+                msg_attr = fallback || "".concat(explanation, " Status is ").concat(status, " ").concat(event.jqxhr.statusText, ", time was ").concat(timestamp, ". You can click to close this.");
+                jquery__WEBPACK_IMPORTED_MODULE_2___default()("body").attr("data-error-message", msg_attr);
+                jquery__WEBPACK_IMPORTED_MODULE_2___default()("body").on("click", function () {
+                  jquery__WEBPACK_IMPORTED_MODULE_2___default()("body").removeAttr("data-error-message");
+                  window.location.href = window.location.href; // reload
+                });
+              }
+
+            case 24:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2, null, [[7, 18]]);
+    }))();
+  },
+  execute: function execute(cfgs, $el) {
+    /* Actually execute the injection.
+     *
+     * Either by making an ajax request or by spoofing an ajax
+     * request when the content is readily available in the current page.
+     */
+    // get a kinda deep copy, we scribble on it
+    cfgs = cfgs.map(function (cfg) {
+      return jquery__WEBPACK_IMPORTED_MODULE_2___default.a.extend({}, cfg);
+    });
+
+    if (!this.verifyConfig(cfgs, $el)) {
+      return;
+    }
+
+    if (!this.askForConfirmation(cfgs)) {
+      return;
+    }
+
+    if ($el.data("pat-inject-triggered")) {
+      // Prevent double triggers;
+      return;
+    }
+
+    $el.data("pat-inject-triggered", true); // possibility for spinners on targets
+
+    underscore__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].chain(cfgs).filter(underscore__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].property("loadingClass")).each(function (cfg) {
+      if (cfg.target != "none") cfg.$target.addClass(cfg.loadingClass);
+    }); // Put the execute class on the elem that has pat inject on it
+
+
+    underscore__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].chain(cfgs).filter(underscore__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].property("loadingClass")).each(function (cfg) {
+      return $el.addClass(cfg.executingClass);
+    });
+
+    $el.on("pat-ajax-success.pat-inject", this._onInjectSuccess.bind(this, $el, cfgs));
+    $el.on("pat-ajax-error.pat-inject", this._onInjectError.bind(this, $el, cfgs));
+    $el.on("pat-ajax-success.pat-inject pat-ajax-error.pat-inject", function () {
+      return $el.removeData("pat-inject-triggered");
+    });
+
+    if (cfgs[0].url.length) {
+      _ajax_ajax__WEBPACK_IMPORTED_MODULE_4__[/* default */ "a"].request($el, {
+        url: cfgs[0].url
+      });
+    } else {
+      // If there is no url specified, then content is being fetched
+      // from the same page.
+      // No need to do an ajax request for this, so we spoof the ajax
+      // event.
+      $el.trigger({
+        type: "pat-ajax-success",
+        jqxhr: {
+          responseText: jquery__WEBPACK_IMPORTED_MODULE_2___default()("body").html()
+        }
+      });
+    }
+  },
+  _inject: function _inject(trigger, $source, $target, cfg) {
+    // action to jquery method mapping, except for "content"
+    // and "element"
+    var method = {
+      contentbefore: "prepend",
+      contentafter: "append",
+      elementbefore: "before",
+      elementafter: "after"
+    }[cfg.action];
+
+    if (cfg.source === "none") {
+      $target.replaceWith("");
+      return true;
+    }
+
+    if ($source.length === 0) {
+      log.warn("Aborting injection, source not found:", $source);
+      jquery__WEBPACK_IMPORTED_MODULE_2___default()(trigger).trigger("pat-inject-missingSource", {
+        url: cfg.url,
+        selector: cfg.source
+      });
+      return false;
+    }
+
+    if (cfg.target === "none") // Special case. Don't do anything, we don't want any result
+      return true;
+
+    if ($target.length === 0) {
+      log.warn("Aborting injection, target not found:", $target);
+      jquery__WEBPACK_IMPORTED_MODULE_2___default()(trigger).trigger("pat-inject-missingTarget", {
+        selector: cfg.target
+      });
+      return false;
+    }
+
+    if (cfg.action === "content") {
+      $target.empty().append($source);
+    } else if (cfg.action === "element") {
+      $target.replaceWith($source);
+    } else {
+      $target[method]($source);
+    }
+
+    return true;
+  },
+  _sourcesFromHtml: function _sourcesFromHtml(html, url, sources) {
+    var $html = this._parseRawHtml(html, url);
+
+    return sources.map(function (source) {
+      if (source === "body") {
+        source = "#__original_body";
+      }
+
+      if (source === "none") {
+        return jquery__WEBPACK_IMPORTED_MODULE_2___default()("<!-- -->");
+      }
+
+      var $source = $html.find(source);
+
+      if ($source.length === 0) {
+        if (source != "title") {
+          log.warn("No source elements for selector:", source, $html);
+        }
+      }
+
+      $source.find('a[href^="#"]').each(function (idx, el_) {
+        var href = el_.getAttribute("href");
+
+        if (href.indexOf("#{1}") !== -1) {
+          // We ignore hrefs containing #{1} because they're not
+          // valid and only applicable in the context of
+          // pat-clone.
+          return;
+        } // Skip in-document links pointing to an id that is inside
+        // this fragment.
+
+
+        if (href.length === 1) {
+          // Special case for top-of-page links
+          el_.href = url;
+        } else if (!$source.find(href).length) {
+          el_.href = url + href;
+        }
+      });
+      return $source;
+    });
+  },
+  _rebaseAttrs: {
+    A: "href",
+    FORM: "action",
+    IMG: "data-pat-inject-rebase-src",
+    OBJECT: "data",
+    SOURCE: "data-pat-inject-rebase-src",
+    VIDEO: "data-pat-inject-rebase-src"
+  },
+  _rebaseOptions: {
+    "calendar": ["url", "event-sources"],
+    "collapsible": ["load-content"],
+    "date-picker": ["i18n"],
+    "datetime-picker": ["i18n"],
+    "inject": ["url"]
+  },
+  _rebaseHTML: function _rebaseHTML(base, html) {
+    var _this4 = this;
+
+    if (html === "") {
+      // Special case, source is none
+      return "";
+    }
+
+    var $page = jquery__WEBPACK_IMPORTED_MODULE_2___default()(html.replace(/(\s)(src\s*)=/gi, '$1src="" data-pat-inject-rebase-$2=').trim()).wrapAll("<div>").parent();
+    $page.find(Object.keys(this._rebaseAttrs).join(",")).each(function (idx, el_) {
+      var $el_ = jquery__WEBPACK_IMPORTED_MODULE_2___default()(el_);
+      var attrName = _this4._rebaseAttrs[el_.tagName];
+      var value = $el_.attr(attrName);
+
+      if (value && value.slice(0, 2) !== "@@" && value[0] !== "#" && value.slice(0, 7) !== "mailto:" && value.slice(0, 11) !== "javascript:") {
+        value = _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].rebaseURL(base, value);
+        $el_.attr(attrName, value);
+      }
+    });
+
+    for (var _i = 0, _Object$entries = Object.entries(this._rebaseOptions); _i < _Object$entries.length; _i++) {
+      var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          pattern_name = _Object$entries$_i[0],
+          opts = _Object$entries$_i[1];
+
+      var _iterator2 = _createForOfIteratorHelper(_core_dom__WEBPACK_IMPORTED_MODULE_5__[/* default */ "a"].querySelectorAllAndMe($page[0], "[data-pat-".concat(pattern_name, "]"))),
+          _step2;
+
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var el_ = _step2.value;
+          var val = el_.getAttribute("data-pat-".concat(pattern_name), false);
+
+          if (val) {
+            var pattern = _core_registry__WEBPACK_IMPORTED_MODULE_8__[/* default */ "a"].patterns[pattern_name];
+            var pattern_parser = pattern === null || pattern === void 0 ? void 0 : pattern.parser;
+
+            if (!pattern_parser) {
+              continue;
+            }
+
+            var options = pattern_parser._parse(val);
+
+            var changed = false;
+
+            var _iterator3 = _createForOfIteratorHelper(opts),
+                _step3;
+
+            try {
+              for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+                var opt = _step3.value;
+                var _val = options[opt];
+
+                if (typeof _val === "undefined") {
+                  continue;
+                }
+
+                changed = true;
+
+                if (Array.isArray(_val)) {
+                  options[opt] = _val.map(function (it) {
+                    return _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].rebaseURL(base, it);
+                  });
+                } else {
+                  options[opt] = _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].rebaseURL(base, _val);
+                }
+              }
+            } catch (err) {
+              _iterator3.e(err);
+            } finally {
+              _iterator3.f();
+            }
+
+            if (changed) {
+              el_.setAttribute("data-pat-".concat(pattern_name), JSON.stringify(options));
+            }
+          }
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+    } // XXX: IE8 changes the order of attributes in html. The following
+    // lines move data-pat-inject-rebase-src to src.
+
+
+    $page.find("[data-pat-inject-rebase-src]").each(function (id, el_) {
+      var $el = jquery__WEBPACK_IMPORTED_MODULE_2___default()(el_);
+      $el.attr("src", $el.attr("data-pat-inject-rebase-src")).removeAttr("data-pat-inject-rebase-src");
+    });
+    return $page.html().replace(/src="" data-pat-inject-rebase-/g, "").trim();
+  },
+  _parseRawHtml: function _parseRawHtml(html, url) {
+    url = url || ""; // remove script tags and head and replace body by a div
+
+    var title = html.match(/\<title\>(.*)\<\/title\>/);
+    var clean_html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").replace(/<head\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/head>/gi, "").replace(/<body([^>]*?)>/gi, '<div id="__original_body">').replace(/<\/body([^>]*?)>/gi, "</div>");
+
+    if (title && title.length == 2) {
+      clean_html = title[0] + clean_html;
+    }
+
+    try {
+      clean_html = this._rebaseHTML(url, clean_html);
+    } catch (e) {
+      log.error("Error rebasing urls", e);
+    }
+
+    var $html = jquery__WEBPACK_IMPORTED_MODULE_2___default()("<div/>").html(clean_html);
+
+    if ($html.children().length === 0) {
+      log.warn("Parsing html resulted in empty jquery object:", clean_html);
+    }
+
+    return $html;
+  },
+  // XXX: hack
+  _initAutoloadVisible: function _initAutoloadVisible($el, cfgs) {
+    var _this5 = this;
+
+    if ($el.data("pat-inject-autoloaded")) {
+      // ignore executed autoloads
+      return false;
+    }
+
+    var $scrollable = $el.parents(":scrollable"); // function to trigger the autoload and mark as triggered
+
+    var trigger = function trigger(event) {
+      if ($el.data("pat-inject-autoloaded")) {
+        return false;
+      }
+
+      $el.data("pat-inject-autoloaded", true);
+
+      _this5.onTrigger({
+        currentTarget: $el[0]
+      });
+
+      event && event.preventDefault();
+      return true;
+    };
+
+    $el.click(trigger); // Use case 1: a (heigh-constrained) scrollable parent
+
+    if ($scrollable.length) {
+      // if scrollable parent and visible -> trigger it
+      // we only look at the closest scrollable parent, no nesting
+      // Check visibility for scrollable
+      var checkVisibility = _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].debounce(function () {
+        if ($el.data("patterns.autoload") || !jquery__WEBPACK_IMPORTED_MODULE_2___default.a.contains(document, $el[0])) {
+          return false;
+        }
+
+        if (!$el.is(":visible")) {
+          return false;
+        } // check if the target element still exists. Otherwise halt and catch fire
+
+
+        var target = ($el.data("pat-inject")[0].target || cfgs[0].defaultSelector).replace(/::element/, "");
+
+        if (target && target !== "self" && jquery__WEBPACK_IMPORTED_MODULE_2___default()(target).length === 0) {
+          return false;
+        }
+
+        var reltop = $el.safeOffset().top - $scrollable.safeOffset().top - 1000,
+            doTrigger = reltop <= $scrollable.innerHeight();
+
+        if (doTrigger) {
+          // checkVisibility was possibly installed as a scroll
+          // handler and has now served its purpose -> remove
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()($scrollable[0]).off("scroll", checkVisibility);
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(window).off("resize.pat-autoload", checkVisibility);
+          return trigger();
+        }
+
+        return false;
+      }, 100);
+
+      if (checkVisibility()) {
+        return true;
+      } // wait to become visible - again only immediate scrollable parent
+
+
+      jquery__WEBPACK_IMPORTED_MODULE_2___default()($scrollable[0]).on("scroll", checkVisibility);
+      jquery__WEBPACK_IMPORTED_MODULE_2___default()(window).on("resize.pat-autoload", checkVisibility);
+    } else {
+      // Use case 2: scrolling the entire page
+      // Check visibility for non-scrollable
+      var _checkVisibility = _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].debounce(function () {
+        if ($el.parents(":scrollable").length) {
+          // Because of a resize the element has now a scrollable parent
+          // and we should reset the correct event
+          jquery__WEBPACK_IMPORTED_MODULE_2___default()(window).off(".pat-autoload", _checkVisibility);
+          return _this5._initAutoloadVisible($el);
+        }
+
+        if ($el.data("patterns.autoload")) {
+          return false;
+        }
+
+        if (!$el.is(":visible")) {
+          return false;
+        }
+
+        if (!_core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].elementInViewport($el[0])) {
+          return false;
+        } // check if the target element still exists. Otherwise halt and catch fire
+
+
+        var target = ($el.data("pat-inject")[0].target || cfgs[0].defaultSelector).replace(/::element/, "");
+
+        if (target && target !== "self" && jquery__WEBPACK_IMPORTED_MODULE_2___default()(target).length === 0) {
+          return false;
+        }
+
+        jquery__WEBPACK_IMPORTED_MODULE_2___default()(window).off(".pat-autoload", _checkVisibility);
+        return trigger();
+      }, 100);
+
+      if (_checkVisibility()) {
+        return true;
+      } // https://github.com/w3c/IntersectionObserver/tree/master/polyfill
+
+
+      if (IntersectionObserver) {
+        var observer = new IntersectionObserver(_checkVisibility);
+        $el.each(function (idx, el) {
+          return observer.observe(el);
+        });
+      } else {
+        jquery__WEBPACK_IMPORTED_MODULE_2___default()(window).on("resize.pat-autoload scroll.pat-autoload", _checkVisibility);
+      }
+    }
+
+    return false;
+  },
+  _initIdleTrigger: function _initIdleTrigger($el, delay) {
+    var _this6 = this;
+
+    // XXX TODO: handle item removed from DOM
+    var timeout = parseInt(delay, 10);
+    var timer;
+
+    var onTimeout = function onTimeout() {
+      _this6.onTrigger({
+        currentTarget: $el[0]
+      });
+
+      unsub();
+      clearTimeout(timer);
+    };
+
+    var onInteraction = _core_utils__WEBPACK_IMPORTED_MODULE_9__[/* default */ "a"].debounce(function () {
+      if (!document.body.contains($el[0])) {
+        unsub();
+        return;
+      }
+
+      clearTimeout(timer);
+      timer = setTimeout(onTimeout, timeout);
+    }, timeout);
+
+    var unsub = function unsub() {
+      ["scroll", "resize"].forEach(function (e) {
+        return window.removeEventListener(e, onInteraction);
+      });
+      ["click", "keypress", "keyup", "mousemove", "touchstart", "touchend"].forEach(function (e) {
+        return document.removeEventListener(e, onInteraction);
+      });
+    };
+
+    onInteraction();
+    ["scroll", "resize"].forEach(function (e) {
+      return window.addEventListener(e, onInteraction);
+    });
+    ["click", "keypress", "keyup", "mousemove", "touchstart", "touchend"].forEach(function (e) {
+      return document.addEventListener(e, onInteraction);
+    });
+  },
+  // XXX: simple so far to see what the team thinks of the idea
+  registerTypeHandler: function registerTypeHandler(type, handler) {
+    this.handlers[type] = handler;
+  },
+  callTypeHandler: function callTypeHandler(type, fn, context, params) {
+    var _this7 = this;
+
+    return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+      return regeneratorRuntime.wrap(function _callee3$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              type = type || "html";
+
+              if (!(_this7.handlers[type] && jquery__WEBPACK_IMPORTED_MODULE_2___default.a.isFunction(_this7.handlers[type][fn]))) {
+                _context3.next = 7;
+                break;
+              }
+
+              _context3.next = 4;
+              return _this7.handlers[type][fn].bind(_this7).apply(void 0, _toConsumableArray(params));
+
+            case 4:
+              return _context3.abrupt("return", _context3.sent);
+
+            case 7:
+              return _context3.abrupt("return", null);
+
+            case 8:
+            case "end":
+              return _context3.stop();
+          }
+        }
+      }, _callee3);
+    }))();
+  },
+  handlers: {
+    html: {
+      sources: function sources(cfgs, data) {
+        var sources = cfgs.map(function (cfg) {
+          return cfg.source;
+        });
+        sources.push("title");
+        return this._sourcesFromHtml(data, cfgs[0].url, sources);
+      }
+    }
+  }
+};
+jquery__WEBPACK_IMPORTED_MODULE_2___default()(document).on("patterns-injected.inject", function (ev, cfg, trigger, injected) {
+  /* Listen for the patterns-injected event.
+   *
+   * Remove the "loading-class" classes from all injection targets and
+   * then scan the injected content for new patterns.
+   */
+  if (cfg && cfg.skipPatInjectHandler) {
+    // Allow skipping this handler but still have other handlers in other
+    // patterns listen to ``patterns-injected``.
+    return;
+  }
+
+  if (cfg) {
+    cfg.$target.removeClass(cfg.loadingClass); // Remove the executing class, add the executed class to the element with pat.inject on it.
+
+    jquery__WEBPACK_IMPORTED_MODULE_2___default()(trigger).removeClass(cfg.executingClass).addClass(cfg.executedClass);
+  }
+
+  if (injected.nodeType !== TEXT_NODE && injected !== COMMENT_NODE) {
+    _core_registry__WEBPACK_IMPORTED_MODULE_8__[/* default */ "a"].scan(injected, null, {
+      type: "injection",
+      element: trigger
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_2___default()(injected).trigger("patterns-injected-scanned");
+  }
+});
+jquery__WEBPACK_IMPORTED_MODULE_2___default()(window).on("popstate", function (event) {
+  // popstate also triggers on traditional anchors
+  if (!event.originalEvent.state && "replaceState" in history) {
+    try {
+      history.replaceState("anchor", "", document.location.href);
+    } catch (e) {
+      log.debug(e);
+    }
+
+    return;
+  } // Not only change the URL, also reload the page.
+
+
+  window.location.reload();
+}); // this entry ensures that the initally loaded page can be reached with
+// the back button
+
+if ("replaceState" in history) {
+  try {
+    history.replaceState("pageload", "", document.location.href);
+  } catch (e) {
+    log.debug(e);
+  }
+}
+
+_core_registry__WEBPACK_IMPORTED_MODULE_8__[/* default */ "a"].register(inject);
+/* harmony default export */ __webpack_exports__["a"] = (inject);
+
+/***/ }),
+
 /***/ 310:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -25088,7 +25528,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _core_logging__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9);
 /* harmony import */ var _core_utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(2);
 /* harmony import */ var _core_base__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4);
-/* harmony import */ var _inject_inject__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(30);
+/* harmony import */ var _inject_inject__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(31);
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
@@ -25328,7 +25768,7 @@ _inject_inject__WEBPACK_IMPORTED_MODULE_5__[/* default */ "a"].registerTypeHandl
 
 /***/ }),
 
-/***/ 36:
+/***/ 37:
 /***/ (function(module, exports) {
 
 var g;
@@ -25365,7 +25805,7 @@ var jquery_js_exposed = __webpack_require__(0);
 var jquery_js_exposed_default = /*#__PURE__*/__webpack_require__.n(jquery_js_exposed);
 
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/registry.js
-var registry = __webpack_require__(13);
+var registry = __webpack_require__(12);
 
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/logging.js
 var logging = __webpack_require__(9);
@@ -25385,7 +25825,7 @@ var parser = {
     options = options || {}; // get options from parent element first, stop if element tag name is 'body'
 
     if ($el.length !== 0 && !jquery_js_exposed_default.a.nodeName($el[0], "body")) {
-      options = getOptions($el.parent(), patternName, options);
+      options = this.getOptions($el.parent(), patternName, options);
     } // collect all options from element
 
 
@@ -25437,7 +25877,7 @@ var parser = {
 
 
 
-var base_log = logging["a" /* default */].getLogger("Patternslib Base");
+var log = logging["a" /* default */].getLogger("Patternslib Base");
 
 var base_initBasePattern = function initBasePattern($el, options, trigger) {
   if (!$el.jquery) {
@@ -25445,18 +25885,18 @@ var base_initBasePattern = function initBasePattern($el, options, trigger) {
   }
 
   var name = this.prototype.name;
-  var log = logging["a" /* default */].getLogger("pat." + name);
-  var pattern = $el.data("pattern-" + name);
+  var plog = logging["a" /* default */].getLogger("pat.".concat(name));
+  var pattern = $el.data("pattern-".concat(name));
 
   if (pattern === undefined && registry["a" /* default */].patterns[name]) {
     try {
       options = this.prototype.parser === "mockup" ? mockup_parser.getOptions($el, name, options) : options;
       pattern = new registry["a" /* default */].patterns[name]($el, options, trigger);
     } catch (e) {
-      log.error("Failed while initializing '" + name + "' pattern.", e);
+      plog.error("Failed while initializing ".concat(name, " pattern."), e);
     }
 
-    $el.data("pattern-" + name, pattern);
+    $el.data("pattern-".concat(name), pattern);
   }
 
   return pattern;
@@ -25477,7 +25917,7 @@ var base_Base = function Base($el, options, trigger) {
 base_Base.prototype = {
   constructor: base_Base,
   on: function on(eventName, eventCallback) {
-    this.$el.on(eventName + "." + this.name + ".patterns", eventCallback);
+    this.$el.on("".concat(eventName, ".").concat(this.name, ".patterns"), eventCallback);
   },
   emit: function emit(eventName, args) {
     // args should be a list
@@ -25485,7 +25925,7 @@ base_Base.prototype = {
       args = [];
     }
 
-    this.$el.trigger(eventName + "." + this.name + ".patterns", args);
+    this.$el.trigger("".concat(eventName, ".").concat(this.name, ".patterns"), args);
   }
 };
 
@@ -25515,7 +25955,8 @@ base_Base.extend = function (patternProps) {
 
   child.init = base_initBasePattern;
   child.jquery_plugin = true;
-  child.trigger = patternProps.trigger; // Set the prototype chain to inherit from `parent`, without calling
+  child.trigger = patternProps.trigger;
+  child.parser = (patternProps === null || patternProps === void 0 ? void 0 : patternProps.parser) || null; // Set the prototype chain to inherit from `parent`, without calling
   // `parent`'s constructor function.
 
   var Surrogate = function Surrogate() {
@@ -25531,9 +25972,9 @@ base_Base.extend = function (patternProps) {
   child.__super__ = parent.prototype; // Register the pattern in the Patternslib registry.
 
   if (!patternProps.name) {
-    base_log.warn("This pattern without a name attribute will not be registered!");
+    log.warn("This pattern without a name attribute will not be registered!");
   } else if (!patternProps.trigger) {
-    base_log.warn("The pattern '" + patternProps.name + "' does not " + "have a trigger attribute, it will not be registered.");
+    log.warn("The pattern ".concat(patternProps.name, " does not have a trigger attribute, it will not be registered."));
   } else {
     registry["a" /* default */].register(child, patternProps.name);
   }
@@ -25542,124 +25983,6 @@ base_Base.extend = function (patternProps) {
 };
 
 /* harmony default export */ var base = __webpack_exports__["a"] = (base_Base);
-
-/***/ }),
-
-/***/ 45:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-/* Utilities for DOM traversal or navigation */
-var DATA_STYLE_DISPLAY = "__patternslib__style__display";
-
-var toNodeArray = function toNodeArray(nodes) {
-  // Return an array of DOM nodes
-  if (nodes.jquery || nodes instanceof NodeList) {
-    // jQuery or document.querySelectorAll
-    nodes = _toConsumableArray(nodes);
-  } else if (nodes instanceof Array === false) {
-    nodes = [nodes];
-  }
-
-  return nodes;
-};
-
-var querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
-  // Like querySelectorAll but including the element where it starts from.
-  // Returns an Array, not a NodeList
-  var all = _toConsumableArray(el.querySelectorAll(selector));
-
-  if (el.matches(selector)) {
-    all.unshift(el); // start element should be first.
-  }
-
-  return all;
-};
-
-var wrap = function wrap(el, wrapper) {
-  // Wrap a element with a wrapper element.
-  // See: https://stackoverflow.com/a/13169465/1337474
-  el.parentNode.insertBefore(wrapper, el);
-  wrapper.appendChild(el);
-};
-
-var hide = function hide(el) {
-  // Hides the element with ``display: none``
-  if (el.style.display === "none") {
-    // Nothing to do.
-    return;
-  }
-
-  if (el.style.display) {
-    el[DATA_STYLE_DISPLAY] = el.style.display;
-  }
-
-  el.style.display = "none";
-};
-
-var show = function show(el) {
-  // Shows element by removing ``display: none`` and restoring the display
-  // value to whatever it was before.
-  var val = el[DATA_STYLE_DISPLAY] || null;
-  el.style.display = val;
-  delete el[DATA_STYLE_DISPLAY];
-};
-
-var find_parents = function find_parents(el, selector) {
-  var _el$parentNode;
-
-  // Return all direct parents of ``el`` matching ``selector``.
-  // This matches against all parents but not the element itself.
-  // The order of elements is from the search starting point up to higher
-  // DOM levels.
-  var parent = ((_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest(selector)) || null;
-  var ret = [];
-
-  while (parent) {
-    var _parent$parentNode;
-
-    ret.push(parent);
-    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
-  }
-
-  return ret;
-};
-
-var find_scoped = function find_scoped(el, selector) {
-  // If the selector starts with an object id do a global search,
-  // otherwise do a local search.
-  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
-};
-
-var is_visible = function is_visible(el) {
-  // Check, if element is visible in DOM.
-  // https://stackoverflow.com/a/19808107/1337474
-  return el.offsetWidth > 0 && el.offsetHeight > 0;
-};
-
-var dom = {
-  toNodeArray: toNodeArray,
-  querySelectorAllAndMe: querySelectorAllAndMe,
-  wrap: wrap,
-  hide: hide,
-  show: show,
-  find_parents: find_parents,
-  find_scoped: find_scoped,
-  is_visible: is_visible
-};
-/* harmony default export */ __webpack_exports__["a"] = (dom);
 
 /***/ }),
 
@@ -25731,7 +26054,7 @@ var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
 // The largest integer that can be represented exactly.
 var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(36)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
 
 /***/ }),
 
@@ -26203,7 +26526,7 @@ var jquery_js_exposed = __webpack_require__(0);
 var jquery_js_exposed_default = /*#__PURE__*/__webpack_require__.n(jquery_js_exposed);
 
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/registry.js
-var registry = __webpack_require__(13);
+var registry = __webpack_require__(12);
 
 // EXTERNAL MODULE: ./node_modules/pat-content-mirror/node_modules/underscore/modules/_setup.js
 var modules_setup = __webpack_require__(6);
@@ -28840,6 +29163,126 @@ index_default_._ = index_default_;
 
 
 
+// CONCATENATED MODULE: ./node_modules/pat-content-mirror/node_modules/patternslib/src/core/dom.js
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+/* Utilities for DOM traversal or navigation */
+var DATA_STYLE_DISPLAY = "__patternslib__style__display";
+
+var toNodeArray = function toNodeArray(nodes) {
+  // Return an array of DOM nodes
+  if (nodes.jquery || nodes instanceof NodeList) {
+    // jQuery or document.querySelectorAll
+    nodes = _toConsumableArray(nodes);
+  } else if (nodes instanceof Array === false) {
+    nodes = [nodes];
+  }
+
+  return nodes;
+};
+
+var querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
+  // Like querySelectorAll but including the element where it starts from.
+  // Returns an Array, not a NodeList
+  var all = _toConsumableArray(el.querySelectorAll(selector));
+
+  if (el.matches(selector)) {
+    all.unshift(el); // start element should be first.
+  }
+
+  return all;
+};
+
+var dom_wrap = function wrap(el, wrapper) {
+  // Wrap a element with a wrapper element.
+  // See: https://stackoverflow.com/a/13169465/1337474
+  el.parentNode.insertBefore(wrapper, el);
+  wrapper.appendChild(el);
+};
+
+var hide = function hide(el) {
+  // Hides the element with ``display: none``
+  if (el.style.display === "none") {
+    // Nothing to do.
+    return;
+  }
+
+  if (el.style.display) {
+    el[DATA_STYLE_DISPLAY] = el.style.display;
+  }
+
+  el.style.display = "none";
+};
+
+var show = function show(el) {
+  // Shows element by removing ``display: none`` and restoring the display
+  // value to whatever it was before.
+  var val = el[DATA_STYLE_DISPLAY] || null;
+  el.style.display = val;
+  delete el[DATA_STYLE_DISPLAY];
+};
+
+var find_parents = function find_parents(el, selector) {
+  var _el$parentNode;
+
+  // Return all direct parents of ``el`` matching ``selector``.
+  // This matches against all parents but not the element itself.
+  // The order of elements is from the search starting point up to higher
+  // DOM levels.
+  var parent = (el === null || el === void 0 ? void 0 : (_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest) && el.parentNode.closest(selector) || null;
+  var ret = [];
+
+  while (parent) {
+    var _parent$parentNode;
+
+    ret.push(parent);
+    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
+  }
+
+  return ret;
+};
+
+var find_scoped = function find_scoped(el, selector) {
+  // If the selector starts with an object id do a global search,
+  // otherwise do a local search.
+  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
+};
+
+var is_visible = function is_visible(el) {
+  // Check, if element is visible in DOM.
+  // https://stackoverflow.com/a/19808107/1337474
+  return el.offsetWidth > 0 && el.offsetHeight > 0;
+};
+
+var create_from_string = function create_from_string(string) {
+  // Create a DOM element from a string.
+  var div = document.createElement("div");
+  div.innerHTML = string.trim();
+  return div.firstChild;
+};
+
+var dom = {
+  toNodeArray: toNodeArray,
+  querySelectorAllAndMe: querySelectorAllAndMe,
+  wrap: dom_wrap,
+  hide: hide,
+  show: show,
+  find_parents: find_parents,
+  find_scoped: find_scoped,
+  is_visible: is_visible,
+  create_from_string: create_from_string
+};
+/* harmony default export */ var core_dom = (dom);
 // CONCATENATED MODULE: ./node_modules/pat-content-mirror/node_modules/patternslib/src/core/logging.js
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -28869,7 +29312,7 @@ if (!Function.prototype.bind) {
   };
 }
 
-var root, // root logger instance
+var logging_root, // root logger instance
 writer; // writer instance, used to output log entries
 
 var Level = {
@@ -29007,143 +29450,31 @@ if (!window.console || !window.console.log || typeof window.console.log.apply !=
   setWriter(new ConsoleWriter());
 }
 
-root = new Logger();
+logging_root = new Logger();
 var logconfig = /loglevel(|-[^=]+)=([^&]+)/g,
     match;
 
 while ((match = logconfig.exec(window.location.search)) !== null) {
-  var logger = match[1] === "" ? root : root.getLogger(match[1].slice(1));
+  var logger = match[1] === "" ? logging_root : logging_root.getLogger(match[1].slice(1));
   logger.setLevel(match[2].toUpperCase());
 }
 
 var api = {
   Level: Level,
-  getLogger: root.getLogger.bind(root),
-  setEnabled: root.setEnabled.bind(root),
-  isEnabled: root.isEnabled.bind(root),
-  setLevel: root.setLevel.bind(root),
-  getLevel: root.getLevel.bind(root),
-  debug: root.debug.bind(root),
-  info: root.info.bind(root),
-  warn: root.warn.bind(root),
-  error: root.error.bind(root),
-  fatal: root.fatal.bind(root),
+  getLogger: logging_root.getLogger.bind(logging_root),
+  setEnabled: logging_root.setEnabled.bind(logging_root),
+  isEnabled: logging_root.isEnabled.bind(logging_root),
+  setLevel: logging_root.setLevel.bind(logging_root),
+  getLevel: logging_root.getLevel.bind(logging_root),
+  debug: logging_root.debug.bind(logging_root),
+  info: logging_root.info.bind(logging_root),
+  warn: logging_root.warn.bind(logging_root),
+  error: logging_root.error.bind(logging_root),
+  fatal: logging_root.fatal.bind(logging_root),
   getWriter: getWriter,
   setWriter: setWriter
 };
 /* harmony default export */ var logging = (api);
-// CONCATENATED MODULE: ./node_modules/pat-content-mirror/node_modules/patternslib/src/core/dom.js
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-/* Utilities for DOM traversal or navigation */
-var DATA_STYLE_DISPLAY = "__patternslib__style__display";
-
-var toNodeArray = function toNodeArray(nodes) {
-  // Return an array of DOM nodes
-  if (nodes.jquery || nodes instanceof NodeList) {
-    // jQuery or document.querySelectorAll
-    nodes = _toConsumableArray(nodes);
-  } else if (nodes instanceof Array === false) {
-    nodes = [nodes];
-  }
-
-  return nodes;
-};
-
-var querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
-  // Like querySelectorAll but including the element where it starts from.
-  // Returns an Array, not a NodeList
-  var all = _toConsumableArray(el.querySelectorAll(selector));
-
-  if (el.matches(selector)) {
-    all.unshift(el); // start element should be first.
-  }
-
-  return all;
-};
-
-var dom_wrap = function wrap(el, wrapper) {
-  // Wrap a element with a wrapper element.
-  // See: https://stackoverflow.com/a/13169465/1337474
-  el.parentNode.insertBefore(wrapper, el);
-  wrapper.appendChild(el);
-};
-
-var hide = function hide(el) {
-  // Hides the element with ``display: none``
-  if (el.style.display === "none") {
-    // Nothing to do.
-    return;
-  }
-
-  if (el.style.display) {
-    el[DATA_STYLE_DISPLAY] = el.style.display;
-  }
-
-  el.style.display = "none";
-};
-
-var show = function show(el) {
-  // Shows element by removing ``display: none`` and restoring the display
-  // value to whatever it was before.
-  var val = el[DATA_STYLE_DISPLAY] || null;
-  el.style.display = val;
-  delete el[DATA_STYLE_DISPLAY];
-};
-
-var find_parents = function find_parents(el, selector) {
-  var _el$parentNode;
-
-  // Return all direct parents of ``el`` matching ``selector``.
-  // This matches against all parents but not the element itself.
-  // The order of elements is from the search starting point up to higher
-  // DOM levels.
-  var parent = ((_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest(selector)) || null;
-  var ret = [];
-
-  while (parent) {
-    var _parent$parentNode;
-
-    ret.push(parent);
-    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
-  }
-
-  return ret;
-};
-
-var find_scoped = function find_scoped(el, selector) {
-  // If the selector starts with an object id do a global search,
-  // otherwise do a local search.
-  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
-};
-
-var is_visible = function is_visible(el) {
-  // Check, if element is visible in DOM.
-  // https://stackoverflow.com/a/19808107/1337474
-  return el.offsetWidth > 0 && el.offsetHeight > 0;
-};
-
-var dom = {
-  toNodeArray: toNodeArray,
-  querySelectorAllAndMe: querySelectorAllAndMe,
-  wrap: dom_wrap,
-  hide: hide,
-  show: show,
-  find_parents: find_parents,
-  find_scoped: find_scoped,
-  is_visible: is_visible
-};
-/* harmony default export */ var core_dom = (dom);
 // CONCATENATED MODULE: ./node_modules/pat-content-mirror/node_modules/patternslib/src/core/utils.js
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = utils_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -29723,11 +30054,12 @@ var utils_debounce = function debounce(func, ms) {
   // From: https://underscorejs.org/#debounce
   var timer = null;
   return function () {
+    var _this = this;
+
     clearTimeout(timer);
     var args = arguments;
-    var context = this;
     timer = setTimeout(function () {
-      func.apply(context, args);
+      func.apply(_this, args);
     }, ms);
   };
 };
@@ -29739,6 +30071,15 @@ var isIE = function isIE() {
     /*@cc_on!@*/
      false || !!document.documentMode
   );
+};
+
+var jqToNode = function jqToNode(el) {
+  // Return a DOM node if a jQuery node was passed.
+  if (el.jquery) {
+    el = el[0];
+  }
+
+  return el;
 };
 
 var utils = {
@@ -29764,294 +30105,17 @@ var utils = {
   checkCSSFeature: checkCSSFeature,
   timeout: utils_timeout,
   debounce: utils_debounce,
-  isIE: isIE
+  isIE: isIE,
+  jqToNode: jqToNode
 };
 /* harmony default export */ var core_utils = (utils);
-// CONCATENATED MODULE: ./node_modules/pat-content-mirror/node_modules/patternslib/src/core/jquery-ext.js
-function jquery_ext_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { jquery_ext_typeof = function _typeof(obj) { return typeof obj; }; } else { jquery_ext_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return jquery_ext_typeof(obj); }
-
-/**
- * @license
- * Patterns @VERSION@ jquery-ext - various jQuery extensions
- *
- * Copyright 2011 Humberto Sermeño
- */
-
-var jquery_ext_methods = {
-  init: function init(options) {
-    var settings = {
-      time: 3
-      /* time it will wait before moving to "timeout" after a move event */
-      ,
-      initialTime: 8
-      /* time it will wait before first adding the "timeout" class */
-      ,
-      exceptionAreas: []
-      /* IDs of elements that, if the mouse is over them, will reset the timer */
-
-    };
-    return this.each(function () {
-      var $this = jquery_js_exposed_default()(this),
-          data = $this.data("timeout");
-
-      if (!data) {
-        if (options) {
-          jquery_js_exposed_default.a.extend(settings, options);
-        }
-
-        $this.data("timeout", {
-          lastEvent: new Date(),
-          trueTime: settings.time,
-          time: settings.initialTime,
-          untouched: true,
-          inExceptionArea: false
-        });
-        $this.on("mouseover.timeout", jquery_ext_methods.mouseMoved);
-        $this.on("mouseenter.timeout", jquery_ext_methods.mouseMoved);
-        jquery_js_exposed_default()(settings.exceptionAreas).each(function () {
-          $this.find(this).live("mouseover.timeout", {
-            parent: $this
-          }, jquery_ext_methods.enteredException).live("mouseleave.timeout", {
-            parent: $this
-          }, jquery_ext_methods.leftException);
-        });
-        if (settings.initialTime > 0) $this.timeout("startTimer");else $this.addClass("timeout");
-      }
-    });
-  },
-  enteredException: function enteredException(event) {
-    var data = event.data.parent.data("timeout");
-    data.inExceptionArea = true;
-    event.data.parent.data("timeout", data);
-    event.data.parent.trigger("mouseover");
-  },
-  leftException: function leftException(event) {
-    var data = event.data.parent.data("timeout");
-    data.inExceptionArea = false;
-    event.data.parent.data("timeout", data);
-  },
-  destroy: function destroy() {
-    return this.each(function () {
-      var $this = jquery_js_exposed_default()(this),
-          data = $this.data("timeout");
-      jquery_js_exposed_default()(window).off(".timeout");
-      data.timeout.remove();
-      $this.removeData("timeout");
-    });
-  },
-  mouseMoved: function mouseMoved() {
-    var $this = jquery_js_exposed_default()(this),
-        data = $this.data("timeout");
-
-    if ($this.hasClass("timeout")) {
-      $this.removeClass("timeout");
-      $this.timeout("startTimer");
-    } else if (data.untouched) {
-      data.untouched = false;
-      data.time = data.trueTime;
-    }
-
-    data.lastEvent = new Date();
-    $this.data("timeout", data);
-  },
-  startTimer: function startTimer() {
-    var $this = jquery_js_exposed_default()(this),
-        data = $this.data("timeout");
-
-    var fn = function fn() {
-      var data = $this.data("timeout");
-
-      if (data && data.lastEvent) {
-        if (data.inExceptionArea) {
-          setTimeout(fn, Math.floor(data.time * 1000));
-        } else {
-          var now = new Date();
-          var diff = Math.floor(data.time * 1000) - (now - data.lastEvent);
-
-          if (diff > 0) {
-            // the timeout has not ocurred, so set the timeout again
-            setTimeout(fn, diff + 100);
-          } else {
-            // timeout ocurred, so set the class
-            $this.addClass("timeout");
-          }
-        }
-      }
-    };
-
-    setTimeout(fn, Math.floor(data.time * 1000));
-  }
-};
-
-jquery_js_exposed_default.a.fn.timeout = function (method) {
-  if (jquery_ext_methods[method]) {
-    return jquery_ext_methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-  } else if (jquery_ext_typeof(method) === "object" || !method) {
-    return jquery_ext_methods.init.apply(this, arguments);
-  } else {
-    jquery_js_exposed_default.a.error("Method " + method + " does not exist on jQuery.timeout");
-  }
-}; // Custom jQuery selector to find elements with scrollbars
-
-
-jquery_js_exposed_default.a.extend(jquery_js_exposed_default.a.expr[":"], {
-  scrollable: function scrollable(element) {
-    var vertically_scrollable, horizontally_scrollable;
-    if (jquery_js_exposed_default()(element).css("overflow") === "scroll" || jquery_js_exposed_default()(element).css("overflowX") === "scroll" || jquery_js_exposed_default()(element).css("overflowY") === "scroll") return true;
-    vertically_scrollable = element.clientHeight < element.scrollHeight && (jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflowY"), ["scroll", "auto"]) !== -1 || jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflow"), ["scroll", "auto"]) !== -1);
-    if (vertically_scrollable) return true;
-    horizontally_scrollable = element.clientWidth < element.scrollWidth && (jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflowX"), ["scroll", "auto"]) !== -1 || jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflow"), ["scroll", "auto"]) !== -1);
-    return horizontally_scrollable;
-  }
-}); // Make Visible in scroll
-
-jquery_js_exposed_default.a.fn.makeVisibleInScroll = function (parent_id) {
-  var absoluteParent = null;
-
-  if (typeof parent_id === "string") {
-    absoluteParent = jquery_js_exposed_default()("#" + parent_id);
-  } else if (parent_id) {
-    absoluteParent = jquery_js_exposed_default()(parent_id);
-  }
-
-  return this.each(function () {
-    var $this = jquery_js_exposed_default()(this),
-        parent;
-
-    if (!absoluteParent) {
-      parent = $this.parents(":scrollable");
-
-      if (parent.length > 0) {
-        parent = jquery_js_exposed_default()(parent[0]);
-      } else {
-        parent = jquery_js_exposed_default()(window);
-      }
-    } else {
-      parent = absoluteParent;
-    }
-
-    var elemTop = $this.position().top;
-    var elemBottom = $this.height() + elemTop;
-    var viewTop = parent.scrollTop();
-    var viewBottom = parent.height() + viewTop;
-
-    if (elemTop < viewTop) {
-      parent.scrollTop(elemTop);
-    } else if (elemBottom > viewBottom - parent.height() / 2) {
-      parent.scrollTop(elemTop - (parent.height() - $this.height()) / 2);
-    }
-  });
-}; //Work around warning for jQuery 3.x:
-//JQMIGRATE: jQuery.fn.offset() requires an element connected to a document
-
-
-jquery_js_exposed_default.a.fn.safeOffset = function () {
-  var docElem,
-      elem = this[0],
-      origin = {
-    top: 0,
-    left: 0
-  };
-
-  if (!elem || !elem.nodeType) {
-    return origin;
-  }
-
-  docElem = (elem.ownerDocument || document).documentElement;
-
-  if (!jquery_js_exposed_default.a.contains(docElem, elem)) {
-    return origin;
-  }
-
-  return jquery_js_exposed_default.a.fn.offset.apply(this, arguments);
-}; //Make absolute location
-
-
-jquery_js_exposed_default.a.fn.setPositionAbsolute = function (element, offsettop, offsetleft) {
-  return this.each(function () {
-    // set absolute location for based on the element passed
-    // dynamically since every browser has different settings
-    var $this = jquery_js_exposed_default()(this);
-    var thiswidth = jquery_js_exposed_default()(this).width();
-    var pos = element.safeOffset();
-    var width = element.width();
-    var height = element.height();
-    var setleft = pos.left + width - thiswidth + offsetleft;
-    var settop = pos.top + height + offsettop;
-    $this.css({
-      "z-index": 1,
-      "position": "absolute",
-      "marginLeft": 0,
-      "marginTop": 0,
-      "left": setleft + "px",
-      "top": settop + "px",
-      "width": thiswidth
-    });
-    $this.remove().appendTo("body").show();
-  });
-};
-
-jquery_js_exposed_default.a.fn.positionAncestor = function (selector) {
-  var left = 0;
-  var top = 0;
-  this.each(function () {
-    // check if current element has an ancestor matching a selector
-    // and that ancestor is positioned
-    var $ancestor = jquery_js_exposed_default()(this).closest(selector);
-
-    if ($ancestor.length && $ancestor.css("position") !== "static") {
-      var $child = jquery_js_exposed_default()(this);
-      var childMarginEdgeLeft = $child.safeOffset().left - parseInt($child.css("marginLeft"), 10);
-      var childMarginEdgeTop = $child.safeOffset().top - parseInt($child.css("marginTop"), 10);
-      var ancestorPaddingEdgeLeft = $ancestor.safeOffset().left + parseInt($ancestor.css("borderLeftWidth"), 10);
-      var ancestorPaddingEdgeTop = $ancestor.safeOffset().top + parseInt($ancestor.css("borderTopWidth"), 10);
-      left = childMarginEdgeLeft - ancestorPaddingEdgeLeft;
-      top = childMarginEdgeTop - ancestorPaddingEdgeTop; // we have found the ancestor and computed the position
-      // stop iterating
-
-      return false;
-    }
-  });
-  return {
-    left: left,
-    top: top
-  };
-};
-
-jquery_js_exposed_default.a.fn.findInclusive = function (selector) {
-  return this.find("*").addBack().filter(selector);
-};
-
-jquery_js_exposed_default.a.fn.slideIn = function (speed, easing, callback) {
-  return this.animate({
-    width: "show"
-  }, speed, easing, callback);
-};
-
-jquery_js_exposed_default.a.fn.slideOut = function (speed, easing, callback) {
-  return this.animate({
-    width: "hide"
-  }, speed, easing, callback);
-}; // case-insensitive :contains
-
-
-jquery_js_exposed_default.a.expr[":"].Contains = function (a, i, m) {
-  return jquery_js_exposed_default()(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
-};
-
-jquery_js_exposed_default.a.fn.scopedFind = function (selector) {
-  /*  If the selector starts with an object id do a global search,
-   *  otherwise do a local search.
-   */
-  if (selector.indexOf("#") === 0) {
-    return jquery_js_exposed_default()(selector);
-  } else {
-    return this.find(selector);
-  }
-};
-
-/* harmony default export */ var jquery_ext = (undefined);
 // CONCATENATED MODULE: ./node_modules/pat-content-mirror/node_modules/patternslib/src/core/registry.js
+function registry_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = registry_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function registry_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return registry_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return registry_arrayLikeToArray(o, minLen); }
+
+function registry_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 /**
  * Patterns registry - Central registry and scan logic for patterns
  *
@@ -30073,24 +30137,22 @@ jquery_js_exposed_default.a.fn.scopedFind = function (selector) {
 
 
 
- // below here modules that are only loaded
 
-
-var registry_log = logging.getLogger("registry"),
-    disable_re = /patterns-disable=([^&]+)/g,
-    dont_catch_re = /patterns-dont-catch/g,
-    dont_catch = false,
-    disabled = {},
-    registry_match;
+var log = logging.getLogger("registry");
+var disable_re = /patterns-disable=([^&]+)/g;
+var dont_catch_re = /patterns-dont-catch/g;
+var disabled = {};
+var dont_catch = false;
+var registry_match;
 
 while ((registry_match = disable_re.exec(window.location.search)) !== null) {
   disabled[registry_match[1]] = true;
-  registry_log.info("Pattern disabled via url config:", registry_match[1]);
+  log.info("Pattern disabled via url config:", registry_match[1]);
 }
 
 while ((registry_match = dont_catch_re.exec(window.location.search)) !== null) {
   dont_catch = true;
-  registry_log.info("I will not catch init exceptions");
+  log.info("I will not catch init exceptions");
 }
 
 var registry_registry = {
@@ -30100,15 +30162,15 @@ var registry_registry = {
   // the DOM is scanned. After that registering a new pattern
   // results in rescanning the DOM only for this pattern.
   initialized: false,
-  init: function registry_init() {
+  init: function init() {
     jquery_js_exposed_default()(document).ready(function () {
-      registry_log.info("loaded: " + Object.keys(registry_registry.patterns).sort().join(", "));
+      log.info("loaded: " + Object.keys(registry_registry.patterns).sort().join(", "));
       registry_registry.scan(document.body);
       registry_registry.initialized = true;
-      registry_log.info("finished initial scan.");
+      log.info("finished initial scan.");
     });
   },
-  clear: function clearRegistry() {
+  clear: function clear() {
     // Removes all patterns from the registry. Currently only being
     // used in tests.
     this.patterns = {};
@@ -30120,7 +30182,7 @@ var registry_registry = {
      * it exists.
      */
     if (disabled[name]) {
-      registry_log.debug("Skipping disabled pattern:", name);
+      log.debug("Skipping disabled pattern:", name);
       return;
     }
 
@@ -30135,7 +30197,7 @@ var registry_registry = {
           throw e;
         }
 
-        registry_log.error("Transform error for pattern" + name, e);
+        log.error("Transform error for pattern" + name, e);
       }
     }
   },
@@ -30171,49 +30233,90 @@ var registry_registry = {
     // sure here, that it appears first. Not sure what would be
     // the best solution. Perhaps some kind of way to register
     // patterns "before" or "after" other patterns.
-    if (index_default.contains(patterns, "validation") && index_default.contains(patterns, "inject")) {
+    if (patterns.includes("validation") && patterns.includes("inject")) {
       patterns.splice(patterns.indexOf("validation"), 1);
       patterns.unshift("validation");
     }
 
     return patterns;
   },
-  scan: function registryScan(content, patterns, trigger) {
-    var selectors = [],
-        $match;
+  scan: function scan(content, patterns, trigger) {
+    if (typeof content === "string") {
+      content = document.querySelector(content);
+    } else if (content.jquery) {
+      content = content[0];
+    }
+
+    var selectors = [];
     patterns = this.orderPatterns(patterns || Object.keys(registry_registry.patterns));
-    patterns.forEach(index_default.partial(this.transformPattern, index_default, content));
-    patterns = index_default.each(patterns, function (name) {
-      var pattern = registry_registry.patterns[name];
 
-      if (pattern.trigger) {
-        selectors.unshift(pattern.trigger);
+    var _iterator = registry_createForOfIteratorHelper(patterns),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var name = _step.value;
+        this.transformPattern(name, content);
+        var pattern = registry_registry.patterns[name];
+
+        if (pattern.trigger) {
+          selectors.unshift(pattern.trigger);
+        }
       }
-    });
-    $match = jquery_js_exposed_default()(content).findInclusive(selectors.join(",")); // Find all DOM elements belonging to a pattern
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
 
-    $match = $match.filter(function () {
+    var matches = core_dom.querySelectorAllAndMe(content, selectors.map(function (it) {
+      return it.trim().replace(/,$/, "");
+    }).join(","));
+    matches = matches.filter(function (el) {
       // Filter out code examples wrapped in <pre> elements.
-      return jquery_js_exposed_default()(this).parents("pre").length === 0;
-    });
-    $match = $match.filter(":not(.cant-touch-this)"); // walk list backwards and initialize patterns inside-out.
+      // Also filter special class ``.cant-touch-this``
+      return core_dom.find_parents(el, "pre").length === 0 && !el.matches(".cant-touch-this");
+    }); // walk list backwards and initialize patterns inside-out.
 
-    $match.toArray().reduceRight(function registryInitPattern(acc, el) {
-      patterns.forEach(index_default.partial(this.initPattern, index_default, el, trigger));
-    }.bind(this), null);
-    jquery_js_exposed_default()("body").addClass("patterns-loaded");
+    var _iterator2 = registry_createForOfIteratorHelper(matches.reverse()),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var el = _step2.value;
+
+        var _iterator3 = registry_createForOfIteratorHelper(patterns),
+            _step3;
+
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var _name = _step3.value;
+            this.initPattern(_name, el, trigger);
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+
+    document.body.classList.add("patterns-loaded");
   },
-  register: function registry_register(pattern, name) {
-    var plugin_name;
+  register: function register(pattern, name) {
     name = name || pattern.name;
 
     if (!name) {
-      registry_log.error("Pattern lacks a name:", pattern);
+      log.error("Pattern lacks a name:", pattern);
       return false;
     }
 
     if (registry_registry.patterns[name]) {
-      registry_log.error("Already have a pattern called: " + name);
+      log.error("Already have a pattern called: " + name);
       return false;
     } // register pattern to be used for scanning new content
 
@@ -30221,7 +30324,7 @@ var registry_registry = {
     registry_registry.patterns[name] = pattern; // register pattern as jquery plugin
 
     if (pattern.jquery_plugin) {
-      plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
+      var plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
         return p1.toUpperCase();
       });
       jquery_js_exposed_default.a.fn[plugin_name] = core_utils.jqueryPlugin(pattern); // BBB 2012-12-10 and also for Mockup patterns.
@@ -30229,7 +30332,7 @@ var registry_registry = {
       jquery_js_exposed_default.a.fn[plugin_name.replace(/^pat/, "pattern")] = jquery_js_exposed_default.a.fn[plugin_name];
     }
 
-    registry_log.debug("Registered pattern:", name, pattern);
+    log.debug("Registered pattern:", name, pattern);
 
     if (registry_registry.initialized) {
       registry_registry.scan(document.body, [name]);
@@ -30254,7 +30357,7 @@ var parser = {
     options = options || {}; // get options from parent element first, stop if element tag name is 'body'
 
     if ($el.length !== 0 && !jquery_js_exposed_default.a.nodeName($el[0], "body")) {
-      options = getOptions($el.parent(), patternName, options);
+      options = this.getOptions($el.parent(), patternName, options);
     } // collect all options from element
 
 
@@ -30314,18 +30417,18 @@ var base_initBasePattern = function initBasePattern($el, options, trigger) {
   }
 
   var name = this.prototype.name;
-  var log = logging.getLogger("pat." + name);
-  var pattern = $el.data("pattern-" + name);
+  var plog = logging.getLogger("pat.".concat(name));
+  var pattern = $el.data("pattern-".concat(name));
 
   if (pattern === undefined && core_registry.patterns[name]) {
     try {
       options = this.prototype.parser === "mockup" ? mockup_parser.getOptions($el, name, options) : options;
       pattern = new core_registry.patterns[name]($el, options, trigger);
     } catch (e) {
-      log.error("Failed while initializing '" + name + "' pattern.", e);
+      plog.error("Failed while initializing ".concat(name, " pattern."), e);
     }
 
-    $el.data("pattern-" + name, pattern);
+    $el.data("pattern-".concat(name), pattern);
   }
 
   return pattern;
@@ -30346,7 +30449,7 @@ var base_Base = function Base($el, options, trigger) {
 base_Base.prototype = {
   constructor: base_Base,
   on: function on(eventName, eventCallback) {
-    this.$el.on(eventName + "." + this.name + ".patterns", eventCallback);
+    this.$el.on("".concat(eventName, ".").concat(this.name, ".patterns"), eventCallback);
   },
   emit: function emit(eventName, args) {
     // args should be a list
@@ -30354,7 +30457,7 @@ base_Base.prototype = {
       args = [];
     }
 
-    this.$el.trigger(eventName + "." + this.name + ".patterns", args);
+    this.$el.trigger("".concat(eventName, ".").concat(this.name, ".patterns"), args);
   }
 };
 
@@ -30384,7 +30487,8 @@ base_Base.extend = function (patternProps) {
 
   child.init = base_initBasePattern;
   child.jquery_plugin = true;
-  child.trigger = patternProps.trigger; // Set the prototype chain to inherit from `parent`, without calling
+  child.trigger = patternProps.trigger;
+  child.parser = (patternProps === null || patternProps === void 0 ? void 0 : patternProps.parser) || null; // Set the prototype chain to inherit from `parent`, without calling
   // `parent`'s constructor function.
 
   var Surrogate = function Surrogate() {
@@ -30402,7 +30506,7 @@ base_Base.extend = function (patternProps) {
   if (!patternProps.name) {
     base_log.warn("This pattern without a name attribute will not be registered!");
   } else if (!patternProps.trigger) {
-    base_log.warn("The pattern '" + patternProps.name + "' does not " + "have a trigger attribute, it will not be registered.");
+    base_log.warn("The pattern ".concat(patternProps.name, " does not have a trigger attribute, it will not be registered."));
   } else {
     core_registry.register(child, patternProps.name);
   }
@@ -30412,466 +30516,579 @@ base_Base.extend = function (patternProps) {
 
 /* harmony default export */ var base = (base_Base);
 // CONCATENATED MODULE: ./node_modules/pat-content-mirror/node_modules/patternslib/src/core/parser.js
-function parser_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { parser_typeof = function _typeof(obj) { return typeof obj; }; } else { parser_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return parser_typeof(obj); }
+function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
-/**
- * Patterns parser - Argument parser
- *
- * Copyright 2012-2013 Florian Friesdorf
- * Copyright 2012-2013 Simplon B.V. - Wichert Akkerman
- */
+function parser_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = parser_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
+function parser_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return parser_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return parser_arrayLikeToArray(o, minLen); }
 
+function parser_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function ArgumentParser(name) {
-  this.order = [];
-  this.parameters = {};
-  this.attribute = "data-pat-" + name;
-  this.enum_values = {};
-  this.enum_conflicts = [];
-  this.groups = {};
-  this.possible_groups = {};
-  this.log = logging.getLogger(name + ".parser");
-}
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-ArgumentParser.prototype = {
-  group_pattern: /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i,
-  json_param_pattern: /^\s*{/i,
-  named_param_pattern: /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i,
-  token_pattern: /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g,
-  _camelCase: function _camelCase(str) {
-    return str.replace(/\-([a-z])/g, function (_, p1) {
-      return p1.toUpperCase();
-    });
-  },
-  addAlias: function argParserAddAlias(alias, original) {
-    /* Add an alias for a previously added parser argument.
-     *
-     * Useful when you want to support both US and UK english argument
-     * names.
-     */
-    if (this.parameters[original]) {
-      this.parameters[original].alias = alias;
-    } else {
-      throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
-    }
-  },
-  addGroupToSpec: function argParserAddGroupToSpec(spec) {
-    /* Determine wether an argument being parsed can be grouped and
-     * update its specifications object accordingly.
-     *
-     * Internal method used by addArgument and addJSONArgument
-     */
-    var m = spec.name.match(this.group_pattern);
+// Patterns argument parser
 
-    if (m) {
-      var group = m[1],
-          field = m[2];
 
-      if (group in this.possible_groups) {
-        var first_spec = this.possible_groups[group],
-            first_name = first_spec.name.match(this.group_pattern)[2];
-        first_spec.group = group;
-        first_spec.dest = first_name;
-        this.groups[group] = new ArgumentParser();
-        this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
-        delete this.possible_groups[group];
-      }
 
-      if (group in this.groups) {
-        this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
-        spec.group = group;
-        spec.dest = field;
-      } else {
-        this.possible_groups[group] = spec;
-        spec.dest = this._camelCase(spec.name);
-      }
-    }
 
-    return spec;
-  },
-  addJSONArgument: function argParserAddJSONArgument(name, default_value) {
-    /* Add an argument where the value is provided in JSON format.
-     *
-     * This is a different usecase than specifying all arguments to
-     * the data-pat-... attributes in JSON format, and instead is part
-     * of the normal notation except that a value is in JSON instead of
-     * for example a string.
-     */
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec({
-      name: name,
-      value: default_value,
-      dest: name,
-      group: null,
-      type: "json"
-    });
-  },
-  addArgument: function ArgParserAddArgument(name, default_value, choices, multiple) {
-    var spec = {
-      name: name,
-      value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
-      multiple: multiple,
-      dest: name,
-      group: null
-    };
+var parser_ArgumentParser = /*#__PURE__*/function () {
+  function ArgumentParser(name) {
+    _classCallCheck(this, ArgumentParser);
 
-    if (choices && Array.isArray(choices) && choices.length) {
-      spec.choices = choices;
-      spec.type = this._typeof(choices[0]);
-
-      for (var i = 0; i < choices.length; i++) {
-        if (this.enum_conflicts.indexOf(choices[i]) !== -1) {
-          continue;
-        } else if (choices[i] in this.enum_values) {
-          this.enum_conflicts.push(choices[i]);
-          delete this.enum_values[choices[i]];
-        } else {
-          this.enum_values[choices[i]] = name;
-        }
-      }
-    } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
-      spec.type = this.parameters[spec.value.slice(1)].type;
-    } else {
-      // Note that this will get reset by _defaults if default_value is a function.
-      spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
-    }
-
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec(spec);
-  },
-  _typeof: function argParserTypeof(obj) {
-    var type = parser_typeof(obj);
-
-    if (obj === null) return "null";
-    return type;
-  },
-  _coerce: function argParserCoerce(name, value) {
-    var spec = this.parameters[name];
-    if (parser_typeof(value) !== spec.type) try {
-      switch (spec.type) {
-        case "json":
-          value = JSON.parse(value);
-          break;
-
-        case "boolean":
-          if (typeof value === "string") {
-            value = value.toLowerCase();
-            var num = parseInt(value, 10);
-            if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
-          } else if (typeof value === "number") value = !!value;else throw "Cannot convert value for " + name + " to boolean";
-
-          break;
-
-        case "number":
-          if (typeof value === "string") {
-            value = parseInt(value, 10);
-            if (isNaN(value)) throw "Cannot convert value for " + name + " to number";
-          } else if (typeof value === "boolean") value = value + 0;else throw "Cannot convert value for " + name + " to number";
-
-          break;
-
-        case "string":
-          value = value.toString();
-          break;
-
-        case "null": // Missing default values
-
-        case "undefined":
-          break;
-
-        default:
-          throw "Do not know how to convert value for " + name + " to " + spec.type;
-      }
-    } catch (e) {
-      this.log.warn(e);
-      return null;
-    }
-
-    if (spec.choices && spec.choices.indexOf(value) === -1) {
-      this.log.warn("Illegal value for " + name + ": " + value);
-      return null;
-    }
-
-    return value;
-  },
-  _set: function argParserSet(opts, name, value) {
-    if (!(name in this.parameters)) {
-      this.log.debug("Ignoring value for unknown argument " + name);
-      return;
-    }
-
-    var spec = this.parameters[name],
-        parts,
-        i,
-        v;
-
-    if (spec.multiple) {
-      if (typeof value === "string") {
-        parts = value.split(/,+/);
-      } else {
-        parts = value;
-      }
-
-      value = [];
-
-      for (i = 0; i < parts.length; i++) {
-        v = this._coerce(name, parts[i].trim());
-        if (v !== null) value.push(v);
-      }
-    } else {
-      value = this._coerce(name, value);
-      if (value === null) return;
-    }
-
-    opts[name] = value;
-  },
-  _split: function argParserSplit(text) {
-    var tokens = [];
-    text.replace(this.token_pattern, function (match, quoted, _, simple) {
-      if (quoted) tokens.push(quoted);else if (simple) tokens.push(simple);
-    });
-    return tokens;
-  },
-  _parseExtendedNotation: function argParserParseExtendedNotation(argstring) {
-    var opts = {};
-    var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
-      return el.replace(new RegExp("\0x1f", "g"), ";");
-    });
-
-    index_default.each(parts, function (part) {
-      if (!part) {
-        return;
-      }
-
-      var matches = part.match(this.named_param_pattern);
-
-      if (!matches) {
-        this.log.warn("Invalid parameter: " + part + ": " + argstring);
-        return;
-      }
-
-      var name = matches[1],
-          value = matches[2].trim(),
-          arg = index_default.chain(this.parameters).where({
-        alias: name
-      }).value(),
-          is_alias = arg.length === 1;
-
-      if (is_alias) {
-        this._set(opts, arg[0].name, value);
-      } else if (name in this.parameters) {
-        this._set(opts, name, value);
-      } else if (name in this.groups) {
-        var subopt = this.groups[name]._parseShorthandNotation(value);
-
-        for (var field in subopt) {
-          this._set(opts, name + "-" + field, subopt[field]);
-        }
-      } else {
-        this.log.warn("Unknown named parameter " + matches[1]);
-        return;
-      }
-    }.bind(this));
-
-    return opts;
-  },
-  _parseShorthandNotation: function argParserParseShorthandNotation(parameter) {
-    var parts = this._split(parameter),
-        opts = {},
-        positional = true,
-        i = 0,
-        part,
-        flag,
-        sense;
-
-    while (parts.length) {
-      part = parts.shift().trim();
-
-      if (part.slice(0, 3) === "no-") {
-        sense = false;
-        flag = part.slice(3);
-      } else {
-        sense = true;
-        flag = part;
-      }
-
-      if (flag in this.parameters && this.parameters[flag].type === "boolean") {
-        positional = false;
-
-        this._set(opts, flag, sense);
-      } else if (flag in this.enum_values) {
-        positional = false;
-
-        this._set(opts, this.enum_values[flag], flag);
-      } else if (positional) this._set(opts, this.order[i], part);else {
-        parts.unshift(part);
-        break;
-      }
-
-      i++;
-
-      if (i >= this.order.length) {
-        break;
-      }
-    }
-
-    if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
-    return opts;
-  },
-  _parse: function argParser_parse(parameter) {
-    var opts, extended, sep;
-
-    if (!parameter) {
-      return {};
-    }
-
-    if (parameter.match(this.json_param_pattern)) {
-      try {
-        return JSON.parse(parameter);
-      } catch (e) {
-        this.log.warn("Invalid JSON argument found: " + parameter);
-      }
-    }
-
-    if (parameter.match(this.named_param_pattern)) {
-      return this._parseExtendedNotation(parameter);
-    }
-
-    sep = parameter.indexOf(";");
-
-    if (sep === -1) {
-      return this._parseShorthandNotation(parameter);
-    }
-
-    opts = this._parseShorthandNotation(parameter.slice(0, sep));
-    extended = this._parseExtendedNotation(parameter.slice(sep + 1));
-
-    for (var name in extended) {
-      opts[name] = extended[name];
-    }
-
-    return opts;
-  },
-  _defaults: function argParserDefaults($el) {
-    var result = {};
-
-    for (var name in this.parameters) {
-      if (typeof this.parameters[name].value === "function") try {
-        result[name] = this.parameters[name].value($el, name);
-        this.parameters[name].type = parser_typeof(result[name]);
-      } catch (e) {
-        this.log.error("Default function for " + name + " failed.");
-      } else result[name] = this.parameters[name].value;
-    }
-
-    return result;
-  },
-  _cleanupOptions: function argParserCleanupOptions(options) {
-    var keys = Object.keys(options),
-        i,
-        spec,
-        name,
-        target; // Resolve references
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-      if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
-    } // Move options into groups and do renames
-
-
-    keys = Object.keys(options);
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-
-      if (spec.group) {
-        if (parser_typeof(options[spec.group]) !== "object") options[spec.group] = {};
-        target = options[spec.group];
-      } else {
-        target = options;
-      }
-
-      if (spec.dest !== name) {
-        target[spec.dest] = options[name];
-        delete options[name];
-      }
-    }
-
-    return options;
-  },
-  parse: function argParserParse($el, options, multiple, inherit) {
-    if (!$el.jquery) {
-      $el = jquery_js_exposed_default()($el);
-    }
-
-    if (typeof options === "boolean" && multiple === undefined) {
-      multiple = options;
-      options = {};
-    }
-
-    inherit = inherit !== false;
-    var stack = inherit ? [[this._defaults($el)]] : [[{}]];
-    var $possible_config_providers;
-    var final_length = 1;
-    /*
-     * XXX this is a workaround for:
-     * - https://github.com/Patternslib/Patterns/issues/393
-     *
-     * Prevents the parser to pollute the pat-modal configuration
-     * with data-pat-inject elements define in a `.pat-modal` parent element.
-     *
-     *  Probably this function should be completely revisited, see:
-     * - https://github.com/Patternslib/Patterns/issues/627
-     *
-     */
-
-    if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
-      $possible_config_providers = $el;
-    } else {
-      $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
-    }
-
-    index_default.each($possible_config_providers, function (provider) {
-      var data, frame, _parse;
-
-      data = jquery_js_exposed_default()(provider).attr(this.attribute);
-
-      if (!data) {
-        return;
-      }
-
-      _parse = this._parse.bind(this);
-      if (data.match(/&&/)) frame = data.split(/\s*&&\s*/).map(_parse);else frame = [_parse(data)];
-      final_length = Math.max(frame.length, final_length);
-      stack.push(frame);
-    }.bind(this));
-
-    if (parser_typeof(options) === "object") {
-      if (Array.isArray(options)) {
-        stack.push(options);
-        final_length = Math.max(options.length, final_length);
-      } else stack.push([options]);
-    }
-
-    if (!multiple) {
-      final_length = 1;
-    }
-
-    var results = index_default.map(index_default.compose(core_utils.removeDuplicateObjects, index_default.partial(core_utils.mergeStack, index_default, final_length))(stack), this._cleanupOptions.bind(this));
-
-    return multiple ? results : results[0];
+    this.order = [];
+    this.parameters = {};
+    this.attribute = "data-pat-" + name;
+    this.enum_values = {};
+    this.enum_conflicts = [];
+    this.groups = {};
+    this.possible_groups = {};
+    this.log = logging.getLogger(name + ".parser");
+    this.group_pattern = /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i;
+    this.json_param_pattern = /^\s*{/i;
+    this.named_param_pattern = /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i;
+    this.token_pattern = /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g;
   }
-}; // BBB
 
-ArgumentParser.prototype.add_argument = ArgumentParser.prototype.addArgument;
-/* harmony default export */ var core_parser = (ArgumentParser);
+  _createClass(ArgumentParser, [{
+    key: "_camelCase",
+    value: function _camelCase(str) {
+      return str.replace(/\-([a-z])/g, function (__, p1) {
+        return p1.toUpperCase();
+      });
+    }
+  }, {
+    key: "addAlias",
+    value: function addAlias(alias, original) {
+      /* Add an alias for a previously added parser argument.
+       *
+       * Useful when you want to support both US and UK english argument
+       * names.
+       */
+      if (this.parameters[original]) {
+        this.parameters[original].alias = alias;
+      } else {
+        throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
+      }
+    }
+  }, {
+    key: "addGroupToSpec",
+    value: function addGroupToSpec(spec) {
+      /* Determine wether an argument being parsed can be grouped and
+       * update its specifications object accordingly.
+       *
+       * Internal method used by addArgument and addJSONArgument
+       */
+      var m = spec.name.match(this.group_pattern);
+
+      if (m) {
+        var group = m[1];
+        var field = m[2];
+
+        if (group in this.possible_groups) {
+          var first_spec = this.possible_groups[group];
+          var first_name = first_spec.name.match(this.group_pattern)[2];
+          first_spec.group = group;
+          first_spec.dest = first_name;
+          this.groups[group] = new ArgumentParser();
+          this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
+          delete this.possible_groups[group];
+        }
+
+        if (group in this.groups) {
+          this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
+          spec.group = group;
+          spec.dest = field;
+        } else {
+          this.possible_groups[group] = spec;
+          spec.dest = this._camelCase(spec.name);
+        }
+      }
+
+      return spec;
+    }
+  }, {
+    key: "addJSONArgument",
+    value: function addJSONArgument(name, default_value) {
+      /* Add an argument where the value is provided in JSON format.
+       *
+       * This is a different usecase than specifying all arguments to
+       * the data-pat-... attributes in JSON format, and instead is part
+       * of the normal notation except that a value is in JSON instead of
+       * for example a string.
+       */
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec({
+        name: name,
+        value: default_value,
+        dest: name,
+        group: null,
+        type: "json"
+      });
+    }
+  }, {
+    key: "addArgument",
+    value: function addArgument(name, default_value, choices, multiple) {
+      var spec = {
+        name: name,
+        value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
+        multiple: multiple,
+        dest: name,
+        group: null
+      };
+
+      if (choices && Array.isArray(choices) && choices.length) {
+        spec.choices = choices;
+        spec.type = this._typeof(choices[0]);
+
+        var _iterator = parser_createForOfIteratorHelper(choices),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var choice = _step.value;
+
+            if (this.enum_conflicts.indexOf(choice) !== -1) {
+              continue;
+            } else if (choice in this.enum_values) {
+              this.enum_conflicts.push(choice);
+              delete this.enum_values[choice];
+            } else {
+              this.enum_values[choice] = name;
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
+        spec.type = this.parameters[spec.value.slice(1)].type;
+      } else {
+        // Note that this will get reset by _defaults if default_value is a function.
+        spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
+      }
+
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec(spec);
+    }
+  }, {
+    key: "_typeof",
+    value: function _typeof(obj) {
+      if (obj === null) {
+        return "null";
+      }
+
+      return _typeof2(obj);
+    }
+  }, {
+    key: "_coerce",
+    value: function _coerce(name, value) {
+      var spec = this.parameters[name];
+      if (_typeof2(value) !== spec.type) try {
+        switch (spec.type) {
+          case "json":
+            value = JSON.parse(value);
+            break;
+
+          case "boolean":
+            if (typeof value === "string") {
+              value = value.toLowerCase();
+              var num = parseInt(value, 10);
+              if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
+            } else if (typeof value === "number") {
+              value = !!value;
+            } else {
+              throw "Cannot convert value for " + name + " to boolean";
+            }
+
+            break;
+
+          case "number":
+            if (typeof value === "string") {
+              value = parseInt(value, 10);
+
+              if (isNaN(value)) {
+                throw "Cannot convert value for " + name + " to number";
+              }
+            } else if (typeof value === "boolean") {
+              value = value + 0;
+            } else {
+              throw "Cannot convert value for " + name + " to number";
+            }
+
+            break;
+
+          case "string":
+            value = value.toString();
+            break;
+
+          case "null": // Missing default values
+
+          case "undefined":
+            break;
+
+          default:
+            throw "Do not know how to convert value for " + name + " to " + spec.type;
+        }
+      } catch (e) {
+        this.log.warn(e);
+        return null;
+      }
+
+      if (spec.choices && spec.choices.indexOf(value) === -1) {
+        this.log.warn("Illegal value for " + name + ": " + value);
+        return null;
+      }
+
+      return value;
+    }
+  }, {
+    key: "_set",
+    value: function _set(opts, name, value) {
+      if (!(name in this.parameters)) {
+        this.log.debug("Ignoring value for unknown argument " + name);
+        return;
+      }
+
+      var spec = this.parameters[name];
+      var parts;
+
+      if (spec.multiple) {
+        if (typeof value === "string") {
+          parts = value.split(/,+/);
+        } else {
+          parts = value;
+        }
+
+        value = [];
+
+        var _iterator2 = parser_createForOfIteratorHelper(parts),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var part = _step2.value;
+
+            var v = this._coerce(name, part.trim());
+
+            if (v !== null) {
+              value.push(v);
+            }
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      } else {
+        value = this._coerce(name, value);
+
+        if (value === null) {
+          return;
+        }
+      }
+
+      opts[name] = value;
+    }
+  }, {
+    key: "_split",
+    value: function _split(text) {
+      var tokens = [];
+      text.replace(this.token_pattern, function (match, quoted, __, simple) {
+        if (quoted) {
+          tokens.push(quoted);
+        } else if (simple) {
+          tokens.push(simple);
+        }
+      });
+      return tokens;
+    }
+  }, {
+    key: "_parseExtendedNotation",
+    value: function _parseExtendedNotation(argstring) {
+      var _this = this;
+
+      var opts = {};
+      var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
+        return el.replace(new RegExp("\0x1f", "g"), ";");
+      });
+
+      var _iterator3 = parser_createForOfIteratorHelper(parts),
+          _step3;
+
+      try {
+        var _loop = function _loop() {
+          var part = _step3.value;
+
+          if (!part) {
+            return "continue";
+          }
+
+          var matches = part.match(_this.named_param_pattern);
+
+          if (!matches) {
+            _this.log.warn("Invalid parameter: " + part + ": " + argstring);
+
+            return "continue";
+          }
+
+          var name = matches[1];
+          var value = matches[2].trim();
+          var arg = Object.values(_this.parameters).filter(function (it) {
+            return it.alias === name;
+          });
+          var is_alias = arg.length === 1;
+
+          if (is_alias) {
+            _this._set(opts, arg[0].name, value);
+          } else if (name in _this.parameters) {
+            _this._set(opts, name, value);
+          } else if (name in _this.groups) {
+            var subopt = _this.groups[name]._parseShorthandNotation(value);
+
+            for (var field in subopt) {
+              _this._set(opts, name + "-" + field, subopt[field]);
+            }
+          } else {
+            _this.log.warn("Unknown named parameter " + matches[1]);
+
+            return "continue";
+          }
+        };
+
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _ret = _loop();
+
+          if (_ret === "continue") continue;
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_parseShorthandNotation",
+    value: function _parseShorthandNotation(parameter) {
+      var parts = this._split(parameter);
+
+      var opts = {};
+      var i = 0;
+
+      while (parts.length) {
+        var part = parts.shift().trim();
+        var sense = void 0;
+        var flag = void 0;
+        var positional = true;
+
+        if (part.slice(0, 3) === "no-") {
+          sense = false;
+          flag = part.slice(3);
+        } else {
+          sense = true;
+          flag = part;
+        }
+
+        if (flag in this.parameters && this.parameters[flag].type === "boolean") {
+          positional = false;
+
+          this._set(opts, flag, sense);
+        } else if (flag in this.enum_values) {
+          positional = false;
+
+          this._set(opts, this.enum_values[flag], flag);
+        } else if (positional) this._set(opts, this.order[i], part);else {
+          parts.unshift(part);
+          break;
+        }
+
+        i++;
+
+        if (i >= this.order.length) {
+          break;
+        }
+      }
+
+      if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
+      return opts;
+    }
+  }, {
+    key: "_parse",
+    value: function _parse(parameter) {
+      if (!parameter) {
+        return {};
+      }
+
+      if (parameter.match(this.json_param_pattern)) {
+        try {
+          return JSON.parse(parameter);
+        } catch (e) {
+          this.log.warn("Invalid JSON argument found: " + parameter);
+        }
+      }
+
+      if (parameter.match(this.named_param_pattern)) {
+        return this._parseExtendedNotation(parameter);
+      }
+
+      var sep = parameter.indexOf(";");
+
+      if (sep === -1) {
+        return this._parseShorthandNotation(parameter);
+      }
+
+      var opts = this._parseShorthandNotation(parameter.slice(0, sep));
+
+      var extended = this._parseExtendedNotation(parameter.slice(sep + 1));
+
+      for (var name in extended) {
+        opts[name] = extended[name];
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_defaults",
+    value: function _defaults($el) {
+      var result = {};
+
+      for (var name in this.parameters) {
+        if (typeof this.parameters[name].value === "function") try {
+          result[name] = this.parameters[name].value($el, name);
+          this.parameters[name].type = _typeof2(result[name]);
+        } catch (e) {
+          this.log.error("Default function for " + name + " failed.");
+        } else result[name] = this.parameters[name].value;
+      }
+
+      return result;
+    }
+  }, {
+    key: "_cleanupOptions",
+    value: function _cleanupOptions(options) {
+      // Resolve references
+      for (var _i = 0, _Object$keys = Object.keys(options); _i < _Object$keys.length; _i++) {
+        var name = _Object$keys[_i];
+        var spec = this.parameters[name];
+        if (spec === undefined) continue;
+        if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
+      } // Move options into groups and do renames
+
+
+      for (var _i2 = 0, _Object$keys2 = Object.keys(options); _i2 < _Object$keys2.length; _i2++) {
+        var _name = _Object$keys2[_i2];
+        var _spec = this.parameters[_name];
+        var target = void 0;
+        if (_spec === undefined) continue;
+
+        if (_spec.group) {
+          if (_typeof2(options[_spec.group]) !== "object") options[_spec.group] = {};
+          target = options[_spec.group];
+        } else {
+          target = options;
+        }
+
+        if (_spec.dest !== _name) {
+          target[_spec.dest] = options[_name];
+          delete options[_name];
+        }
+      }
+
+      return options;
+    }
+  }, {
+    key: "parse",
+    value: function parse($el, options, multiple, inherit) {
+      if (!$el.jquery) {
+        $el = jquery_js_exposed_default()($el);
+      }
+
+      if (typeof options === "boolean" && multiple === undefined) {
+        // Fix argument order: ``multiple`` passed instead of ``options``.
+        multiple = options;
+        options = {};
+      }
+
+      inherit = inherit !== false;
+      var stack = inherit ? [[this._defaults($el)]] : [[{}]];
+      var $possible_config_providers;
+      var final_length = 1;
+      /*
+       * XXX this is a workaround for:
+       * - https://github.com/Patternslib/Patterns/issues/393
+       *
+       * Prevents the parser to pollute the pat-modal configuration
+       * with data-pat-inject elements define in a `.pat-modal` parent element.
+       *
+       *  Probably this function should be completely revisited, see:
+       * - https://github.com/Patternslib/Patterns/issues/627
+       *
+       */
+
+      if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
+        $possible_config_providers = $el;
+      } else {
+        $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
+      }
+
+      var _iterator4 = parser_createForOfIteratorHelper($possible_config_providers),
+          _step4;
+
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var provider = _step4.value;
+          var frame = void 0;
+          var data = jquery_js_exposed_default()(provider).attr(this.attribute);
+
+          if (!data) {
+            continue;
+          }
+
+          var _parse = this._parse.bind(this);
+
+          if (data.match(/&&/)) {
+            frame = data.split(/\s*&&\s*/).map(_parse);
+          } else {
+            frame = [_parse(data)];
+          }
+
+          final_length = Math.max(frame.length, final_length);
+          stack.push(frame);
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+
+      if (_typeof2(options) === "object") {
+        if (Array.isArray(options)) {
+          stack.push(options);
+          final_length = Math.max(options.length, final_length);
+        } else stack.push([options]);
+      }
+
+      if (!multiple) {
+        final_length = 1;
+      }
+
+      var results = core_utils.removeDuplicateObjects(core_utils.mergeStack(stack, final_length)).map(this._cleanupOptions.bind(this));
+      return multiple ? results : results[0];
+    }
+  }]);
+
+  return ArgumentParser;
+}(); // BBB
+
+
+parser_ArgumentParser.prototype.add_argument = parser_ArgumentParser.prototype.addArgument;
+/* harmony default export */ var core_parser = (parser_ArgumentParser);
 // CONCATENATED MODULE: ./node_modules/pat-content-mirror/src/pat-content-mirror.js
 
 
@@ -30913,6 +31130,318 @@ pat_content_mirror_parser.add_argument("target");
 // EXTERNAL MODULE: ./node_modules/regenerator-runtime/runtime.js
 var runtime = __webpack_require__(23);
 
+// CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/dom.js
+function dom_toConsumableArray(arr) { return dom_arrayWithoutHoles(arr) || dom_iterableToArray(arr) || dom_unsupportedIterableToArray(arr) || dom_nonIterableSpread(); }
+
+function dom_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function dom_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return dom_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return dom_arrayLikeToArray(o, minLen); }
+
+function dom_iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function dom_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return dom_arrayLikeToArray(arr); }
+
+function dom_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+/* Utilities for DOM traversal or navigation */
+var dom_DATA_STYLE_DISPLAY = "__patternslib__style__display";
+
+var dom_toNodeArray = function toNodeArray(nodes) {
+  // Return an array of DOM nodes
+  if (nodes.jquery || nodes instanceof NodeList) {
+    // jQuery or document.querySelectorAll
+    nodes = dom_toConsumableArray(nodes);
+  } else if (nodes instanceof Array === false) {
+    nodes = [nodes];
+  }
+
+  return nodes;
+};
+
+var dom_querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
+  // Like querySelectorAll but including the element where it starts from.
+  // Returns an Array, not a NodeList
+  var all = dom_toConsumableArray(el.querySelectorAll(selector));
+
+  if (el.matches(selector)) {
+    all.unshift(el); // start element should be first.
+  }
+
+  return all;
+};
+
+var core_dom_wrap = function wrap(el, wrapper) {
+  // Wrap a element with a wrapper element.
+  // See: https://stackoverflow.com/a/13169465/1337474
+  el.parentNode.insertBefore(wrapper, el);
+  wrapper.appendChild(el);
+};
+
+var dom_hide = function hide(el) {
+  // Hides the element with ``display: none``
+  if (el.style.display === "none") {
+    // Nothing to do.
+    return;
+  }
+
+  if (el.style.display) {
+    el[dom_DATA_STYLE_DISPLAY] = el.style.display;
+  }
+
+  el.style.display = "none";
+};
+
+var dom_show = function show(el) {
+  // Shows element by removing ``display: none`` and restoring the display
+  // value to whatever it was before.
+  var val = el[dom_DATA_STYLE_DISPLAY] || null;
+  el.style.display = val;
+  delete el[dom_DATA_STYLE_DISPLAY];
+};
+
+var dom_find_parents = function find_parents(el, selector) {
+  var _el$parentNode;
+
+  // Return all direct parents of ``el`` matching ``selector``.
+  // This matches against all parents but not the element itself.
+  // The order of elements is from the search starting point up to higher
+  // DOM levels.
+  var parent = (el === null || el === void 0 ? void 0 : (_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest) && el.parentNode.closest(selector) || null;
+  var ret = [];
+
+  while (parent) {
+    var _parent$parentNode;
+
+    ret.push(parent);
+    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
+  }
+
+  return ret;
+};
+
+var dom_find_scoped = function find_scoped(el, selector) {
+  // If the selector starts with an object id do a global search,
+  // otherwise do a local search.
+  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
+};
+
+var dom_is_visible = function is_visible(el) {
+  // Check, if element is visible in DOM.
+  // https://stackoverflow.com/a/19808107/1337474
+  return el.offsetWidth > 0 && el.offsetHeight > 0;
+};
+
+var dom_create_from_string = function create_from_string(string) {
+  // Create a DOM element from a string.
+  var div = document.createElement("div");
+  div.innerHTML = string.trim();
+  return div.firstChild;
+};
+
+var dom_dom = {
+  toNodeArray: dom_toNodeArray,
+  querySelectorAllAndMe: dom_querySelectorAllAndMe,
+  wrap: core_dom_wrap,
+  hide: dom_hide,
+  show: dom_show,
+  find_parents: dom_find_parents,
+  find_scoped: dom_find_scoped,
+  is_visible: dom_is_visible,
+  create_from_string: dom_create_from_string
+};
+/* harmony default export */ var src_core_dom = (dom_dom);
+// CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/logging.js
+function logging_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { logging_typeof = function _typeof(obj) { return typeof obj; }; } else { logging_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return logging_typeof(obj); }
+
+/**
+ * Patterns logging - minimal logging framework
+ *
+ * Copyright 2012 Simplon B.V.
+ */
+// source: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind
+if (!Function.prototype.bind) {
+  Function.prototype.bind = function (oThis) {
+    if (typeof this !== "function") {
+      // closest thing possible to the ECMAScript 5 internal IsCallable function
+      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+    }
+
+    var aArgs = Array.prototype.slice.call(arguments, 1),
+        fToBind = this,
+        fNOP = function fNOP() {},
+        fBound = function fBound() {
+      return fToBind.apply(this instanceof fNOP && oThis ? this : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
+    };
+
+    fNOP.prototype = this.prototype;
+    fBound.prototype = new fNOP();
+    return fBound;
+  };
+}
+
+var core_logging_root, // root logger instance
+logging_writer; // writer instance, used to output log entries
+
+var logging_Level = {
+  DEBUG: 10,
+  INFO: 20,
+  WARN: 30,
+  ERROR: 40,
+  FATAL: 50
+};
+
+function logging_IEConsoleWriter() {}
+
+logging_IEConsoleWriter.prototype = {
+  output: function output(log_name, level, messages) {
+    // console.log will magically appear in IE8 when the user opens the
+    // F12 Developer Tools, so we have to test for it every time.
+    if (typeof window.console === "undefined" || typeof console.log === "undefined") return;
+    if (log_name) messages.unshift(log_name + ":");
+    var message = messages.join(" "); // Under some conditions console.log will be available but the
+    // other functions are missing.
+
+    if (logging_typeof(console.info) === undefined) {
+      var level_name;
+      if (level <= logging_Level.DEBUG) level_name = "DEBUG";else if (level <= logging_Level.INFO) level_name = "INFO";else if (level <= logging_Level.WARN) level_name = "WARN";else if (level <= logging_Level.ERROR) level_name = "ERROR";else level_name = "FATAL";
+      console.log("[" + level_name + "] " + message);
+    } else {
+      if (level <= logging_Level.DEBUG) {
+        // console.debug exists but is deprecated
+        message = "[DEBUG] " + message;
+        console.log(message);
+      } else if (level <= logging_Level.INFO) console.info(message);else if (level <= logging_Level.WARN) console.warn(message);else console.error(message);
+    }
+  }
+};
+
+function logging_ConsoleWriter() {}
+
+logging_ConsoleWriter.prototype = {
+  output: function output(log_name, level, messages) {
+    if (log_name) messages.unshift(log_name + ":");
+
+    if (level <= logging_Level.DEBUG) {
+      // console.debug exists but is deprecated
+      messages.unshift("[DEBUG]");
+      console.log.apply(console, messages);
+    } else if (level <= logging_Level.INFO) console.info.apply(console, messages);else if (level <= logging_Level.WARN) console.warn.apply(console, messages);else console.error.apply(console, messages);
+  }
+};
+
+function logging_Logger(name, parent) {
+  this._loggers = {};
+  this.name = name || "";
+  this._parent = parent || null;
+
+  if (!parent) {
+    this._enabled = true;
+    this._level = logging_Level.WARN;
+  }
+}
+
+logging_Logger.prototype = {
+  getLogger: function getLogger(name) {
+    var path = name.split("."),
+        root = this,
+        route = this.name ? [this.name] : [];
+
+    while (path.length) {
+      var entry = path.shift();
+      route.push(entry);
+      if (!(entry in root._loggers)) root._loggers[entry] = new logging_Logger(route.join("."), root);
+      root = root._loggers[entry];
+    }
+
+    return root;
+  },
+  _getFlag: function _getFlag(flag) {
+    var context = this;
+    flag = "_" + flag;
+
+    while (context !== null) {
+      if (context[flag] !== undefined) return context[flag];
+      context = context._parent;
+    }
+
+    return null;
+  },
+  setEnabled: function setEnabled(state) {
+    this._enabled = !!state;
+  },
+  isEnabled: function isEnabled() {
+    this._getFlag("enabled");
+  },
+  setLevel: function setLevel(level) {
+    if (typeof level === "number") this._level = level;else if (typeof level === "string") {
+      level = level.toUpperCase();
+      if (level in logging_Level) this._level = logging_Level[level];
+    }
+  },
+  getLevel: function getLevel() {
+    return this._getFlag("level");
+  },
+  log: function log(level, messages) {
+    if (!messages.length || !this._getFlag("enabled") || level < this._getFlag("level")) return;
+    messages = Array.prototype.slice.call(messages);
+    logging_writer.output(this.name, level, messages);
+  },
+  debug: function debug() {
+    this.log(logging_Level.DEBUG, arguments);
+  },
+  info: function info() {
+    this.log(logging_Level.INFO, arguments);
+  },
+  warn: function warn() {
+    this.log(logging_Level.WARN, arguments);
+  },
+  error: function error() {
+    this.log(logging_Level.ERROR, arguments);
+  },
+  fatal: function fatal() {
+    this.log(logging_Level.FATAL, arguments);
+  }
+};
+
+function logging_getWriter() {
+  return logging_writer;
+}
+
+function logging_setWriter(w) {
+  logging_writer = w;
+}
+
+if (!window.console || !window.console.log || typeof window.console.log.apply !== "function") {
+  logging_setWriter(new logging_IEConsoleWriter());
+} else {
+  logging_setWriter(new logging_ConsoleWriter());
+}
+
+core_logging_root = new logging_Logger();
+var logging_logconfig = /loglevel(|-[^=]+)=([^&]+)/g,
+    logging_match;
+
+while ((logging_match = logging_logconfig.exec(window.location.search)) !== null) {
+  var logging_logger = logging_match[1] === "" ? core_logging_root : core_logging_root.getLogger(logging_match[1].slice(1));
+  logging_logger.setLevel(logging_match[2].toUpperCase());
+}
+
+var logging_api = {
+  Level: logging_Level,
+  getLogger: core_logging_root.getLogger.bind(core_logging_root),
+  setEnabled: core_logging_root.setEnabled.bind(core_logging_root),
+  isEnabled: core_logging_root.isEnabled.bind(core_logging_root),
+  setLevel: core_logging_root.setLevel.bind(core_logging_root),
+  getLevel: core_logging_root.getLevel.bind(core_logging_root),
+  debug: core_logging_root.debug.bind(core_logging_root),
+  info: core_logging_root.info.bind(core_logging_root),
+  warn: core_logging_root.warn.bind(core_logging_root),
+  error: core_logging_root.error.bind(core_logging_root),
+  fatal: core_logging_root.fatal.bind(core_logging_root),
+  getWriter: logging_getWriter,
+  setWriter: logging_setWriter
+};
+/* harmony default export */ var core_logging = (logging_api);
 // EXTERNAL MODULE: ./node_modules/pat-sortable-table/node_modules/underscore/modules/_setup.js
 var underscore_modules_setup = __webpack_require__(7);
 
@@ -33548,310 +34077,6 @@ modules_index_default_._ = modules_index_default_;
 
 
 
-// CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/logging.js
-function logging_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { logging_typeof = function _typeof(obj) { return typeof obj; }; } else { logging_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return logging_typeof(obj); }
-
-/**
- * Patterns logging - minimal logging framework
- *
- * Copyright 2012 Simplon B.V.
- */
-// source: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind
-if (!Function.prototype.bind) {
-  Function.prototype.bind = function (oThis) {
-    if (typeof this !== "function") {
-      // closest thing possible to the ECMAScript 5 internal IsCallable function
-      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
-    }
-
-    var aArgs = Array.prototype.slice.call(arguments, 1),
-        fToBind = this,
-        fNOP = function fNOP() {},
-        fBound = function fBound() {
-      return fToBind.apply(this instanceof fNOP && oThis ? this : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
-    };
-
-    fNOP.prototype = this.prototype;
-    fBound.prototype = new fNOP();
-    return fBound;
-  };
-}
-
-var logging_root, // root logger instance
-logging_writer; // writer instance, used to output log entries
-
-var logging_Level = {
-  DEBUG: 10,
-  INFO: 20,
-  WARN: 30,
-  ERROR: 40,
-  FATAL: 50
-};
-
-function logging_IEConsoleWriter() {}
-
-logging_IEConsoleWriter.prototype = {
-  output: function output(log_name, level, messages) {
-    // console.log will magically appear in IE8 when the user opens the
-    // F12 Developer Tools, so we have to test for it every time.
-    if (typeof window.console === "undefined" || typeof console.log === "undefined") return;
-    if (log_name) messages.unshift(log_name + ":");
-    var message = messages.join(" "); // Under some conditions console.log will be available but the
-    // other functions are missing.
-
-    if (logging_typeof(console.info) === undefined) {
-      var level_name;
-      if (level <= logging_Level.DEBUG) level_name = "DEBUG";else if (level <= logging_Level.INFO) level_name = "INFO";else if (level <= logging_Level.WARN) level_name = "WARN";else if (level <= logging_Level.ERROR) level_name = "ERROR";else level_name = "FATAL";
-      console.log("[" + level_name + "] " + message);
-    } else {
-      if (level <= logging_Level.DEBUG) {
-        // console.debug exists but is deprecated
-        message = "[DEBUG] " + message;
-        console.log(message);
-      } else if (level <= logging_Level.INFO) console.info(message);else if (level <= logging_Level.WARN) console.warn(message);else console.error(message);
-    }
-  }
-};
-
-function logging_ConsoleWriter() {}
-
-logging_ConsoleWriter.prototype = {
-  output: function output(log_name, level, messages) {
-    if (log_name) messages.unshift(log_name + ":");
-
-    if (level <= logging_Level.DEBUG) {
-      // console.debug exists but is deprecated
-      messages.unshift("[DEBUG]");
-      console.log.apply(console, messages);
-    } else if (level <= logging_Level.INFO) console.info.apply(console, messages);else if (level <= logging_Level.WARN) console.warn.apply(console, messages);else console.error.apply(console, messages);
-  }
-};
-
-function logging_Logger(name, parent) {
-  this._loggers = {};
-  this.name = name || "";
-  this._parent = parent || null;
-
-  if (!parent) {
-    this._enabled = true;
-    this._level = logging_Level.WARN;
-  }
-}
-
-logging_Logger.prototype = {
-  getLogger: function getLogger(name) {
-    var path = name.split("."),
-        root = this,
-        route = this.name ? [this.name] : [];
-
-    while (path.length) {
-      var entry = path.shift();
-      route.push(entry);
-      if (!(entry in root._loggers)) root._loggers[entry] = new logging_Logger(route.join("."), root);
-      root = root._loggers[entry];
-    }
-
-    return root;
-  },
-  _getFlag: function _getFlag(flag) {
-    var context = this;
-    flag = "_" + flag;
-
-    while (context !== null) {
-      if (context[flag] !== undefined) return context[flag];
-      context = context._parent;
-    }
-
-    return null;
-  },
-  setEnabled: function setEnabled(state) {
-    this._enabled = !!state;
-  },
-  isEnabled: function isEnabled() {
-    this._getFlag("enabled");
-  },
-  setLevel: function setLevel(level) {
-    if (typeof level === "number") this._level = level;else if (typeof level === "string") {
-      level = level.toUpperCase();
-      if (level in logging_Level) this._level = logging_Level[level];
-    }
-  },
-  getLevel: function getLevel() {
-    return this._getFlag("level");
-  },
-  log: function log(level, messages) {
-    if (!messages.length || !this._getFlag("enabled") || level < this._getFlag("level")) return;
-    messages = Array.prototype.slice.call(messages);
-    logging_writer.output(this.name, level, messages);
-  },
-  debug: function debug() {
-    this.log(logging_Level.DEBUG, arguments);
-  },
-  info: function info() {
-    this.log(logging_Level.INFO, arguments);
-  },
-  warn: function warn() {
-    this.log(logging_Level.WARN, arguments);
-  },
-  error: function error() {
-    this.log(logging_Level.ERROR, arguments);
-  },
-  fatal: function fatal() {
-    this.log(logging_Level.FATAL, arguments);
-  }
-};
-
-function logging_getWriter() {
-  return logging_writer;
-}
-
-function logging_setWriter(w) {
-  logging_writer = w;
-}
-
-if (!window.console || !window.console.log || typeof window.console.log.apply !== "function") {
-  logging_setWriter(new logging_IEConsoleWriter());
-} else {
-  logging_setWriter(new logging_ConsoleWriter());
-}
-
-logging_root = new logging_Logger();
-var logging_logconfig = /loglevel(|-[^=]+)=([^&]+)/g,
-    logging_match;
-
-while ((logging_match = logging_logconfig.exec(window.location.search)) !== null) {
-  var logging_logger = logging_match[1] === "" ? logging_root : logging_root.getLogger(logging_match[1].slice(1));
-  logging_logger.setLevel(logging_match[2].toUpperCase());
-}
-
-var logging_api = {
-  Level: logging_Level,
-  getLogger: logging_root.getLogger.bind(logging_root),
-  setEnabled: logging_root.setEnabled.bind(logging_root),
-  isEnabled: logging_root.isEnabled.bind(logging_root),
-  setLevel: logging_root.setLevel.bind(logging_root),
-  getLevel: logging_root.getLevel.bind(logging_root),
-  debug: logging_root.debug.bind(logging_root),
-  info: logging_root.info.bind(logging_root),
-  warn: logging_root.warn.bind(logging_root),
-  error: logging_root.error.bind(logging_root),
-  fatal: logging_root.fatal.bind(logging_root),
-  getWriter: logging_getWriter,
-  setWriter: logging_setWriter
-};
-/* harmony default export */ var core_logging = (logging_api);
-// CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/dom.js
-function dom_toConsumableArray(arr) { return dom_arrayWithoutHoles(arr) || dom_iterableToArray(arr) || dom_unsupportedIterableToArray(arr) || dom_nonIterableSpread(); }
-
-function dom_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function dom_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return dom_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return dom_arrayLikeToArray(o, minLen); }
-
-function dom_iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function dom_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return dom_arrayLikeToArray(arr); }
-
-function dom_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-/* Utilities for DOM traversal or navigation */
-var dom_DATA_STYLE_DISPLAY = "__patternslib__style__display";
-
-var dom_toNodeArray = function toNodeArray(nodes) {
-  // Return an array of DOM nodes
-  if (nodes.jquery || nodes instanceof NodeList) {
-    // jQuery or document.querySelectorAll
-    nodes = dom_toConsumableArray(nodes);
-  } else if (nodes instanceof Array === false) {
-    nodes = [nodes];
-  }
-
-  return nodes;
-};
-
-var dom_querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
-  // Like querySelectorAll but including the element where it starts from.
-  // Returns an Array, not a NodeList
-  var all = dom_toConsumableArray(el.querySelectorAll(selector));
-
-  if (el.matches(selector)) {
-    all.unshift(el); // start element should be first.
-  }
-
-  return all;
-};
-
-var core_dom_wrap = function wrap(el, wrapper) {
-  // Wrap a element with a wrapper element.
-  // See: https://stackoverflow.com/a/13169465/1337474
-  el.parentNode.insertBefore(wrapper, el);
-  wrapper.appendChild(el);
-};
-
-var dom_hide = function hide(el) {
-  // Hides the element with ``display: none``
-  if (el.style.display === "none") {
-    // Nothing to do.
-    return;
-  }
-
-  if (el.style.display) {
-    el[dom_DATA_STYLE_DISPLAY] = el.style.display;
-  }
-
-  el.style.display = "none";
-};
-
-var dom_show = function show(el) {
-  // Shows element by removing ``display: none`` and restoring the display
-  // value to whatever it was before.
-  var val = el[dom_DATA_STYLE_DISPLAY] || null;
-  el.style.display = val;
-  delete el[dom_DATA_STYLE_DISPLAY];
-};
-
-var dom_find_parents = function find_parents(el, selector) {
-  var _el$parentNode;
-
-  // Return all direct parents of ``el`` matching ``selector``.
-  // This matches against all parents but not the element itself.
-  // The order of elements is from the search starting point up to higher
-  // DOM levels.
-  var parent = ((_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest(selector)) || null;
-  var ret = [];
-
-  while (parent) {
-    var _parent$parentNode;
-
-    ret.push(parent);
-    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
-  }
-
-  return ret;
-};
-
-var dom_find_scoped = function find_scoped(el, selector) {
-  // If the selector starts with an object id do a global search,
-  // otherwise do a local search.
-  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
-};
-
-var dom_is_visible = function is_visible(el) {
-  // Check, if element is visible in DOM.
-  // https://stackoverflow.com/a/19808107/1337474
-  return el.offsetWidth > 0 && el.offsetHeight > 0;
-};
-
-var dom_dom = {
-  toNodeArray: dom_toNodeArray,
-  querySelectorAllAndMe: dom_querySelectorAllAndMe,
-  wrap: core_dom_wrap,
-  hide: dom_hide,
-  show: dom_show,
-  find_parents: dom_find_parents,
-  find_scoped: dom_find_scoped,
-  is_visible: dom_is_visible
-};
-/* harmony default export */ var src_core_dom = (dom_dom);
 // CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/utils.js
 function utils_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = core_utils_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -34431,11 +34656,12 @@ var core_utils_debounce = function debounce(func, ms) {
   // From: https://underscorejs.org/#debounce
   var timer = null;
   return function () {
+    var _this = this;
+
     clearTimeout(timer);
     var args = arguments;
-    var context = this;
     timer = setTimeout(function () {
-      func.apply(context, args);
+      func.apply(_this, args);
     }, ms);
   };
 };
@@ -34447,6 +34673,15 @@ var utils_isIE = function isIE() {
     /*@cc_on!@*/
      false || !!document.documentMode
   );
+};
+
+var utils_jqToNode = function jqToNode(el) {
+  // Return a DOM node if a jQuery node was passed.
+  if (el.jquery) {
+    el = el[0];
+  }
+
+  return el;
 };
 
 var utils_utils = {
@@ -34472,294 +34707,17 @@ var utils_utils = {
   checkCSSFeature: utils_checkCSSFeature,
   timeout: core_utils_timeout,
   debounce: core_utils_debounce,
-  isIE: utils_isIE
+  isIE: utils_isIE,
+  jqToNode: utils_jqToNode
 };
 /* harmony default export */ var src_core_utils = (utils_utils);
-// CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/jquery-ext.js
-function core_jquery_ext_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { core_jquery_ext_typeof = function _typeof(obj) { return typeof obj; }; } else { core_jquery_ext_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return core_jquery_ext_typeof(obj); }
-
-/**
- * @license
- * Patterns @VERSION@ jquery-ext - various jQuery extensions
- *
- * Copyright 2011 Humberto Sermeño
- */
-
-var core_jquery_ext_methods = {
-  init: function init(options) {
-    var settings = {
-      time: 3
-      /* time it will wait before moving to "timeout" after a move event */
-      ,
-      initialTime: 8
-      /* time it will wait before first adding the "timeout" class */
-      ,
-      exceptionAreas: []
-      /* IDs of elements that, if the mouse is over them, will reset the timer */
-
-    };
-    return this.each(function () {
-      var $this = jquery_js_exposed_default()(this),
-          data = $this.data("timeout");
-
-      if (!data) {
-        if (options) {
-          jquery_js_exposed_default.a.extend(settings, options);
-        }
-
-        $this.data("timeout", {
-          lastEvent: new Date(),
-          trueTime: settings.time,
-          time: settings.initialTime,
-          untouched: true,
-          inExceptionArea: false
-        });
-        $this.on("mouseover.timeout", core_jquery_ext_methods.mouseMoved);
-        $this.on("mouseenter.timeout", core_jquery_ext_methods.mouseMoved);
-        jquery_js_exposed_default()(settings.exceptionAreas).each(function () {
-          $this.find(this).live("mouseover.timeout", {
-            parent: $this
-          }, core_jquery_ext_methods.enteredException).live("mouseleave.timeout", {
-            parent: $this
-          }, core_jquery_ext_methods.leftException);
-        });
-        if (settings.initialTime > 0) $this.timeout("startTimer");else $this.addClass("timeout");
-      }
-    });
-  },
-  enteredException: function enteredException(event) {
-    var data = event.data.parent.data("timeout");
-    data.inExceptionArea = true;
-    event.data.parent.data("timeout", data);
-    event.data.parent.trigger("mouseover");
-  },
-  leftException: function leftException(event) {
-    var data = event.data.parent.data("timeout");
-    data.inExceptionArea = false;
-    event.data.parent.data("timeout", data);
-  },
-  destroy: function destroy() {
-    return this.each(function () {
-      var $this = jquery_js_exposed_default()(this),
-          data = $this.data("timeout");
-      jquery_js_exposed_default()(window).off(".timeout");
-      data.timeout.remove();
-      $this.removeData("timeout");
-    });
-  },
-  mouseMoved: function mouseMoved() {
-    var $this = jquery_js_exposed_default()(this),
-        data = $this.data("timeout");
-
-    if ($this.hasClass("timeout")) {
-      $this.removeClass("timeout");
-      $this.timeout("startTimer");
-    } else if (data.untouched) {
-      data.untouched = false;
-      data.time = data.trueTime;
-    }
-
-    data.lastEvent = new Date();
-    $this.data("timeout", data);
-  },
-  startTimer: function startTimer() {
-    var $this = jquery_js_exposed_default()(this),
-        data = $this.data("timeout");
-
-    var fn = function fn() {
-      var data = $this.data("timeout");
-
-      if (data && data.lastEvent) {
-        if (data.inExceptionArea) {
-          setTimeout(fn, Math.floor(data.time * 1000));
-        } else {
-          var now = new Date();
-          var diff = Math.floor(data.time * 1000) - (now - data.lastEvent);
-
-          if (diff > 0) {
-            // the timeout has not ocurred, so set the timeout again
-            setTimeout(fn, diff + 100);
-          } else {
-            // timeout ocurred, so set the class
-            $this.addClass("timeout");
-          }
-        }
-      }
-    };
-
-    setTimeout(fn, Math.floor(data.time * 1000));
-  }
-};
-
-jquery_js_exposed_default.a.fn.timeout = function (method) {
-  if (core_jquery_ext_methods[method]) {
-    return core_jquery_ext_methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-  } else if (core_jquery_ext_typeof(method) === "object" || !method) {
-    return core_jquery_ext_methods.init.apply(this, arguments);
-  } else {
-    jquery_js_exposed_default.a.error("Method " + method + " does not exist on jQuery.timeout");
-  }
-}; // Custom jQuery selector to find elements with scrollbars
-
-
-jquery_js_exposed_default.a.extend(jquery_js_exposed_default.a.expr[":"], {
-  scrollable: function scrollable(element) {
-    var vertically_scrollable, horizontally_scrollable;
-    if (jquery_js_exposed_default()(element).css("overflow") === "scroll" || jquery_js_exposed_default()(element).css("overflowX") === "scroll" || jquery_js_exposed_default()(element).css("overflowY") === "scroll") return true;
-    vertically_scrollable = element.clientHeight < element.scrollHeight && (jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflowY"), ["scroll", "auto"]) !== -1 || jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflow"), ["scroll", "auto"]) !== -1);
-    if (vertically_scrollable) return true;
-    horizontally_scrollable = element.clientWidth < element.scrollWidth && (jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflowX"), ["scroll", "auto"]) !== -1 || jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflow"), ["scroll", "auto"]) !== -1);
-    return horizontally_scrollable;
-  }
-}); // Make Visible in scroll
-
-jquery_js_exposed_default.a.fn.makeVisibleInScroll = function (parent_id) {
-  var absoluteParent = null;
-
-  if (typeof parent_id === "string") {
-    absoluteParent = jquery_js_exposed_default()("#" + parent_id);
-  } else if (parent_id) {
-    absoluteParent = jquery_js_exposed_default()(parent_id);
-  }
-
-  return this.each(function () {
-    var $this = jquery_js_exposed_default()(this),
-        parent;
-
-    if (!absoluteParent) {
-      parent = $this.parents(":scrollable");
-
-      if (parent.length > 0) {
-        parent = jquery_js_exposed_default()(parent[0]);
-      } else {
-        parent = jquery_js_exposed_default()(window);
-      }
-    } else {
-      parent = absoluteParent;
-    }
-
-    var elemTop = $this.position().top;
-    var elemBottom = $this.height() + elemTop;
-    var viewTop = parent.scrollTop();
-    var viewBottom = parent.height() + viewTop;
-
-    if (elemTop < viewTop) {
-      parent.scrollTop(elemTop);
-    } else if (elemBottom > viewBottom - parent.height() / 2) {
-      parent.scrollTop(elemTop - (parent.height() - $this.height()) / 2);
-    }
-  });
-}; //Work around warning for jQuery 3.x:
-//JQMIGRATE: jQuery.fn.offset() requires an element connected to a document
-
-
-jquery_js_exposed_default.a.fn.safeOffset = function () {
-  var docElem,
-      elem = this[0],
-      origin = {
-    top: 0,
-    left: 0
-  };
-
-  if (!elem || !elem.nodeType) {
-    return origin;
-  }
-
-  docElem = (elem.ownerDocument || document).documentElement;
-
-  if (!jquery_js_exposed_default.a.contains(docElem, elem)) {
-    return origin;
-  }
-
-  return jquery_js_exposed_default.a.fn.offset.apply(this, arguments);
-}; //Make absolute location
-
-
-jquery_js_exposed_default.a.fn.setPositionAbsolute = function (element, offsettop, offsetleft) {
-  return this.each(function () {
-    // set absolute location for based on the element passed
-    // dynamically since every browser has different settings
-    var $this = jquery_js_exposed_default()(this);
-    var thiswidth = jquery_js_exposed_default()(this).width();
-    var pos = element.safeOffset();
-    var width = element.width();
-    var height = element.height();
-    var setleft = pos.left + width - thiswidth + offsetleft;
-    var settop = pos.top + height + offsettop;
-    $this.css({
-      "z-index": 1,
-      "position": "absolute",
-      "marginLeft": 0,
-      "marginTop": 0,
-      "left": setleft + "px",
-      "top": settop + "px",
-      "width": thiswidth
-    });
-    $this.remove().appendTo("body").show();
-  });
-};
-
-jquery_js_exposed_default.a.fn.positionAncestor = function (selector) {
-  var left = 0;
-  var top = 0;
-  this.each(function () {
-    // check if current element has an ancestor matching a selector
-    // and that ancestor is positioned
-    var $ancestor = jquery_js_exposed_default()(this).closest(selector);
-
-    if ($ancestor.length && $ancestor.css("position") !== "static") {
-      var $child = jquery_js_exposed_default()(this);
-      var childMarginEdgeLeft = $child.safeOffset().left - parseInt($child.css("marginLeft"), 10);
-      var childMarginEdgeTop = $child.safeOffset().top - parseInt($child.css("marginTop"), 10);
-      var ancestorPaddingEdgeLeft = $ancestor.safeOffset().left + parseInt($ancestor.css("borderLeftWidth"), 10);
-      var ancestorPaddingEdgeTop = $ancestor.safeOffset().top + parseInt($ancestor.css("borderTopWidth"), 10);
-      left = childMarginEdgeLeft - ancestorPaddingEdgeLeft;
-      top = childMarginEdgeTop - ancestorPaddingEdgeTop; // we have found the ancestor and computed the position
-      // stop iterating
-
-      return false;
-    }
-  });
-  return {
-    left: left,
-    top: top
-  };
-};
-
-jquery_js_exposed_default.a.fn.findInclusive = function (selector) {
-  return this.find("*").addBack().filter(selector);
-};
-
-jquery_js_exposed_default.a.fn.slideIn = function (speed, easing, callback) {
-  return this.animate({
-    width: "show"
-  }, speed, easing, callback);
-};
-
-jquery_js_exposed_default.a.fn.slideOut = function (speed, easing, callback) {
-  return this.animate({
-    width: "hide"
-  }, speed, easing, callback);
-}; // case-insensitive :contains
-
-
-jquery_js_exposed_default.a.expr[":"].Contains = function (a, i, m) {
-  return jquery_js_exposed_default()(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
-};
-
-jquery_js_exposed_default.a.fn.scopedFind = function (selector) {
-  /*  If the selector starts with an object id do a global search,
-   *  otherwise do a local search.
-   */
-  if (selector.indexOf("#") === 0) {
-    return jquery_js_exposed_default()(selector);
-  } else {
-    return this.find(selector);
-  }
-};
-
-/* harmony default export */ var core_jquery_ext = (undefined);
 // CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/registry.js
+function core_registry_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = core_registry_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function core_registry_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return core_registry_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return core_registry_arrayLikeToArray(o, minLen); }
+
+function core_registry_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 /**
  * Patterns registry - Central registry and scan logic for patterns
  *
@@ -34781,24 +34739,22 @@ jquery_js_exposed_default.a.fn.scopedFind = function (selector) {
 
 
 
- // below here modules that are only loaded
 
-
-var core_registry_log = core_logging.getLogger("registry"),
-    registry_disable_re = /patterns-disable=([^&]+)/g,
-    registry_dont_catch_re = /patterns-dont-catch/g,
-    registry_dont_catch = false,
-    registry_disabled = {},
-    core_registry_match;
+var registry_log = core_logging.getLogger("registry");
+var registry_disable_re = /patterns-disable=([^&]+)/g;
+var registry_dont_catch_re = /patterns-dont-catch/g;
+var registry_disabled = {};
+var registry_dont_catch = false;
+var core_registry_match;
 
 while ((core_registry_match = registry_disable_re.exec(window.location.search)) !== null) {
   registry_disabled[core_registry_match[1]] = true;
-  core_registry_log.info("Pattern disabled via url config:", core_registry_match[1]);
+  registry_log.info("Pattern disabled via url config:", core_registry_match[1]);
 }
 
 while ((core_registry_match = registry_dont_catch_re.exec(window.location.search)) !== null) {
   registry_dont_catch = true;
-  core_registry_log.info("I will not catch init exceptions");
+  registry_log.info("I will not catch init exceptions");
 }
 
 var core_registry_registry = {
@@ -34808,15 +34764,15 @@ var core_registry_registry = {
   // the DOM is scanned. After that registering a new pattern
   // results in rescanning the DOM only for this pattern.
   initialized: false,
-  init: function registry_init() {
+  init: function init() {
     jquery_js_exposed_default()(document).ready(function () {
-      core_registry_log.info("loaded: " + Object.keys(core_registry_registry.patterns).sort().join(", "));
+      registry_log.info("loaded: " + Object.keys(core_registry_registry.patterns).sort().join(", "));
       core_registry_registry.scan(document.body);
       core_registry_registry.initialized = true;
-      core_registry_log.info("finished initial scan.");
+      registry_log.info("finished initial scan.");
     });
   },
-  clear: function clearRegistry() {
+  clear: function clear() {
     // Removes all patterns from the registry. Currently only being
     // used in tests.
     this.patterns = {};
@@ -34828,7 +34784,7 @@ var core_registry_registry = {
      * it exists.
      */
     if (registry_disabled[name]) {
-      core_registry_log.debug("Skipping disabled pattern:", name);
+      registry_log.debug("Skipping disabled pattern:", name);
       return;
     }
 
@@ -34843,7 +34799,7 @@ var core_registry_registry = {
           throw e;
         }
 
-        core_registry_log.error("Transform error for pattern" + name, e);
+        registry_log.error("Transform error for pattern" + name, e);
       }
     }
   },
@@ -34879,49 +34835,90 @@ var core_registry_registry = {
     // sure here, that it appears first. Not sure what would be
     // the best solution. Perhaps some kind of way to register
     // patterns "before" or "after" other patterns.
-    if (modules_index_default.contains(patterns, "validation") && modules_index_default.contains(patterns, "inject")) {
+    if (patterns.includes("validation") && patterns.includes("inject")) {
       patterns.splice(patterns.indexOf("validation"), 1);
       patterns.unshift("validation");
     }
 
     return patterns;
   },
-  scan: function registryScan(content, patterns, trigger) {
-    var selectors = [],
-        $match;
+  scan: function scan(content, patterns, trigger) {
+    if (typeof content === "string") {
+      content = document.querySelector(content);
+    } else if (content.jquery) {
+      content = content[0];
+    }
+
+    var selectors = [];
     patterns = this.orderPatterns(patterns || Object.keys(core_registry_registry.patterns));
-    patterns.forEach(modules_index_default.partial(this.transformPattern, modules_index_default, content));
-    patterns = modules_index_default.each(patterns, function (name) {
-      var pattern = core_registry_registry.patterns[name];
 
-      if (pattern.trigger) {
-        selectors.unshift(pattern.trigger);
+    var _iterator = core_registry_createForOfIteratorHelper(patterns),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var name = _step.value;
+        this.transformPattern(name, content);
+        var pattern = core_registry_registry.patterns[name];
+
+        if (pattern.trigger) {
+          selectors.unshift(pattern.trigger);
+        }
       }
-    });
-    $match = jquery_js_exposed_default()(content).findInclusive(selectors.join(",")); // Find all DOM elements belonging to a pattern
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
 
-    $match = $match.filter(function () {
+    var matches = src_core_dom.querySelectorAllAndMe(content, selectors.map(function (it) {
+      return it.trim().replace(/,$/, "");
+    }).join(","));
+    matches = matches.filter(function (el) {
       // Filter out code examples wrapped in <pre> elements.
-      return jquery_js_exposed_default()(this).parents("pre").length === 0;
-    });
-    $match = $match.filter(":not(.cant-touch-this)"); // walk list backwards and initialize patterns inside-out.
+      // Also filter special class ``.cant-touch-this``
+      return src_core_dom.find_parents(el, "pre").length === 0 && !el.matches(".cant-touch-this");
+    }); // walk list backwards and initialize patterns inside-out.
 
-    $match.toArray().reduceRight(function registryInitPattern(acc, el) {
-      patterns.forEach(modules_index_default.partial(this.initPattern, modules_index_default, el, trigger));
-    }.bind(this), null);
-    jquery_js_exposed_default()("body").addClass("patterns-loaded");
+    var _iterator2 = core_registry_createForOfIteratorHelper(matches.reverse()),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var el = _step2.value;
+
+        var _iterator3 = core_registry_createForOfIteratorHelper(patterns),
+            _step3;
+
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var _name = _step3.value;
+            this.initPattern(_name, el, trigger);
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+
+    document.body.classList.add("patterns-loaded");
   },
-  register: function registry_register(pattern, name) {
-    var plugin_name;
+  register: function register(pattern, name) {
     name = name || pattern.name;
 
     if (!name) {
-      core_registry_log.error("Pattern lacks a name:", pattern);
+      registry_log.error("Pattern lacks a name:", pattern);
       return false;
     }
 
     if (core_registry_registry.patterns[name]) {
-      core_registry_log.error("Already have a pattern called: " + name);
+      registry_log.error("Already have a pattern called: " + name);
       return false;
     } // register pattern to be used for scanning new content
 
@@ -34929,7 +34926,7 @@ var core_registry_registry = {
     core_registry_registry.patterns[name] = pattern; // register pattern as jquery plugin
 
     if (pattern.jquery_plugin) {
-      plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
+      var plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
         return p1.toUpperCase();
       });
       jquery_js_exposed_default.a.fn[plugin_name] = src_core_utils.jqueryPlugin(pattern); // BBB 2012-12-10 and also for Mockup patterns.
@@ -34937,7 +34934,7 @@ var core_registry_registry = {
       jquery_js_exposed_default.a.fn[plugin_name.replace(/^pat/, "pattern")] = jquery_js_exposed_default.a.fn[plugin_name];
     }
 
-    core_registry_log.debug("Registered pattern:", name, pattern);
+    registry_log.debug("Registered pattern:", name, pattern);
 
     if (core_registry_registry.initialized) {
       core_registry_registry.scan(document.body, [name]);
@@ -34962,7 +34959,7 @@ var mockup_parser_parser = {
     options = options || {}; // get options from parent element first, stop if element tag name is 'body'
 
     if ($el.length !== 0 && !jquery_js_exposed_default.a.nodeName($el[0], "body")) {
-      options = getOptions($el.parent(), patternName, options);
+      options = this.getOptions($el.parent(), patternName, options);
     } // collect all options from element
 
 
@@ -35022,18 +35019,18 @@ var core_base_initBasePattern = function initBasePattern($el, options, trigger) 
   }
 
   var name = this.prototype.name;
-  var log = core_logging.getLogger("pat." + name);
-  var pattern = $el.data("pattern-" + name);
+  var plog = core_logging.getLogger("pat.".concat(name));
+  var pattern = $el.data("pattern-".concat(name));
 
   if (pattern === undefined && src_core_registry.patterns[name]) {
     try {
       options = this.prototype.parser === "mockup" ? core_mockup_parser.getOptions($el, name, options) : options;
       pattern = new src_core_registry.patterns[name]($el, options, trigger);
     } catch (e) {
-      log.error("Failed while initializing '" + name + "' pattern.", e);
+      plog.error("Failed while initializing ".concat(name, " pattern."), e);
     }
 
-    $el.data("pattern-" + name, pattern);
+    $el.data("pattern-".concat(name), pattern);
   }
 
   return pattern;
@@ -35054,7 +35051,7 @@ var core_base_Base = function Base($el, options, trigger) {
 core_base_Base.prototype = {
   constructor: core_base_Base,
   on: function on(eventName, eventCallback) {
-    this.$el.on(eventName + "." + this.name + ".patterns", eventCallback);
+    this.$el.on("".concat(eventName, ".").concat(this.name, ".patterns"), eventCallback);
   },
   emit: function emit(eventName, args) {
     // args should be a list
@@ -35062,7 +35059,7 @@ core_base_Base.prototype = {
       args = [];
     }
 
-    this.$el.trigger(eventName + "." + this.name + ".patterns", args);
+    this.$el.trigger("".concat(eventName, ".").concat(this.name, ".patterns"), args);
   }
 };
 
@@ -35092,7 +35089,8 @@ core_base_Base.extend = function (patternProps) {
 
   child.init = core_base_initBasePattern;
   child.jquery_plugin = true;
-  child.trigger = patternProps.trigger; // Set the prototype chain to inherit from `parent`, without calling
+  child.trigger = patternProps.trigger;
+  child.parser = (patternProps === null || patternProps === void 0 ? void 0 : patternProps.parser) || null; // Set the prototype chain to inherit from `parent`, without calling
   // `parent`'s constructor function.
 
   var Surrogate = function Surrogate() {
@@ -35110,7 +35108,7 @@ core_base_Base.extend = function (patternProps) {
   if (!patternProps.name) {
     core_base_log.warn("This pattern without a name attribute will not be registered!");
   } else if (!patternProps.trigger) {
-    core_base_log.warn("The pattern '" + patternProps.name + "' does not " + "have a trigger attribute, it will not be registered.");
+    core_base_log.warn("The pattern ".concat(patternProps.name, " does not have a trigger attribute, it will not be registered."));
   } else {
     src_core_registry.register(child, patternProps.name);
   }
@@ -35120,466 +35118,579 @@ core_base_Base.extend = function (patternProps) {
 
 /* harmony default export */ var core_base = (core_base_Base);
 // CONCATENATED MODULE: ./node_modules/pat-sortable-table/node_modules/patternslib/src/core/parser.js
-function core_parser_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { core_parser_typeof = function _typeof(obj) { return typeof obj; }; } else { core_parser_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return core_parser_typeof(obj); }
+function parser_typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { parser_typeof2 = function _typeof2(obj) { return typeof obj; }; } else { parser_typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return parser_typeof2(obj); }
 
-/**
- * Patterns parser - Argument parser
- *
- * Copyright 2012-2013 Florian Friesdorf
- * Copyright 2012-2013 Simplon B.V. - Wichert Akkerman
- */
+function core_parser_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = core_parser_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
+function core_parser_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return core_parser_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return core_parser_arrayLikeToArray(o, minLen); }
 
+function core_parser_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+function parser_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function parser_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function parser_ArgumentParser(name) {
-  this.order = [];
-  this.parameters = {};
-  this.attribute = "data-pat-" + name;
-  this.enum_values = {};
-  this.enum_conflicts = [];
-  this.groups = {};
-  this.possible_groups = {};
-  this.log = core_logging.getLogger(name + ".parser");
-}
+function parser_createClass(Constructor, protoProps, staticProps) { if (protoProps) parser_defineProperties(Constructor.prototype, protoProps); if (staticProps) parser_defineProperties(Constructor, staticProps); return Constructor; }
 
-parser_ArgumentParser.prototype = {
-  group_pattern: /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i,
-  json_param_pattern: /^\s*{/i,
-  named_param_pattern: /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i,
-  token_pattern: /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g,
-  _camelCase: function _camelCase(str) {
-    return str.replace(/\-([a-z])/g, function (_, p1) {
-      return p1.toUpperCase();
-    });
-  },
-  addAlias: function argParserAddAlias(alias, original) {
-    /* Add an alias for a previously added parser argument.
-     *
-     * Useful when you want to support both US and UK english argument
-     * names.
-     */
-    if (this.parameters[original]) {
-      this.parameters[original].alias = alias;
-    } else {
-      throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
-    }
-  },
-  addGroupToSpec: function argParserAddGroupToSpec(spec) {
-    /* Determine wether an argument being parsed can be grouped and
-     * update its specifications object accordingly.
-     *
-     * Internal method used by addArgument and addJSONArgument
-     */
-    var m = spec.name.match(this.group_pattern);
+// Patterns argument parser
 
-    if (m) {
-      var group = m[1],
-          field = m[2];
 
-      if (group in this.possible_groups) {
-        var first_spec = this.possible_groups[group],
-            first_name = first_spec.name.match(this.group_pattern)[2];
-        first_spec.group = group;
-        first_spec.dest = first_name;
-        this.groups[group] = new parser_ArgumentParser();
-        this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
-        delete this.possible_groups[group];
-      }
 
-      if (group in this.groups) {
-        this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
-        spec.group = group;
-        spec.dest = field;
-      } else {
-        this.possible_groups[group] = spec;
-        spec.dest = this._camelCase(spec.name);
-      }
-    }
 
-    return spec;
-  },
-  addJSONArgument: function argParserAddJSONArgument(name, default_value) {
-    /* Add an argument where the value is provided in JSON format.
-     *
-     * This is a different usecase than specifying all arguments to
-     * the data-pat-... attributes in JSON format, and instead is part
-     * of the normal notation except that a value is in JSON instead of
-     * for example a string.
-     */
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec({
-      name: name,
-      value: default_value,
-      dest: name,
-      group: null,
-      type: "json"
-    });
-  },
-  addArgument: function ArgParserAddArgument(name, default_value, choices, multiple) {
-    var spec = {
-      name: name,
-      value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
-      multiple: multiple,
-      dest: name,
-      group: null
-    };
+var core_parser_ArgumentParser = /*#__PURE__*/function () {
+  function ArgumentParser(name) {
+    parser_classCallCheck(this, ArgumentParser);
 
-    if (choices && Array.isArray(choices) && choices.length) {
-      spec.choices = choices;
-      spec.type = this._typeof(choices[0]);
-
-      for (var i = 0; i < choices.length; i++) {
-        if (this.enum_conflicts.indexOf(choices[i]) !== -1) {
-          continue;
-        } else if (choices[i] in this.enum_values) {
-          this.enum_conflicts.push(choices[i]);
-          delete this.enum_values[choices[i]];
-        } else {
-          this.enum_values[choices[i]] = name;
-        }
-      }
-    } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
-      spec.type = this.parameters[spec.value.slice(1)].type;
-    } else {
-      // Note that this will get reset by _defaults if default_value is a function.
-      spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
-    }
-
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec(spec);
-  },
-  _typeof: function argParserTypeof(obj) {
-    var type = core_parser_typeof(obj);
-
-    if (obj === null) return "null";
-    return type;
-  },
-  _coerce: function argParserCoerce(name, value) {
-    var spec = this.parameters[name];
-    if (core_parser_typeof(value) !== spec.type) try {
-      switch (spec.type) {
-        case "json":
-          value = JSON.parse(value);
-          break;
-
-        case "boolean":
-          if (typeof value === "string") {
-            value = value.toLowerCase();
-            var num = parseInt(value, 10);
-            if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
-          } else if (typeof value === "number") value = !!value;else throw "Cannot convert value for " + name + " to boolean";
-
-          break;
-
-        case "number":
-          if (typeof value === "string") {
-            value = parseInt(value, 10);
-            if (isNaN(value)) throw "Cannot convert value for " + name + " to number";
-          } else if (typeof value === "boolean") value = value + 0;else throw "Cannot convert value for " + name + " to number";
-
-          break;
-
-        case "string":
-          value = value.toString();
-          break;
-
-        case "null": // Missing default values
-
-        case "undefined":
-          break;
-
-        default:
-          throw "Do not know how to convert value for " + name + " to " + spec.type;
-      }
-    } catch (e) {
-      this.log.warn(e);
-      return null;
-    }
-
-    if (spec.choices && spec.choices.indexOf(value) === -1) {
-      this.log.warn("Illegal value for " + name + ": " + value);
-      return null;
-    }
-
-    return value;
-  },
-  _set: function argParserSet(opts, name, value) {
-    if (!(name in this.parameters)) {
-      this.log.debug("Ignoring value for unknown argument " + name);
-      return;
-    }
-
-    var spec = this.parameters[name],
-        parts,
-        i,
-        v;
-
-    if (spec.multiple) {
-      if (typeof value === "string") {
-        parts = value.split(/,+/);
-      } else {
-        parts = value;
-      }
-
-      value = [];
-
-      for (i = 0; i < parts.length; i++) {
-        v = this._coerce(name, parts[i].trim());
-        if (v !== null) value.push(v);
-      }
-    } else {
-      value = this._coerce(name, value);
-      if (value === null) return;
-    }
-
-    opts[name] = value;
-  },
-  _split: function argParserSplit(text) {
-    var tokens = [];
-    text.replace(this.token_pattern, function (match, quoted, _, simple) {
-      if (quoted) tokens.push(quoted);else if (simple) tokens.push(simple);
-    });
-    return tokens;
-  },
-  _parseExtendedNotation: function argParserParseExtendedNotation(argstring) {
-    var opts = {};
-    var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
-      return el.replace(new RegExp("\0x1f", "g"), ";");
-    });
-
-    modules_index_default.each(parts, function (part) {
-      if (!part) {
-        return;
-      }
-
-      var matches = part.match(this.named_param_pattern);
-
-      if (!matches) {
-        this.log.warn("Invalid parameter: " + part + ": " + argstring);
-        return;
-      }
-
-      var name = matches[1],
-          value = matches[2].trim(),
-          arg = modules_index_default.chain(this.parameters).where({
-        alias: name
-      }).value(),
-          is_alias = arg.length === 1;
-
-      if (is_alias) {
-        this._set(opts, arg[0].name, value);
-      } else if (name in this.parameters) {
-        this._set(opts, name, value);
-      } else if (name in this.groups) {
-        var subopt = this.groups[name]._parseShorthandNotation(value);
-
-        for (var field in subopt) {
-          this._set(opts, name + "-" + field, subopt[field]);
-        }
-      } else {
-        this.log.warn("Unknown named parameter " + matches[1]);
-        return;
-      }
-    }.bind(this));
-
-    return opts;
-  },
-  _parseShorthandNotation: function argParserParseShorthandNotation(parameter) {
-    var parts = this._split(parameter),
-        opts = {},
-        positional = true,
-        i = 0,
-        part,
-        flag,
-        sense;
-
-    while (parts.length) {
-      part = parts.shift().trim();
-
-      if (part.slice(0, 3) === "no-") {
-        sense = false;
-        flag = part.slice(3);
-      } else {
-        sense = true;
-        flag = part;
-      }
-
-      if (flag in this.parameters && this.parameters[flag].type === "boolean") {
-        positional = false;
-
-        this._set(opts, flag, sense);
-      } else if (flag in this.enum_values) {
-        positional = false;
-
-        this._set(opts, this.enum_values[flag], flag);
-      } else if (positional) this._set(opts, this.order[i], part);else {
-        parts.unshift(part);
-        break;
-      }
-
-      i++;
-
-      if (i >= this.order.length) {
-        break;
-      }
-    }
-
-    if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
-    return opts;
-  },
-  _parse: function argParser_parse(parameter) {
-    var opts, extended, sep;
-
-    if (!parameter) {
-      return {};
-    }
-
-    if (parameter.match(this.json_param_pattern)) {
-      try {
-        return JSON.parse(parameter);
-      } catch (e) {
-        this.log.warn("Invalid JSON argument found: " + parameter);
-      }
-    }
-
-    if (parameter.match(this.named_param_pattern)) {
-      return this._parseExtendedNotation(parameter);
-    }
-
-    sep = parameter.indexOf(";");
-
-    if (sep === -1) {
-      return this._parseShorthandNotation(parameter);
-    }
-
-    opts = this._parseShorthandNotation(parameter.slice(0, sep));
-    extended = this._parseExtendedNotation(parameter.slice(sep + 1));
-
-    for (var name in extended) {
-      opts[name] = extended[name];
-    }
-
-    return opts;
-  },
-  _defaults: function argParserDefaults($el) {
-    var result = {};
-
-    for (var name in this.parameters) {
-      if (typeof this.parameters[name].value === "function") try {
-        result[name] = this.parameters[name].value($el, name);
-        this.parameters[name].type = core_parser_typeof(result[name]);
-      } catch (e) {
-        this.log.error("Default function for " + name + " failed.");
-      } else result[name] = this.parameters[name].value;
-    }
-
-    return result;
-  },
-  _cleanupOptions: function argParserCleanupOptions(options) {
-    var keys = Object.keys(options),
-        i,
-        spec,
-        name,
-        target; // Resolve references
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-      if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
-    } // Move options into groups and do renames
-
-
-    keys = Object.keys(options);
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-
-      if (spec.group) {
-        if (core_parser_typeof(options[spec.group]) !== "object") options[spec.group] = {};
-        target = options[spec.group];
-      } else {
-        target = options;
-      }
-
-      if (spec.dest !== name) {
-        target[spec.dest] = options[name];
-        delete options[name];
-      }
-    }
-
-    return options;
-  },
-  parse: function argParserParse($el, options, multiple, inherit) {
-    if (!$el.jquery) {
-      $el = jquery_js_exposed_default()($el);
-    }
-
-    if (typeof options === "boolean" && multiple === undefined) {
-      multiple = options;
-      options = {};
-    }
-
-    inherit = inherit !== false;
-    var stack = inherit ? [[this._defaults($el)]] : [[{}]];
-    var $possible_config_providers;
-    var final_length = 1;
-    /*
-     * XXX this is a workaround for:
-     * - https://github.com/Patternslib/Patterns/issues/393
-     *
-     * Prevents the parser to pollute the pat-modal configuration
-     * with data-pat-inject elements define in a `.pat-modal` parent element.
-     *
-     *  Probably this function should be completely revisited, see:
-     * - https://github.com/Patternslib/Patterns/issues/627
-     *
-     */
-
-    if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
-      $possible_config_providers = $el;
-    } else {
-      $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
-    }
-
-    modules_index_default.each($possible_config_providers, function (provider) {
-      var data, frame, _parse;
-
-      data = jquery_js_exposed_default()(provider).attr(this.attribute);
-
-      if (!data) {
-        return;
-      }
-
-      _parse = this._parse.bind(this);
-      if (data.match(/&&/)) frame = data.split(/\s*&&\s*/).map(_parse);else frame = [_parse(data)];
-      final_length = Math.max(frame.length, final_length);
-      stack.push(frame);
-    }.bind(this));
-
-    if (core_parser_typeof(options) === "object") {
-      if (Array.isArray(options)) {
-        stack.push(options);
-        final_length = Math.max(options.length, final_length);
-      } else stack.push([options]);
-    }
-
-    if (!multiple) {
-      final_length = 1;
-    }
-
-    var results = modules_index_default.map(modules_index_default.compose(src_core_utils.removeDuplicateObjects, modules_index_default.partial(src_core_utils.mergeStack, modules_index_default, final_length))(stack), this._cleanupOptions.bind(this));
-
-    return multiple ? results : results[0];
+    this.order = [];
+    this.parameters = {};
+    this.attribute = "data-pat-" + name;
+    this.enum_values = {};
+    this.enum_conflicts = [];
+    this.groups = {};
+    this.possible_groups = {};
+    this.log = core_logging.getLogger(name + ".parser");
+    this.group_pattern = /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i;
+    this.json_param_pattern = /^\s*{/i;
+    this.named_param_pattern = /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i;
+    this.token_pattern = /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g;
   }
-}; // BBB
 
-parser_ArgumentParser.prototype.add_argument = parser_ArgumentParser.prototype.addArgument;
-/* harmony default export */ var src_core_parser = (parser_ArgumentParser);
+  parser_createClass(ArgumentParser, [{
+    key: "_camelCase",
+    value: function _camelCase(str) {
+      return str.replace(/\-([a-z])/g, function (__, p1) {
+        return p1.toUpperCase();
+      });
+    }
+  }, {
+    key: "addAlias",
+    value: function addAlias(alias, original) {
+      /* Add an alias for a previously added parser argument.
+       *
+       * Useful when you want to support both US and UK english argument
+       * names.
+       */
+      if (this.parameters[original]) {
+        this.parameters[original].alias = alias;
+      } else {
+        throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
+      }
+    }
+  }, {
+    key: "addGroupToSpec",
+    value: function addGroupToSpec(spec) {
+      /* Determine wether an argument being parsed can be grouped and
+       * update its specifications object accordingly.
+       *
+       * Internal method used by addArgument and addJSONArgument
+       */
+      var m = spec.name.match(this.group_pattern);
+
+      if (m) {
+        var group = m[1];
+        var field = m[2];
+
+        if (group in this.possible_groups) {
+          var first_spec = this.possible_groups[group];
+          var first_name = first_spec.name.match(this.group_pattern)[2];
+          first_spec.group = group;
+          first_spec.dest = first_name;
+          this.groups[group] = new ArgumentParser();
+          this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
+          delete this.possible_groups[group];
+        }
+
+        if (group in this.groups) {
+          this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
+          spec.group = group;
+          spec.dest = field;
+        } else {
+          this.possible_groups[group] = spec;
+          spec.dest = this._camelCase(spec.name);
+        }
+      }
+
+      return spec;
+    }
+  }, {
+    key: "addJSONArgument",
+    value: function addJSONArgument(name, default_value) {
+      /* Add an argument where the value is provided in JSON format.
+       *
+       * This is a different usecase than specifying all arguments to
+       * the data-pat-... attributes in JSON format, and instead is part
+       * of the normal notation except that a value is in JSON instead of
+       * for example a string.
+       */
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec({
+        name: name,
+        value: default_value,
+        dest: name,
+        group: null,
+        type: "json"
+      });
+    }
+  }, {
+    key: "addArgument",
+    value: function addArgument(name, default_value, choices, multiple) {
+      var spec = {
+        name: name,
+        value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
+        multiple: multiple,
+        dest: name,
+        group: null
+      };
+
+      if (choices && Array.isArray(choices) && choices.length) {
+        spec.choices = choices;
+        spec.type = this._typeof(choices[0]);
+
+        var _iterator = core_parser_createForOfIteratorHelper(choices),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var choice = _step.value;
+
+            if (this.enum_conflicts.indexOf(choice) !== -1) {
+              continue;
+            } else if (choice in this.enum_values) {
+              this.enum_conflicts.push(choice);
+              delete this.enum_values[choice];
+            } else {
+              this.enum_values[choice] = name;
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
+        spec.type = this.parameters[spec.value.slice(1)].type;
+      } else {
+        // Note that this will get reset by _defaults if default_value is a function.
+        spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
+      }
+
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec(spec);
+    }
+  }, {
+    key: "_typeof",
+    value: function _typeof(obj) {
+      if (obj === null) {
+        return "null";
+      }
+
+      return parser_typeof2(obj);
+    }
+  }, {
+    key: "_coerce",
+    value: function _coerce(name, value) {
+      var spec = this.parameters[name];
+      if (parser_typeof2(value) !== spec.type) try {
+        switch (spec.type) {
+          case "json":
+            value = JSON.parse(value);
+            break;
+
+          case "boolean":
+            if (typeof value === "string") {
+              value = value.toLowerCase();
+              var num = parseInt(value, 10);
+              if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
+            } else if (typeof value === "number") {
+              value = !!value;
+            } else {
+              throw "Cannot convert value for " + name + " to boolean";
+            }
+
+            break;
+
+          case "number":
+            if (typeof value === "string") {
+              value = parseInt(value, 10);
+
+              if (isNaN(value)) {
+                throw "Cannot convert value for " + name + " to number";
+              }
+            } else if (typeof value === "boolean") {
+              value = value + 0;
+            } else {
+              throw "Cannot convert value for " + name + " to number";
+            }
+
+            break;
+
+          case "string":
+            value = value.toString();
+            break;
+
+          case "null": // Missing default values
+
+          case "undefined":
+            break;
+
+          default:
+            throw "Do not know how to convert value for " + name + " to " + spec.type;
+        }
+      } catch (e) {
+        this.log.warn(e);
+        return null;
+      }
+
+      if (spec.choices && spec.choices.indexOf(value) === -1) {
+        this.log.warn("Illegal value for " + name + ": " + value);
+        return null;
+      }
+
+      return value;
+    }
+  }, {
+    key: "_set",
+    value: function _set(opts, name, value) {
+      if (!(name in this.parameters)) {
+        this.log.debug("Ignoring value for unknown argument " + name);
+        return;
+      }
+
+      var spec = this.parameters[name];
+      var parts;
+
+      if (spec.multiple) {
+        if (typeof value === "string") {
+          parts = value.split(/,+/);
+        } else {
+          parts = value;
+        }
+
+        value = [];
+
+        var _iterator2 = core_parser_createForOfIteratorHelper(parts),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var part = _step2.value;
+
+            var v = this._coerce(name, part.trim());
+
+            if (v !== null) {
+              value.push(v);
+            }
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      } else {
+        value = this._coerce(name, value);
+
+        if (value === null) {
+          return;
+        }
+      }
+
+      opts[name] = value;
+    }
+  }, {
+    key: "_split",
+    value: function _split(text) {
+      var tokens = [];
+      text.replace(this.token_pattern, function (match, quoted, __, simple) {
+        if (quoted) {
+          tokens.push(quoted);
+        } else if (simple) {
+          tokens.push(simple);
+        }
+      });
+      return tokens;
+    }
+  }, {
+    key: "_parseExtendedNotation",
+    value: function _parseExtendedNotation(argstring) {
+      var _this = this;
+
+      var opts = {};
+      var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
+        return el.replace(new RegExp("\0x1f", "g"), ";");
+      });
+
+      var _iterator3 = core_parser_createForOfIteratorHelper(parts),
+          _step3;
+
+      try {
+        var _loop = function _loop() {
+          var part = _step3.value;
+
+          if (!part) {
+            return "continue";
+          }
+
+          var matches = part.match(_this.named_param_pattern);
+
+          if (!matches) {
+            _this.log.warn("Invalid parameter: " + part + ": " + argstring);
+
+            return "continue";
+          }
+
+          var name = matches[1];
+          var value = matches[2].trim();
+          var arg = Object.values(_this.parameters).filter(function (it) {
+            return it.alias === name;
+          });
+          var is_alias = arg.length === 1;
+
+          if (is_alias) {
+            _this._set(opts, arg[0].name, value);
+          } else if (name in _this.parameters) {
+            _this._set(opts, name, value);
+          } else if (name in _this.groups) {
+            var subopt = _this.groups[name]._parseShorthandNotation(value);
+
+            for (var field in subopt) {
+              _this._set(opts, name + "-" + field, subopt[field]);
+            }
+          } else {
+            _this.log.warn("Unknown named parameter " + matches[1]);
+
+            return "continue";
+          }
+        };
+
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _ret = _loop();
+
+          if (_ret === "continue") continue;
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_parseShorthandNotation",
+    value: function _parseShorthandNotation(parameter) {
+      var parts = this._split(parameter);
+
+      var opts = {};
+      var i = 0;
+
+      while (parts.length) {
+        var part = parts.shift().trim();
+        var sense = void 0;
+        var flag = void 0;
+        var positional = true;
+
+        if (part.slice(0, 3) === "no-") {
+          sense = false;
+          flag = part.slice(3);
+        } else {
+          sense = true;
+          flag = part;
+        }
+
+        if (flag in this.parameters && this.parameters[flag].type === "boolean") {
+          positional = false;
+
+          this._set(opts, flag, sense);
+        } else if (flag in this.enum_values) {
+          positional = false;
+
+          this._set(opts, this.enum_values[flag], flag);
+        } else if (positional) this._set(opts, this.order[i], part);else {
+          parts.unshift(part);
+          break;
+        }
+
+        i++;
+
+        if (i >= this.order.length) {
+          break;
+        }
+      }
+
+      if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
+      return opts;
+    }
+  }, {
+    key: "_parse",
+    value: function _parse(parameter) {
+      if (!parameter) {
+        return {};
+      }
+
+      if (parameter.match(this.json_param_pattern)) {
+        try {
+          return JSON.parse(parameter);
+        } catch (e) {
+          this.log.warn("Invalid JSON argument found: " + parameter);
+        }
+      }
+
+      if (parameter.match(this.named_param_pattern)) {
+        return this._parseExtendedNotation(parameter);
+      }
+
+      var sep = parameter.indexOf(";");
+
+      if (sep === -1) {
+        return this._parseShorthandNotation(parameter);
+      }
+
+      var opts = this._parseShorthandNotation(parameter.slice(0, sep));
+
+      var extended = this._parseExtendedNotation(parameter.slice(sep + 1));
+
+      for (var name in extended) {
+        opts[name] = extended[name];
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_defaults",
+    value: function _defaults($el) {
+      var result = {};
+
+      for (var name in this.parameters) {
+        if (typeof this.parameters[name].value === "function") try {
+          result[name] = this.parameters[name].value($el, name);
+          this.parameters[name].type = parser_typeof2(result[name]);
+        } catch (e) {
+          this.log.error("Default function for " + name + " failed.");
+        } else result[name] = this.parameters[name].value;
+      }
+
+      return result;
+    }
+  }, {
+    key: "_cleanupOptions",
+    value: function _cleanupOptions(options) {
+      // Resolve references
+      for (var _i = 0, _Object$keys = Object.keys(options); _i < _Object$keys.length; _i++) {
+        var name = _Object$keys[_i];
+        var spec = this.parameters[name];
+        if (spec === undefined) continue;
+        if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
+      } // Move options into groups and do renames
+
+
+      for (var _i2 = 0, _Object$keys2 = Object.keys(options); _i2 < _Object$keys2.length; _i2++) {
+        var _name = _Object$keys2[_i2];
+        var _spec = this.parameters[_name];
+        var target = void 0;
+        if (_spec === undefined) continue;
+
+        if (_spec.group) {
+          if (parser_typeof2(options[_spec.group]) !== "object") options[_spec.group] = {};
+          target = options[_spec.group];
+        } else {
+          target = options;
+        }
+
+        if (_spec.dest !== _name) {
+          target[_spec.dest] = options[_name];
+          delete options[_name];
+        }
+      }
+
+      return options;
+    }
+  }, {
+    key: "parse",
+    value: function parse($el, options, multiple, inherit) {
+      if (!$el.jquery) {
+        $el = jquery_js_exposed_default()($el);
+      }
+
+      if (typeof options === "boolean" && multiple === undefined) {
+        // Fix argument order: ``multiple`` passed instead of ``options``.
+        multiple = options;
+        options = {};
+      }
+
+      inherit = inherit !== false;
+      var stack = inherit ? [[this._defaults($el)]] : [[{}]];
+      var $possible_config_providers;
+      var final_length = 1;
+      /*
+       * XXX this is a workaround for:
+       * - https://github.com/Patternslib/Patterns/issues/393
+       *
+       * Prevents the parser to pollute the pat-modal configuration
+       * with data-pat-inject elements define in a `.pat-modal` parent element.
+       *
+       *  Probably this function should be completely revisited, see:
+       * - https://github.com/Patternslib/Patterns/issues/627
+       *
+       */
+
+      if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
+        $possible_config_providers = $el;
+      } else {
+        $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
+      }
+
+      var _iterator4 = core_parser_createForOfIteratorHelper($possible_config_providers),
+          _step4;
+
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var provider = _step4.value;
+          var frame = void 0;
+          var data = jquery_js_exposed_default()(provider).attr(this.attribute);
+
+          if (!data) {
+            continue;
+          }
+
+          var _parse = this._parse.bind(this);
+
+          if (data.match(/&&/)) {
+            frame = data.split(/\s*&&\s*/).map(_parse);
+          } else {
+            frame = [_parse(data)];
+          }
+
+          final_length = Math.max(frame.length, final_length);
+          stack.push(frame);
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+
+      if (parser_typeof2(options) === "object") {
+        if (Array.isArray(options)) {
+          stack.push(options);
+          final_length = Math.max(options.length, final_length);
+        } else stack.push([options]);
+      }
+
+      if (!multiple) {
+        final_length = 1;
+      }
+
+      var results = src_core_utils.removeDuplicateObjects(src_core_utils.mergeStack(stack, final_length)).map(this._cleanupOptions.bind(this));
+      return multiple ? results : results[0];
+    }
+  }]);
+
+  return ArgumentParser;
+}(); // BBB
+
+
+core_parser_ArgumentParser.prototype.add_argument = core_parser_ArgumentParser.prototype.addArgument;
+/* harmony default export */ var src_core_parser = (core_parser_ArgumentParser);
 // CONCATENATED MODULE: ./node_modules/pat-sortable-table/src/pat-sortable-table.js
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -38303,6 +38414,126 @@ underscore_modules_index_default_._ = underscore_modules_index_default_;
 function translate(str) {
   return str;
 }
+// CONCATENATED MODULE: ./node_modules/pat-upload/node_modules/patternslib/src/core/dom.js
+function core_dom_toConsumableArray(arr) { return core_dom_arrayWithoutHoles(arr) || core_dom_iterableToArray(arr) || core_dom_unsupportedIterableToArray(arr) || core_dom_nonIterableSpread(); }
+
+function core_dom_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function core_dom_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return core_dom_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return core_dom_arrayLikeToArray(o, minLen); }
+
+function core_dom_iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function core_dom_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return core_dom_arrayLikeToArray(arr); }
+
+function core_dom_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+/* Utilities for DOM traversal or navigation */
+var core_dom_DATA_STYLE_DISPLAY = "__patternslib__style__display";
+
+var core_dom_toNodeArray = function toNodeArray(nodes) {
+  // Return an array of DOM nodes
+  if (nodes.jquery || nodes instanceof NodeList) {
+    // jQuery or document.querySelectorAll
+    nodes = core_dom_toConsumableArray(nodes);
+  } else if (nodes instanceof Array === false) {
+    nodes = [nodes];
+  }
+
+  return nodes;
+};
+
+var core_dom_querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
+  // Like querySelectorAll but including the element where it starts from.
+  // Returns an Array, not a NodeList
+  var all = core_dom_toConsumableArray(el.querySelectorAll(selector));
+
+  if (el.matches(selector)) {
+    all.unshift(el); // start element should be first.
+  }
+
+  return all;
+};
+
+var src_core_dom_wrap = function wrap(el, wrapper) {
+  // Wrap a element with a wrapper element.
+  // See: https://stackoverflow.com/a/13169465/1337474
+  el.parentNode.insertBefore(wrapper, el);
+  wrapper.appendChild(el);
+};
+
+var core_dom_hide = function hide(el) {
+  // Hides the element with ``display: none``
+  if (el.style.display === "none") {
+    // Nothing to do.
+    return;
+  }
+
+  if (el.style.display) {
+    el[core_dom_DATA_STYLE_DISPLAY] = el.style.display;
+  }
+
+  el.style.display = "none";
+};
+
+var core_dom_show = function show(el) {
+  // Shows element by removing ``display: none`` and restoring the display
+  // value to whatever it was before.
+  var val = el[core_dom_DATA_STYLE_DISPLAY] || null;
+  el.style.display = val;
+  delete el[core_dom_DATA_STYLE_DISPLAY];
+};
+
+var core_dom_find_parents = function find_parents(el, selector) {
+  var _el$parentNode;
+
+  // Return all direct parents of ``el`` matching ``selector``.
+  // This matches against all parents but not the element itself.
+  // The order of elements is from the search starting point up to higher
+  // DOM levels.
+  var parent = (el === null || el === void 0 ? void 0 : (_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest) && el.parentNode.closest(selector) || null;
+  var ret = [];
+
+  while (parent) {
+    var _parent$parentNode;
+
+    ret.push(parent);
+    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
+  }
+
+  return ret;
+};
+
+var core_dom_find_scoped = function find_scoped(el, selector) {
+  // If the selector starts with an object id do a global search,
+  // otherwise do a local search.
+  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
+};
+
+var core_dom_is_visible = function is_visible(el) {
+  // Check, if element is visible in DOM.
+  // https://stackoverflow.com/a/19808107/1337474
+  return el.offsetWidth > 0 && el.offsetHeight > 0;
+};
+
+var core_dom_create_from_string = function create_from_string(string) {
+  // Create a DOM element from a string.
+  var div = document.createElement("div");
+  div.innerHTML = string.trim();
+  return div.firstChild;
+};
+
+var core_dom_dom = {
+  toNodeArray: core_dom_toNodeArray,
+  querySelectorAllAndMe: core_dom_querySelectorAllAndMe,
+  wrap: src_core_dom_wrap,
+  hide: core_dom_hide,
+  show: core_dom_show,
+  find_parents: core_dom_find_parents,
+  find_scoped: core_dom_find_scoped,
+  is_visible: core_dom_is_visible,
+  create_from_string: core_dom_create_from_string
+};
+/* harmony default export */ var patternslib_src_core_dom = (core_dom_dom);
 // CONCATENATED MODULE: ./node_modules/pat-upload/node_modules/patternslib/src/core/logging.js
 function core_logging_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { core_logging_typeof = function _typeof(obj) { return typeof obj; }; } else { core_logging_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return core_logging_typeof(obj); }
 
@@ -38332,7 +38563,7 @@ if (!Function.prototype.bind) {
   };
 }
 
-var core_logging_root, // root logger instance
+var src_core_logging_root, // root logger instance
 core_logging_writer; // writer instance, used to output log entries
 
 var core_logging_Level = {
@@ -38470,143 +38701,31 @@ if (!window.console || !window.console.log || typeof window.console.log.apply !=
   core_logging_setWriter(new core_logging_ConsoleWriter());
 }
 
-core_logging_root = new core_logging_Logger();
+src_core_logging_root = new core_logging_Logger();
 var core_logging_logconfig = /loglevel(|-[^=]+)=([^&]+)/g,
     core_logging_match;
 
 while ((core_logging_match = core_logging_logconfig.exec(window.location.search)) !== null) {
-  var core_logging_logger = core_logging_match[1] === "" ? core_logging_root : core_logging_root.getLogger(core_logging_match[1].slice(1));
+  var core_logging_logger = core_logging_match[1] === "" ? src_core_logging_root : src_core_logging_root.getLogger(core_logging_match[1].slice(1));
   core_logging_logger.setLevel(core_logging_match[2].toUpperCase());
 }
 
 var core_logging_api = {
   Level: core_logging_Level,
-  getLogger: core_logging_root.getLogger.bind(core_logging_root),
-  setEnabled: core_logging_root.setEnabled.bind(core_logging_root),
-  isEnabled: core_logging_root.isEnabled.bind(core_logging_root),
-  setLevel: core_logging_root.setLevel.bind(core_logging_root),
-  getLevel: core_logging_root.getLevel.bind(core_logging_root),
-  debug: core_logging_root.debug.bind(core_logging_root),
-  info: core_logging_root.info.bind(core_logging_root),
-  warn: core_logging_root.warn.bind(core_logging_root),
-  error: core_logging_root.error.bind(core_logging_root),
-  fatal: core_logging_root.fatal.bind(core_logging_root),
+  getLogger: src_core_logging_root.getLogger.bind(src_core_logging_root),
+  setEnabled: src_core_logging_root.setEnabled.bind(src_core_logging_root),
+  isEnabled: src_core_logging_root.isEnabled.bind(src_core_logging_root),
+  setLevel: src_core_logging_root.setLevel.bind(src_core_logging_root),
+  getLevel: src_core_logging_root.getLevel.bind(src_core_logging_root),
+  debug: src_core_logging_root.debug.bind(src_core_logging_root),
+  info: src_core_logging_root.info.bind(src_core_logging_root),
+  warn: src_core_logging_root.warn.bind(src_core_logging_root),
+  error: src_core_logging_root.error.bind(src_core_logging_root),
+  fatal: src_core_logging_root.fatal.bind(src_core_logging_root),
   getWriter: core_logging_getWriter,
   setWriter: core_logging_setWriter
 };
 /* harmony default export */ var src_core_logging = (core_logging_api);
-// CONCATENATED MODULE: ./node_modules/pat-upload/node_modules/patternslib/src/core/dom.js
-function core_dom_toConsumableArray(arr) { return core_dom_arrayWithoutHoles(arr) || core_dom_iterableToArray(arr) || core_dom_unsupportedIterableToArray(arr) || core_dom_nonIterableSpread(); }
-
-function core_dom_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function core_dom_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return core_dom_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return core_dom_arrayLikeToArray(o, minLen); }
-
-function core_dom_iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function core_dom_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return core_dom_arrayLikeToArray(arr); }
-
-function core_dom_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-/* Utilities for DOM traversal or navigation */
-var core_dom_DATA_STYLE_DISPLAY = "__patternslib__style__display";
-
-var core_dom_toNodeArray = function toNodeArray(nodes) {
-  // Return an array of DOM nodes
-  if (nodes.jquery || nodes instanceof NodeList) {
-    // jQuery or document.querySelectorAll
-    nodes = core_dom_toConsumableArray(nodes);
-  } else if (nodes instanceof Array === false) {
-    nodes = [nodes];
-  }
-
-  return nodes;
-};
-
-var core_dom_querySelectorAllAndMe = function querySelectorAllAndMe(el, selector) {
-  // Like querySelectorAll but including the element where it starts from.
-  // Returns an Array, not a NodeList
-  var all = core_dom_toConsumableArray(el.querySelectorAll(selector));
-
-  if (el.matches(selector)) {
-    all.unshift(el); // start element should be first.
-  }
-
-  return all;
-};
-
-var src_core_dom_wrap = function wrap(el, wrapper) {
-  // Wrap a element with a wrapper element.
-  // See: https://stackoverflow.com/a/13169465/1337474
-  el.parentNode.insertBefore(wrapper, el);
-  wrapper.appendChild(el);
-};
-
-var core_dom_hide = function hide(el) {
-  // Hides the element with ``display: none``
-  if (el.style.display === "none") {
-    // Nothing to do.
-    return;
-  }
-
-  if (el.style.display) {
-    el[core_dom_DATA_STYLE_DISPLAY] = el.style.display;
-  }
-
-  el.style.display = "none";
-};
-
-var core_dom_show = function show(el) {
-  // Shows element by removing ``display: none`` and restoring the display
-  // value to whatever it was before.
-  var val = el[core_dom_DATA_STYLE_DISPLAY] || null;
-  el.style.display = val;
-  delete el[core_dom_DATA_STYLE_DISPLAY];
-};
-
-var core_dom_find_parents = function find_parents(el, selector) {
-  var _el$parentNode;
-
-  // Return all direct parents of ``el`` matching ``selector``.
-  // This matches against all parents but not the element itself.
-  // The order of elements is from the search starting point up to higher
-  // DOM levels.
-  var parent = ((_el$parentNode = el.parentNode) === null || _el$parentNode === void 0 ? void 0 : _el$parentNode.closest(selector)) || null;
-  var ret = [];
-
-  while (parent) {
-    var _parent$parentNode;
-
-    ret.push(parent);
-    parent = ((_parent$parentNode = parent.parentNode) === null || _parent$parentNode === void 0 ? void 0 : _parent$parentNode.closest(selector)) || null;
-  }
-
-  return ret;
-};
-
-var core_dom_find_scoped = function find_scoped(el, selector) {
-  // If the selector starts with an object id do a global search,
-  // otherwise do a local search.
-  return (selector.indexOf("#") === 0 ? document : el).querySelectorAll(selector);
-};
-
-var core_dom_is_visible = function is_visible(el) {
-  // Check, if element is visible in DOM.
-  // https://stackoverflow.com/a/19808107/1337474
-  return el.offsetWidth > 0 && el.offsetHeight > 0;
-};
-
-var core_dom_dom = {
-  toNodeArray: core_dom_toNodeArray,
-  querySelectorAllAndMe: core_dom_querySelectorAllAndMe,
-  wrap: src_core_dom_wrap,
-  hide: core_dom_hide,
-  show: core_dom_show,
-  find_parents: core_dom_find_parents,
-  find_scoped: core_dom_find_scoped,
-  is_visible: core_dom_is_visible
-};
-/* harmony default export */ var patternslib_src_core_dom = (core_dom_dom);
 // CONCATENATED MODULE: ./node_modules/pat-upload/node_modules/patternslib/src/core/utils.js
 function core_utils_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = src_core_utils_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -39186,11 +39305,12 @@ var src_core_utils_debounce = function debounce(func, ms) {
   // From: https://underscorejs.org/#debounce
   var timer = null;
   return function () {
+    var _this = this;
+
     clearTimeout(timer);
     var args = arguments;
-    var context = this;
     timer = setTimeout(function () {
-      func.apply(context, args);
+      func.apply(_this, args);
     }, ms);
   };
 };
@@ -39202,6 +39322,15 @@ var core_utils_isIE = function isIE() {
     /*@cc_on!@*/
      false || !!document.documentMode
   );
+};
+
+var core_utils_jqToNode = function jqToNode(el) {
+  // Return a DOM node if a jQuery node was passed.
+  if (el.jquery) {
+    el = el[0];
+  }
+
+  return el;
 };
 
 var core_utils_utils = {
@@ -39227,294 +39356,17 @@ var core_utils_utils = {
   checkCSSFeature: core_utils_checkCSSFeature,
   timeout: src_core_utils_timeout,
   debounce: src_core_utils_debounce,
-  isIE: core_utils_isIE
+  isIE: core_utils_isIE,
+  jqToNode: core_utils_jqToNode
 };
 /* harmony default export */ var patternslib_src_core_utils = (core_utils_utils);
-// CONCATENATED MODULE: ./node_modules/pat-upload/node_modules/patternslib/src/core/jquery-ext.js
-function src_core_jquery_ext_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { src_core_jquery_ext_typeof = function _typeof(obj) { return typeof obj; }; } else { src_core_jquery_ext_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return src_core_jquery_ext_typeof(obj); }
-
-/**
- * @license
- * Patterns @VERSION@ jquery-ext - various jQuery extensions
- *
- * Copyright 2011 Humberto Sermeño
- */
-
-var src_core_jquery_ext_methods = {
-  init: function init(options) {
-    var settings = {
-      time: 3
-      /* time it will wait before moving to "timeout" after a move event */
-      ,
-      initialTime: 8
-      /* time it will wait before first adding the "timeout" class */
-      ,
-      exceptionAreas: []
-      /* IDs of elements that, if the mouse is over them, will reset the timer */
-
-    };
-    return this.each(function () {
-      var $this = jquery_js_exposed_default()(this),
-          data = $this.data("timeout");
-
-      if (!data) {
-        if (options) {
-          jquery_js_exposed_default.a.extend(settings, options);
-        }
-
-        $this.data("timeout", {
-          lastEvent: new Date(),
-          trueTime: settings.time,
-          time: settings.initialTime,
-          untouched: true,
-          inExceptionArea: false
-        });
-        $this.on("mouseover.timeout", src_core_jquery_ext_methods.mouseMoved);
-        $this.on("mouseenter.timeout", src_core_jquery_ext_methods.mouseMoved);
-        jquery_js_exposed_default()(settings.exceptionAreas).each(function () {
-          $this.find(this).live("mouseover.timeout", {
-            parent: $this
-          }, src_core_jquery_ext_methods.enteredException).live("mouseleave.timeout", {
-            parent: $this
-          }, src_core_jquery_ext_methods.leftException);
-        });
-        if (settings.initialTime > 0) $this.timeout("startTimer");else $this.addClass("timeout");
-      }
-    });
-  },
-  enteredException: function enteredException(event) {
-    var data = event.data.parent.data("timeout");
-    data.inExceptionArea = true;
-    event.data.parent.data("timeout", data);
-    event.data.parent.trigger("mouseover");
-  },
-  leftException: function leftException(event) {
-    var data = event.data.parent.data("timeout");
-    data.inExceptionArea = false;
-    event.data.parent.data("timeout", data);
-  },
-  destroy: function destroy() {
-    return this.each(function () {
-      var $this = jquery_js_exposed_default()(this),
-          data = $this.data("timeout");
-      jquery_js_exposed_default()(window).off(".timeout");
-      data.timeout.remove();
-      $this.removeData("timeout");
-    });
-  },
-  mouseMoved: function mouseMoved() {
-    var $this = jquery_js_exposed_default()(this),
-        data = $this.data("timeout");
-
-    if ($this.hasClass("timeout")) {
-      $this.removeClass("timeout");
-      $this.timeout("startTimer");
-    } else if (data.untouched) {
-      data.untouched = false;
-      data.time = data.trueTime;
-    }
-
-    data.lastEvent = new Date();
-    $this.data("timeout", data);
-  },
-  startTimer: function startTimer() {
-    var $this = jquery_js_exposed_default()(this),
-        data = $this.data("timeout");
-
-    var fn = function fn() {
-      var data = $this.data("timeout");
-
-      if (data && data.lastEvent) {
-        if (data.inExceptionArea) {
-          setTimeout(fn, Math.floor(data.time * 1000));
-        } else {
-          var now = new Date();
-          var diff = Math.floor(data.time * 1000) - (now - data.lastEvent);
-
-          if (diff > 0) {
-            // the timeout has not ocurred, so set the timeout again
-            setTimeout(fn, diff + 100);
-          } else {
-            // timeout ocurred, so set the class
-            $this.addClass("timeout");
-          }
-        }
-      }
-    };
-
-    setTimeout(fn, Math.floor(data.time * 1000));
-  }
-};
-
-jquery_js_exposed_default.a.fn.timeout = function (method) {
-  if (src_core_jquery_ext_methods[method]) {
-    return src_core_jquery_ext_methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-  } else if (src_core_jquery_ext_typeof(method) === "object" || !method) {
-    return src_core_jquery_ext_methods.init.apply(this, arguments);
-  } else {
-    jquery_js_exposed_default.a.error("Method " + method + " does not exist on jQuery.timeout");
-  }
-}; // Custom jQuery selector to find elements with scrollbars
-
-
-jquery_js_exposed_default.a.extend(jquery_js_exposed_default.a.expr[":"], {
-  scrollable: function scrollable(element) {
-    var vertically_scrollable, horizontally_scrollable;
-    if (jquery_js_exposed_default()(element).css("overflow") === "scroll" || jquery_js_exposed_default()(element).css("overflowX") === "scroll" || jquery_js_exposed_default()(element).css("overflowY") === "scroll") return true;
-    vertically_scrollable = element.clientHeight < element.scrollHeight && (jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflowY"), ["scroll", "auto"]) !== -1 || jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflow"), ["scroll", "auto"]) !== -1);
-    if (vertically_scrollable) return true;
-    horizontally_scrollable = element.clientWidth < element.scrollWidth && (jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflowX"), ["scroll", "auto"]) !== -1 || jquery_js_exposed_default.a.inArray(jquery_js_exposed_default()(element).css("overflow"), ["scroll", "auto"]) !== -1);
-    return horizontally_scrollable;
-  }
-}); // Make Visible in scroll
-
-jquery_js_exposed_default.a.fn.makeVisibleInScroll = function (parent_id) {
-  var absoluteParent = null;
-
-  if (typeof parent_id === "string") {
-    absoluteParent = jquery_js_exposed_default()("#" + parent_id);
-  } else if (parent_id) {
-    absoluteParent = jquery_js_exposed_default()(parent_id);
-  }
-
-  return this.each(function () {
-    var $this = jquery_js_exposed_default()(this),
-        parent;
-
-    if (!absoluteParent) {
-      parent = $this.parents(":scrollable");
-
-      if (parent.length > 0) {
-        parent = jquery_js_exposed_default()(parent[0]);
-      } else {
-        parent = jquery_js_exposed_default()(window);
-      }
-    } else {
-      parent = absoluteParent;
-    }
-
-    var elemTop = $this.position().top;
-    var elemBottom = $this.height() + elemTop;
-    var viewTop = parent.scrollTop();
-    var viewBottom = parent.height() + viewTop;
-
-    if (elemTop < viewTop) {
-      parent.scrollTop(elemTop);
-    } else if (elemBottom > viewBottom - parent.height() / 2) {
-      parent.scrollTop(elemTop - (parent.height() - $this.height()) / 2);
-    }
-  });
-}; //Work around warning for jQuery 3.x:
-//JQMIGRATE: jQuery.fn.offset() requires an element connected to a document
-
-
-jquery_js_exposed_default.a.fn.safeOffset = function () {
-  var docElem,
-      elem = this[0],
-      origin = {
-    top: 0,
-    left: 0
-  };
-
-  if (!elem || !elem.nodeType) {
-    return origin;
-  }
-
-  docElem = (elem.ownerDocument || document).documentElement;
-
-  if (!jquery_js_exposed_default.a.contains(docElem, elem)) {
-    return origin;
-  }
-
-  return jquery_js_exposed_default.a.fn.offset.apply(this, arguments);
-}; //Make absolute location
-
-
-jquery_js_exposed_default.a.fn.setPositionAbsolute = function (element, offsettop, offsetleft) {
-  return this.each(function () {
-    // set absolute location for based on the element passed
-    // dynamically since every browser has different settings
-    var $this = jquery_js_exposed_default()(this);
-    var thiswidth = jquery_js_exposed_default()(this).width();
-    var pos = element.safeOffset();
-    var width = element.width();
-    var height = element.height();
-    var setleft = pos.left + width - thiswidth + offsetleft;
-    var settop = pos.top + height + offsettop;
-    $this.css({
-      "z-index": 1,
-      "position": "absolute",
-      "marginLeft": 0,
-      "marginTop": 0,
-      "left": setleft + "px",
-      "top": settop + "px",
-      "width": thiswidth
-    });
-    $this.remove().appendTo("body").show();
-  });
-};
-
-jquery_js_exposed_default.a.fn.positionAncestor = function (selector) {
-  var left = 0;
-  var top = 0;
-  this.each(function () {
-    // check if current element has an ancestor matching a selector
-    // and that ancestor is positioned
-    var $ancestor = jquery_js_exposed_default()(this).closest(selector);
-
-    if ($ancestor.length && $ancestor.css("position") !== "static") {
-      var $child = jquery_js_exposed_default()(this);
-      var childMarginEdgeLeft = $child.safeOffset().left - parseInt($child.css("marginLeft"), 10);
-      var childMarginEdgeTop = $child.safeOffset().top - parseInt($child.css("marginTop"), 10);
-      var ancestorPaddingEdgeLeft = $ancestor.safeOffset().left + parseInt($ancestor.css("borderLeftWidth"), 10);
-      var ancestorPaddingEdgeTop = $ancestor.safeOffset().top + parseInt($ancestor.css("borderTopWidth"), 10);
-      left = childMarginEdgeLeft - ancestorPaddingEdgeLeft;
-      top = childMarginEdgeTop - ancestorPaddingEdgeTop; // we have found the ancestor and computed the position
-      // stop iterating
-
-      return false;
-    }
-  });
-  return {
-    left: left,
-    top: top
-  };
-};
-
-jquery_js_exposed_default.a.fn.findInclusive = function (selector) {
-  return this.find("*").addBack().filter(selector);
-};
-
-jquery_js_exposed_default.a.fn.slideIn = function (speed, easing, callback) {
-  return this.animate({
-    width: "show"
-  }, speed, easing, callback);
-};
-
-jquery_js_exposed_default.a.fn.slideOut = function (speed, easing, callback) {
-  return this.animate({
-    width: "hide"
-  }, speed, easing, callback);
-}; // case-insensitive :contains
-
-
-jquery_js_exposed_default.a.expr[":"].Contains = function (a, i, m) {
-  return jquery_js_exposed_default()(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
-};
-
-jquery_js_exposed_default.a.fn.scopedFind = function (selector) {
-  /*  If the selector starts with an object id do a global search,
-   *  otherwise do a local search.
-   */
-  if (selector.indexOf("#") === 0) {
-    return jquery_js_exposed_default()(selector);
-  } else {
-    return this.find(selector);
-  }
-};
-
-/* harmony default export */ var src_core_jquery_ext = (undefined);
 // CONCATENATED MODULE: ./node_modules/pat-upload/node_modules/patternslib/src/core/registry.js
+function src_core_registry_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = src_core_registry_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function src_core_registry_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return src_core_registry_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return src_core_registry_arrayLikeToArray(o, minLen); }
+
+function src_core_registry_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 /**
  * Patterns registry - Central registry and scan logic for patterns
  *
@@ -39536,24 +39388,22 @@ jquery_js_exposed_default.a.fn.scopedFind = function (selector) {
 
 
 
- // below here modules that are only loaded
 
-
-var src_core_registry_log = src_core_logging.getLogger("registry"),
-    core_registry_disable_re = /patterns-disable=([^&]+)/g,
-    core_registry_dont_catch_re = /patterns-dont-catch/g,
-    core_registry_dont_catch = false,
-    core_registry_disabled = {},
-    src_core_registry_match;
+var core_registry_log = src_core_logging.getLogger("registry");
+var core_registry_disable_re = /patterns-disable=([^&]+)/g;
+var core_registry_dont_catch_re = /patterns-dont-catch/g;
+var core_registry_disabled = {};
+var core_registry_dont_catch = false;
+var src_core_registry_match;
 
 while ((src_core_registry_match = core_registry_disable_re.exec(window.location.search)) !== null) {
   core_registry_disabled[src_core_registry_match[1]] = true;
-  src_core_registry_log.info("Pattern disabled via url config:", src_core_registry_match[1]);
+  core_registry_log.info("Pattern disabled via url config:", src_core_registry_match[1]);
 }
 
 while ((src_core_registry_match = core_registry_dont_catch_re.exec(window.location.search)) !== null) {
   core_registry_dont_catch = true;
-  src_core_registry_log.info("I will not catch init exceptions");
+  core_registry_log.info("I will not catch init exceptions");
 }
 
 var src_core_registry_registry = {
@@ -39563,15 +39413,15 @@ var src_core_registry_registry = {
   // the DOM is scanned. After that registering a new pattern
   // results in rescanning the DOM only for this pattern.
   initialized: false,
-  init: function registry_init() {
+  init: function init() {
     jquery_js_exposed_default()(document).ready(function () {
-      src_core_registry_log.info("loaded: " + Object.keys(src_core_registry_registry.patterns).sort().join(", "));
+      core_registry_log.info("loaded: " + Object.keys(src_core_registry_registry.patterns).sort().join(", "));
       src_core_registry_registry.scan(document.body);
       src_core_registry_registry.initialized = true;
-      src_core_registry_log.info("finished initial scan.");
+      core_registry_log.info("finished initial scan.");
     });
   },
-  clear: function clearRegistry() {
+  clear: function clear() {
     // Removes all patterns from the registry. Currently only being
     // used in tests.
     this.patterns = {};
@@ -39583,7 +39433,7 @@ var src_core_registry_registry = {
      * it exists.
      */
     if (core_registry_disabled[name]) {
-      src_core_registry_log.debug("Skipping disabled pattern:", name);
+      core_registry_log.debug("Skipping disabled pattern:", name);
       return;
     }
 
@@ -39598,7 +39448,7 @@ var src_core_registry_registry = {
           throw e;
         }
 
-        src_core_registry_log.error("Transform error for pattern" + name, e);
+        core_registry_log.error("Transform error for pattern" + name, e);
       }
     }
   },
@@ -39634,49 +39484,90 @@ var src_core_registry_registry = {
     // sure here, that it appears first. Not sure what would be
     // the best solution. Perhaps some kind of way to register
     // patterns "before" or "after" other patterns.
-    if (underscore_modules_index_default.contains(patterns, "validation") && underscore_modules_index_default.contains(patterns, "inject")) {
+    if (patterns.includes("validation") && patterns.includes("inject")) {
       patterns.splice(patterns.indexOf("validation"), 1);
       patterns.unshift("validation");
     }
 
     return patterns;
   },
-  scan: function registryScan(content, patterns, trigger) {
-    var selectors = [],
-        $match;
+  scan: function scan(content, patterns, trigger) {
+    if (typeof content === "string") {
+      content = document.querySelector(content);
+    } else if (content.jquery) {
+      content = content[0];
+    }
+
+    var selectors = [];
     patterns = this.orderPatterns(patterns || Object.keys(src_core_registry_registry.patterns));
-    patterns.forEach(underscore_modules_index_default.partial(this.transformPattern, underscore_modules_index_default, content));
-    patterns = underscore_modules_index_default.each(patterns, function (name) {
-      var pattern = src_core_registry_registry.patterns[name];
 
-      if (pattern.trigger) {
-        selectors.unshift(pattern.trigger);
+    var _iterator = src_core_registry_createForOfIteratorHelper(patterns),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var name = _step.value;
+        this.transformPattern(name, content);
+        var pattern = src_core_registry_registry.patterns[name];
+
+        if (pattern.trigger) {
+          selectors.unshift(pattern.trigger);
+        }
       }
-    });
-    $match = jquery_js_exposed_default()(content).findInclusive(selectors.join(",")); // Find all DOM elements belonging to a pattern
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
 
-    $match = $match.filter(function () {
+    var matches = patternslib_src_core_dom.querySelectorAllAndMe(content, selectors.map(function (it) {
+      return it.trim().replace(/,$/, "");
+    }).join(","));
+    matches = matches.filter(function (el) {
       // Filter out code examples wrapped in <pre> elements.
-      return jquery_js_exposed_default()(this).parents("pre").length === 0;
-    });
-    $match = $match.filter(":not(.cant-touch-this)"); // walk list backwards and initialize patterns inside-out.
+      // Also filter special class ``.cant-touch-this``
+      return patternslib_src_core_dom.find_parents(el, "pre").length === 0 && !el.matches(".cant-touch-this");
+    }); // walk list backwards and initialize patterns inside-out.
 
-    $match.toArray().reduceRight(function registryInitPattern(acc, el) {
-      patterns.forEach(underscore_modules_index_default.partial(this.initPattern, underscore_modules_index_default, el, trigger));
-    }.bind(this), null);
-    jquery_js_exposed_default()("body").addClass("patterns-loaded");
+    var _iterator2 = src_core_registry_createForOfIteratorHelper(matches.reverse()),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var el = _step2.value;
+
+        var _iterator3 = src_core_registry_createForOfIteratorHelper(patterns),
+            _step3;
+
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var _name = _step3.value;
+            this.initPattern(_name, el, trigger);
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+
+    document.body.classList.add("patterns-loaded");
   },
-  register: function registry_register(pattern, name) {
-    var plugin_name;
+  register: function register(pattern, name) {
     name = name || pattern.name;
 
     if (!name) {
-      src_core_registry_log.error("Pattern lacks a name:", pattern);
+      core_registry_log.error("Pattern lacks a name:", pattern);
       return false;
     }
 
     if (src_core_registry_registry.patterns[name]) {
-      src_core_registry_log.error("Already have a pattern called: " + name);
+      core_registry_log.error("Already have a pattern called: " + name);
       return false;
     } // register pattern to be used for scanning new content
 
@@ -39684,7 +39575,7 @@ var src_core_registry_registry = {
     src_core_registry_registry.patterns[name] = pattern; // register pattern as jquery plugin
 
     if (pattern.jquery_plugin) {
-      plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
+      var plugin_name = ("pat-" + name).replace(/-([a-zA-Z])/g, function (match, p1) {
         return p1.toUpperCase();
       });
       jquery_js_exposed_default.a.fn[plugin_name] = patternslib_src_core_utils.jqueryPlugin(pattern); // BBB 2012-12-10 and also for Mockup patterns.
@@ -39692,7 +39583,7 @@ var src_core_registry_registry = {
       jquery_js_exposed_default.a.fn[plugin_name.replace(/^pat/, "pattern")] = jquery_js_exposed_default.a.fn[plugin_name];
     }
 
-    src_core_registry_log.debug("Registered pattern:", name, pattern);
+    core_registry_log.debug("Registered pattern:", name, pattern);
 
     if (src_core_registry_registry.initialized) {
       src_core_registry_registry.scan(document.body, [name]);
@@ -39717,7 +39608,7 @@ var core_mockup_parser_parser = {
     options = options || {}; // get options from parent element first, stop if element tag name is 'body'
 
     if ($el.length !== 0 && !jquery_js_exposed_default.a.nodeName($el[0], "body")) {
-      options = getOptions($el.parent(), patternName, options);
+      options = this.getOptions($el.parent(), patternName, options);
     } // collect all options from element
 
 
@@ -39777,18 +39668,18 @@ var src_core_base_initBasePattern = function initBasePattern($el, options, trigg
   }
 
   var name = this.prototype.name;
-  var log = src_core_logging.getLogger("pat." + name);
-  var pattern = $el.data("pattern-" + name);
+  var plog = src_core_logging.getLogger("pat.".concat(name));
+  var pattern = $el.data("pattern-".concat(name));
 
   if (pattern === undefined && patternslib_src_core_registry.patterns[name]) {
     try {
       options = this.prototype.parser === "mockup" ? src_core_mockup_parser.getOptions($el, name, options) : options;
       pattern = new patternslib_src_core_registry.patterns[name]($el, options, trigger);
     } catch (e) {
-      log.error("Failed while initializing '" + name + "' pattern.", e);
+      plog.error("Failed while initializing ".concat(name, " pattern."), e);
     }
 
-    $el.data("pattern-" + name, pattern);
+    $el.data("pattern-".concat(name), pattern);
   }
 
   return pattern;
@@ -39809,7 +39700,7 @@ var src_core_base_Base = function Base($el, options, trigger) {
 src_core_base_Base.prototype = {
   constructor: src_core_base_Base,
   on: function on(eventName, eventCallback) {
-    this.$el.on(eventName + "." + this.name + ".patterns", eventCallback);
+    this.$el.on("".concat(eventName, ".").concat(this.name, ".patterns"), eventCallback);
   },
   emit: function emit(eventName, args) {
     // args should be a list
@@ -39817,7 +39708,7 @@ src_core_base_Base.prototype = {
       args = [];
     }
 
-    this.$el.trigger(eventName + "." + this.name + ".patterns", args);
+    this.$el.trigger("".concat(eventName, ".").concat(this.name, ".patterns"), args);
   }
 };
 
@@ -39847,7 +39738,8 @@ src_core_base_Base.extend = function (patternProps) {
 
   child.init = src_core_base_initBasePattern;
   child.jquery_plugin = true;
-  child.trigger = patternProps.trigger; // Set the prototype chain to inherit from `parent`, without calling
+  child.trigger = patternProps.trigger;
+  child.parser = (patternProps === null || patternProps === void 0 ? void 0 : patternProps.parser) || null; // Set the prototype chain to inherit from `parent`, without calling
   // `parent`'s constructor function.
 
   var Surrogate = function Surrogate() {
@@ -39865,7 +39757,7 @@ src_core_base_Base.extend = function (patternProps) {
   if (!patternProps.name) {
     src_core_base_log.warn("This pattern without a name attribute will not be registered!");
   } else if (!patternProps.trigger) {
-    src_core_base_log.warn("The pattern '" + patternProps.name + "' does not " + "have a trigger attribute, it will not be registered.");
+    src_core_base_log.warn("The pattern ".concat(patternProps.name, " does not have a trigger attribute, it will not be registered."));
   } else {
     patternslib_src_core_registry.register(child, patternProps.name);
   }
@@ -39875,466 +39767,579 @@ src_core_base_Base.extend = function (patternProps) {
 
 /* harmony default export */ var src_core_base = (src_core_base_Base);
 // CONCATENATED MODULE: ./node_modules/pat-upload/node_modules/patternslib/src/core/parser.js
-function src_core_parser_typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { src_core_parser_typeof = function _typeof(obj) { return typeof obj; }; } else { src_core_parser_typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return src_core_parser_typeof(obj); }
+function core_parser_typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { core_parser_typeof2 = function _typeof2(obj) { return typeof obj; }; } else { core_parser_typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return core_parser_typeof2(obj); }
 
-/**
- * Patterns parser - Argument parser
- *
- * Copyright 2012-2013 Florian Friesdorf
- * Copyright 2012-2013 Simplon B.V. - Wichert Akkerman
- */
+function src_core_parser_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = src_core_parser_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
+function src_core_parser_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return src_core_parser_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return src_core_parser_arrayLikeToArray(o, minLen); }
 
+function src_core_parser_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+function core_parser_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function core_parser_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function core_parser_ArgumentParser(name) {
-  this.order = [];
-  this.parameters = {};
-  this.attribute = "data-pat-" + name;
-  this.enum_values = {};
-  this.enum_conflicts = [];
-  this.groups = {};
-  this.possible_groups = {};
-  this.log = src_core_logging.getLogger(name + ".parser");
-}
+function core_parser_createClass(Constructor, protoProps, staticProps) { if (protoProps) core_parser_defineProperties(Constructor.prototype, protoProps); if (staticProps) core_parser_defineProperties(Constructor, staticProps); return Constructor; }
 
-core_parser_ArgumentParser.prototype = {
-  group_pattern: /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i,
-  json_param_pattern: /^\s*{/i,
-  named_param_pattern: /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i,
-  token_pattern: /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g,
-  _camelCase: function _camelCase(str) {
-    return str.replace(/\-([a-z])/g, function (_, p1) {
-      return p1.toUpperCase();
-    });
-  },
-  addAlias: function argParserAddAlias(alias, original) {
-    /* Add an alias for a previously added parser argument.
-     *
-     * Useful when you want to support both US and UK english argument
-     * names.
-     */
-    if (this.parameters[original]) {
-      this.parameters[original].alias = alias;
-    } else {
-      throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
-    }
-  },
-  addGroupToSpec: function argParserAddGroupToSpec(spec) {
-    /* Determine wether an argument being parsed can be grouped and
-     * update its specifications object accordingly.
-     *
-     * Internal method used by addArgument and addJSONArgument
-     */
-    var m = spec.name.match(this.group_pattern);
+// Patterns argument parser
 
-    if (m) {
-      var group = m[1],
-          field = m[2];
 
-      if (group in this.possible_groups) {
-        var first_spec = this.possible_groups[group],
-            first_name = first_spec.name.match(this.group_pattern)[2];
-        first_spec.group = group;
-        first_spec.dest = first_name;
-        this.groups[group] = new core_parser_ArgumentParser();
-        this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
-        delete this.possible_groups[group];
-      }
 
-      if (group in this.groups) {
-        this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
-        spec.group = group;
-        spec.dest = field;
-      } else {
-        this.possible_groups[group] = spec;
-        spec.dest = this._camelCase(spec.name);
-      }
-    }
 
-    return spec;
-  },
-  addJSONArgument: function argParserAddJSONArgument(name, default_value) {
-    /* Add an argument where the value is provided in JSON format.
-     *
-     * This is a different usecase than specifying all arguments to
-     * the data-pat-... attributes in JSON format, and instead is part
-     * of the normal notation except that a value is in JSON instead of
-     * for example a string.
-     */
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec({
-      name: name,
-      value: default_value,
-      dest: name,
-      group: null,
-      type: "json"
-    });
-  },
-  addArgument: function ArgParserAddArgument(name, default_value, choices, multiple) {
-    var spec = {
-      name: name,
-      value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
-      multiple: multiple,
-      dest: name,
-      group: null
-    };
+var src_core_parser_ArgumentParser = /*#__PURE__*/function () {
+  function ArgumentParser(name) {
+    core_parser_classCallCheck(this, ArgumentParser);
 
-    if (choices && Array.isArray(choices) && choices.length) {
-      spec.choices = choices;
-      spec.type = this._typeof(choices[0]);
-
-      for (var i = 0; i < choices.length; i++) {
-        if (this.enum_conflicts.indexOf(choices[i]) !== -1) {
-          continue;
-        } else if (choices[i] in this.enum_values) {
-          this.enum_conflicts.push(choices[i]);
-          delete this.enum_values[choices[i]];
-        } else {
-          this.enum_values[choices[i]] = name;
-        }
-      }
-    } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
-      spec.type = this.parameters[spec.value.slice(1)].type;
-    } else {
-      // Note that this will get reset by _defaults if default_value is a function.
-      spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
-    }
-
-    this.order.push(name);
-    this.parameters[name] = this.addGroupToSpec(spec);
-  },
-  _typeof: function argParserTypeof(obj) {
-    var type = src_core_parser_typeof(obj);
-
-    if (obj === null) return "null";
-    return type;
-  },
-  _coerce: function argParserCoerce(name, value) {
-    var spec = this.parameters[name];
-    if (src_core_parser_typeof(value) !== spec.type) try {
-      switch (spec.type) {
-        case "json":
-          value = JSON.parse(value);
-          break;
-
-        case "boolean":
-          if (typeof value === "string") {
-            value = value.toLowerCase();
-            var num = parseInt(value, 10);
-            if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
-          } else if (typeof value === "number") value = !!value;else throw "Cannot convert value for " + name + " to boolean";
-
-          break;
-
-        case "number":
-          if (typeof value === "string") {
-            value = parseInt(value, 10);
-            if (isNaN(value)) throw "Cannot convert value for " + name + " to number";
-          } else if (typeof value === "boolean") value = value + 0;else throw "Cannot convert value for " + name + " to number";
-
-          break;
-
-        case "string":
-          value = value.toString();
-          break;
-
-        case "null": // Missing default values
-
-        case "undefined":
-          break;
-
-        default:
-          throw "Do not know how to convert value for " + name + " to " + spec.type;
-      }
-    } catch (e) {
-      this.log.warn(e);
-      return null;
-    }
-
-    if (spec.choices && spec.choices.indexOf(value) === -1) {
-      this.log.warn("Illegal value for " + name + ": " + value);
-      return null;
-    }
-
-    return value;
-  },
-  _set: function argParserSet(opts, name, value) {
-    if (!(name in this.parameters)) {
-      this.log.debug("Ignoring value for unknown argument " + name);
-      return;
-    }
-
-    var spec = this.parameters[name],
-        parts,
-        i,
-        v;
-
-    if (spec.multiple) {
-      if (typeof value === "string") {
-        parts = value.split(/,+/);
-      } else {
-        parts = value;
-      }
-
-      value = [];
-
-      for (i = 0; i < parts.length; i++) {
-        v = this._coerce(name, parts[i].trim());
-        if (v !== null) value.push(v);
-      }
-    } else {
-      value = this._coerce(name, value);
-      if (value === null) return;
-    }
-
-    opts[name] = value;
-  },
-  _split: function argParserSplit(text) {
-    var tokens = [];
-    text.replace(this.token_pattern, function (match, quoted, _, simple) {
-      if (quoted) tokens.push(quoted);else if (simple) tokens.push(simple);
-    });
-    return tokens;
-  },
-  _parseExtendedNotation: function argParserParseExtendedNotation(argstring) {
-    var opts = {};
-    var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
-      return el.replace(new RegExp("\0x1f", "g"), ";");
-    });
-
-    underscore_modules_index_default.each(parts, function (part) {
-      if (!part) {
-        return;
-      }
-
-      var matches = part.match(this.named_param_pattern);
-
-      if (!matches) {
-        this.log.warn("Invalid parameter: " + part + ": " + argstring);
-        return;
-      }
-
-      var name = matches[1],
-          value = matches[2].trim(),
-          arg = underscore_modules_index_default.chain(this.parameters).where({
-        alias: name
-      }).value(),
-          is_alias = arg.length === 1;
-
-      if (is_alias) {
-        this._set(opts, arg[0].name, value);
-      } else if (name in this.parameters) {
-        this._set(opts, name, value);
-      } else if (name in this.groups) {
-        var subopt = this.groups[name]._parseShorthandNotation(value);
-
-        for (var field in subopt) {
-          this._set(opts, name + "-" + field, subopt[field]);
-        }
-      } else {
-        this.log.warn("Unknown named parameter " + matches[1]);
-        return;
-      }
-    }.bind(this));
-
-    return opts;
-  },
-  _parseShorthandNotation: function argParserParseShorthandNotation(parameter) {
-    var parts = this._split(parameter),
-        opts = {},
-        positional = true,
-        i = 0,
-        part,
-        flag,
-        sense;
-
-    while (parts.length) {
-      part = parts.shift().trim();
-
-      if (part.slice(0, 3) === "no-") {
-        sense = false;
-        flag = part.slice(3);
-      } else {
-        sense = true;
-        flag = part;
-      }
-
-      if (flag in this.parameters && this.parameters[flag].type === "boolean") {
-        positional = false;
-
-        this._set(opts, flag, sense);
-      } else if (flag in this.enum_values) {
-        positional = false;
-
-        this._set(opts, this.enum_values[flag], flag);
-      } else if (positional) this._set(opts, this.order[i], part);else {
-        parts.unshift(part);
-        break;
-      }
-
-      i++;
-
-      if (i >= this.order.length) {
-        break;
-      }
-    }
-
-    if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
-    return opts;
-  },
-  _parse: function argParser_parse(parameter) {
-    var opts, extended, sep;
-
-    if (!parameter) {
-      return {};
-    }
-
-    if (parameter.match(this.json_param_pattern)) {
-      try {
-        return JSON.parse(parameter);
-      } catch (e) {
-        this.log.warn("Invalid JSON argument found: " + parameter);
-      }
-    }
-
-    if (parameter.match(this.named_param_pattern)) {
-      return this._parseExtendedNotation(parameter);
-    }
-
-    sep = parameter.indexOf(";");
-
-    if (sep === -1) {
-      return this._parseShorthandNotation(parameter);
-    }
-
-    opts = this._parseShorthandNotation(parameter.slice(0, sep));
-    extended = this._parseExtendedNotation(parameter.slice(sep + 1));
-
-    for (var name in extended) {
-      opts[name] = extended[name];
-    }
-
-    return opts;
-  },
-  _defaults: function argParserDefaults($el) {
-    var result = {};
-
-    for (var name in this.parameters) {
-      if (typeof this.parameters[name].value === "function") try {
-        result[name] = this.parameters[name].value($el, name);
-        this.parameters[name].type = src_core_parser_typeof(result[name]);
-      } catch (e) {
-        this.log.error("Default function for " + name + " failed.");
-      } else result[name] = this.parameters[name].value;
-    }
-
-    return result;
-  },
-  _cleanupOptions: function argParserCleanupOptions(options) {
-    var keys = Object.keys(options),
-        i,
-        spec,
-        name,
-        target; // Resolve references
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-      if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
-    } // Move options into groups and do renames
-
-
-    keys = Object.keys(options);
-
-    for (i = 0; i < keys.length; i++) {
-      name = keys[i];
-      spec = this.parameters[name];
-      if (spec === undefined) continue;
-
-      if (spec.group) {
-        if (src_core_parser_typeof(options[spec.group]) !== "object") options[spec.group] = {};
-        target = options[spec.group];
-      } else {
-        target = options;
-      }
-
-      if (spec.dest !== name) {
-        target[spec.dest] = options[name];
-        delete options[name];
-      }
-    }
-
-    return options;
-  },
-  parse: function argParserParse($el, options, multiple, inherit) {
-    if (!$el.jquery) {
-      $el = jquery_js_exposed_default()($el);
-    }
-
-    if (typeof options === "boolean" && multiple === undefined) {
-      multiple = options;
-      options = {};
-    }
-
-    inherit = inherit !== false;
-    var stack = inherit ? [[this._defaults($el)]] : [[{}]];
-    var $possible_config_providers;
-    var final_length = 1;
-    /*
-     * XXX this is a workaround for:
-     * - https://github.com/Patternslib/Patterns/issues/393
-     *
-     * Prevents the parser to pollute the pat-modal configuration
-     * with data-pat-inject elements define in a `.pat-modal` parent element.
-     *
-     *  Probably this function should be completely revisited, see:
-     * - https://github.com/Patternslib/Patterns/issues/627
-     *
-     */
-
-    if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
-      $possible_config_providers = $el;
-    } else {
-      $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
-    }
-
-    underscore_modules_index_default.each($possible_config_providers, function (provider) {
-      var data, frame, _parse;
-
-      data = jquery_js_exposed_default()(provider).attr(this.attribute);
-
-      if (!data) {
-        return;
-      }
-
-      _parse = this._parse.bind(this);
-      if (data.match(/&&/)) frame = data.split(/\s*&&\s*/).map(_parse);else frame = [_parse(data)];
-      final_length = Math.max(frame.length, final_length);
-      stack.push(frame);
-    }.bind(this));
-
-    if (src_core_parser_typeof(options) === "object") {
-      if (Array.isArray(options)) {
-        stack.push(options);
-        final_length = Math.max(options.length, final_length);
-      } else stack.push([options]);
-    }
-
-    if (!multiple) {
-      final_length = 1;
-    }
-
-    var results = underscore_modules_index_default.map(underscore_modules_index_default.compose(patternslib_src_core_utils.removeDuplicateObjects, underscore_modules_index_default.partial(patternslib_src_core_utils.mergeStack, underscore_modules_index_default, final_length))(stack), this._cleanupOptions.bind(this));
-
-    return multiple ? results : results[0];
+    this.order = [];
+    this.parameters = {};
+    this.attribute = "data-pat-" + name;
+    this.enum_values = {};
+    this.enum_conflicts = [];
+    this.groups = {};
+    this.possible_groups = {};
+    this.log = src_core_logging.getLogger(name + ".parser");
+    this.group_pattern = /([a-z][a-z0-9]*)-([A-Z][a-z0-0\-]*)/i;
+    this.json_param_pattern = /^\s*{/i;
+    this.named_param_pattern = /^\s*([a-z][a-z0-9\-]*)\s*:(.*)/i;
+    this.token_pattern = /((["']).*?(?!\\)\2)|\s*(\S+)\s*/g;
   }
-}; // BBB
 
-core_parser_ArgumentParser.prototype.add_argument = core_parser_ArgumentParser.prototype.addArgument;
-/* harmony default export */ var patternslib_src_core_parser = (core_parser_ArgumentParser);
+  core_parser_createClass(ArgumentParser, [{
+    key: "_camelCase",
+    value: function _camelCase(str) {
+      return str.replace(/\-([a-z])/g, function (__, p1) {
+        return p1.toUpperCase();
+      });
+    }
+  }, {
+    key: "addAlias",
+    value: function addAlias(alias, original) {
+      /* Add an alias for a previously added parser argument.
+       *
+       * Useful when you want to support both US and UK english argument
+       * names.
+       */
+      if (this.parameters[original]) {
+        this.parameters[original].alias = alias;
+      } else {
+        throw 'Attempted to add an alias "' + alias + '" for a non-existing parser argument "' + original + '".';
+      }
+    }
+  }, {
+    key: "addGroupToSpec",
+    value: function addGroupToSpec(spec) {
+      /* Determine wether an argument being parsed can be grouped and
+       * update its specifications object accordingly.
+       *
+       * Internal method used by addArgument and addJSONArgument
+       */
+      var m = spec.name.match(this.group_pattern);
+
+      if (m) {
+        var group = m[1];
+        var field = m[2];
+
+        if (group in this.possible_groups) {
+          var first_spec = this.possible_groups[group];
+          var first_name = first_spec.name.match(this.group_pattern)[2];
+          first_spec.group = group;
+          first_spec.dest = first_name;
+          this.groups[group] = new ArgumentParser();
+          this.groups[group].addArgument(first_name, first_spec.value, first_spec.choices, first_spec.multiple);
+          delete this.possible_groups[group];
+        }
+
+        if (group in this.groups) {
+          this.groups[group].addArgument(field, spec.value, spec.choices, spec.multiple);
+          spec.group = group;
+          spec.dest = field;
+        } else {
+          this.possible_groups[group] = spec;
+          spec.dest = this._camelCase(spec.name);
+        }
+      }
+
+      return spec;
+    }
+  }, {
+    key: "addJSONArgument",
+    value: function addJSONArgument(name, default_value) {
+      /* Add an argument where the value is provided in JSON format.
+       *
+       * This is a different usecase than specifying all arguments to
+       * the data-pat-... attributes in JSON format, and instead is part
+       * of the normal notation except that a value is in JSON instead of
+       * for example a string.
+       */
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec({
+        name: name,
+        value: default_value,
+        dest: name,
+        group: null,
+        type: "json"
+      });
+    }
+  }, {
+    key: "addArgument",
+    value: function addArgument(name, default_value, choices, multiple) {
+      var spec = {
+        name: name,
+        value: multiple && !Array.isArray(default_value) ? [default_value] : default_value,
+        multiple: multiple,
+        dest: name,
+        group: null
+      };
+
+      if (choices && Array.isArray(choices) && choices.length) {
+        spec.choices = choices;
+        spec.type = this._typeof(choices[0]);
+
+        var _iterator = src_core_parser_createForOfIteratorHelper(choices),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var choice = _step.value;
+
+            if (this.enum_conflicts.indexOf(choice) !== -1) {
+              continue;
+            } else if (choice in this.enum_values) {
+              this.enum_conflicts.push(choice);
+              delete this.enum_values[choice];
+            } else {
+              this.enum_values[choice] = name;
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      } else if (typeof spec.value === "string" && spec.value.slice(0, 1) === "$") {
+        spec.type = this.parameters[spec.value.slice(1)].type;
+      } else {
+        // Note that this will get reset by _defaults if default_value is a function.
+        spec.type = this._typeof(multiple ? spec.value[0] : spec.value);
+      }
+
+      this.order.push(name);
+      this.parameters[name] = this.addGroupToSpec(spec);
+    }
+  }, {
+    key: "_typeof",
+    value: function _typeof(obj) {
+      if (obj === null) {
+        return "null";
+      }
+
+      return core_parser_typeof2(obj);
+    }
+  }, {
+    key: "_coerce",
+    value: function _coerce(name, value) {
+      var spec = this.parameters[name];
+      if (core_parser_typeof2(value) !== spec.type) try {
+        switch (spec.type) {
+          case "json":
+            value = JSON.parse(value);
+            break;
+
+          case "boolean":
+            if (typeof value === "string") {
+              value = value.toLowerCase();
+              var num = parseInt(value, 10);
+              if (!isNaN(num)) value = !!num;else value = value === "true" || value === "y" || value === "yes" || value === "y";
+            } else if (typeof value === "number") {
+              value = !!value;
+            } else {
+              throw "Cannot convert value for " + name + " to boolean";
+            }
+
+            break;
+
+          case "number":
+            if (typeof value === "string") {
+              value = parseInt(value, 10);
+
+              if (isNaN(value)) {
+                throw "Cannot convert value for " + name + " to number";
+              }
+            } else if (typeof value === "boolean") {
+              value = value + 0;
+            } else {
+              throw "Cannot convert value for " + name + " to number";
+            }
+
+            break;
+
+          case "string":
+            value = value.toString();
+            break;
+
+          case "null": // Missing default values
+
+          case "undefined":
+            break;
+
+          default:
+            throw "Do not know how to convert value for " + name + " to " + spec.type;
+        }
+      } catch (e) {
+        this.log.warn(e);
+        return null;
+      }
+
+      if (spec.choices && spec.choices.indexOf(value) === -1) {
+        this.log.warn("Illegal value for " + name + ": " + value);
+        return null;
+      }
+
+      return value;
+    }
+  }, {
+    key: "_set",
+    value: function _set(opts, name, value) {
+      if (!(name in this.parameters)) {
+        this.log.debug("Ignoring value for unknown argument " + name);
+        return;
+      }
+
+      var spec = this.parameters[name];
+      var parts;
+
+      if (spec.multiple) {
+        if (typeof value === "string") {
+          parts = value.split(/,+/);
+        } else {
+          parts = value;
+        }
+
+        value = [];
+
+        var _iterator2 = src_core_parser_createForOfIteratorHelper(parts),
+            _step2;
+
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var part = _step2.value;
+
+            var v = this._coerce(name, part.trim());
+
+            if (v !== null) {
+              value.push(v);
+            }
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+      } else {
+        value = this._coerce(name, value);
+
+        if (value === null) {
+          return;
+        }
+      }
+
+      opts[name] = value;
+    }
+  }, {
+    key: "_split",
+    value: function _split(text) {
+      var tokens = [];
+      text.replace(this.token_pattern, function (match, quoted, __, simple) {
+        if (quoted) {
+          tokens.push(quoted);
+        } else if (simple) {
+          tokens.push(simple);
+        }
+      });
+      return tokens;
+    }
+  }, {
+    key: "_parseExtendedNotation",
+    value: function _parseExtendedNotation(argstring) {
+      var _this = this;
+
+      var opts = {};
+      var parts = argstring.replace(/;;/g, "\0x1f").replace(/&amp;/g, "&amp\0x1f").split(/;/).map(function (el) {
+        return el.replace(new RegExp("\0x1f", "g"), ";");
+      });
+
+      var _iterator3 = src_core_parser_createForOfIteratorHelper(parts),
+          _step3;
+
+      try {
+        var _loop = function _loop() {
+          var part = _step3.value;
+
+          if (!part) {
+            return "continue";
+          }
+
+          var matches = part.match(_this.named_param_pattern);
+
+          if (!matches) {
+            _this.log.warn("Invalid parameter: " + part + ": " + argstring);
+
+            return "continue";
+          }
+
+          var name = matches[1];
+          var value = matches[2].trim();
+          var arg = Object.values(_this.parameters).filter(function (it) {
+            return it.alias === name;
+          });
+          var is_alias = arg.length === 1;
+
+          if (is_alias) {
+            _this._set(opts, arg[0].name, value);
+          } else if (name in _this.parameters) {
+            _this._set(opts, name, value);
+          } else if (name in _this.groups) {
+            var subopt = _this.groups[name]._parseShorthandNotation(value);
+
+            for (var field in subopt) {
+              _this._set(opts, name + "-" + field, subopt[field]);
+            }
+          } else {
+            _this.log.warn("Unknown named parameter " + matches[1]);
+
+            return "continue";
+          }
+        };
+
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _ret = _loop();
+
+          if (_ret === "continue") continue;
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_parseShorthandNotation",
+    value: function _parseShorthandNotation(parameter) {
+      var parts = this._split(parameter);
+
+      var opts = {};
+      var i = 0;
+
+      while (parts.length) {
+        var part = parts.shift().trim();
+        var sense = void 0;
+        var flag = void 0;
+        var positional = true;
+
+        if (part.slice(0, 3) === "no-") {
+          sense = false;
+          flag = part.slice(3);
+        } else {
+          sense = true;
+          flag = part;
+        }
+
+        if (flag in this.parameters && this.parameters[flag].type === "boolean") {
+          positional = false;
+
+          this._set(opts, flag, sense);
+        } else if (flag in this.enum_values) {
+          positional = false;
+
+          this._set(opts, this.enum_values[flag], flag);
+        } else if (positional) this._set(opts, this.order[i], part);else {
+          parts.unshift(part);
+          break;
+        }
+
+        i++;
+
+        if (i >= this.order.length) {
+          break;
+        }
+      }
+
+      if (parts.length) this.log.warn("Ignore extra arguments: " + parts.join(" "));
+      return opts;
+    }
+  }, {
+    key: "_parse",
+    value: function _parse(parameter) {
+      if (!parameter) {
+        return {};
+      }
+
+      if (parameter.match(this.json_param_pattern)) {
+        try {
+          return JSON.parse(parameter);
+        } catch (e) {
+          this.log.warn("Invalid JSON argument found: " + parameter);
+        }
+      }
+
+      if (parameter.match(this.named_param_pattern)) {
+        return this._parseExtendedNotation(parameter);
+      }
+
+      var sep = parameter.indexOf(";");
+
+      if (sep === -1) {
+        return this._parseShorthandNotation(parameter);
+      }
+
+      var opts = this._parseShorthandNotation(parameter.slice(0, sep));
+
+      var extended = this._parseExtendedNotation(parameter.slice(sep + 1));
+
+      for (var name in extended) {
+        opts[name] = extended[name];
+      }
+
+      return opts;
+    }
+  }, {
+    key: "_defaults",
+    value: function _defaults($el) {
+      var result = {};
+
+      for (var name in this.parameters) {
+        if (typeof this.parameters[name].value === "function") try {
+          result[name] = this.parameters[name].value($el, name);
+          this.parameters[name].type = core_parser_typeof2(result[name]);
+        } catch (e) {
+          this.log.error("Default function for " + name + " failed.");
+        } else result[name] = this.parameters[name].value;
+      }
+
+      return result;
+    }
+  }, {
+    key: "_cleanupOptions",
+    value: function _cleanupOptions(options) {
+      // Resolve references
+      for (var _i = 0, _Object$keys = Object.keys(options); _i < _Object$keys.length; _i++) {
+        var name = _Object$keys[_i];
+        var spec = this.parameters[name];
+        if (spec === undefined) continue;
+        if (options[name] === spec.value && typeof spec.value === "string" && spec.value.slice(0, 1) === "$") options[name] = options[spec.value.slice(1)];
+      } // Move options into groups and do renames
+
+
+      for (var _i2 = 0, _Object$keys2 = Object.keys(options); _i2 < _Object$keys2.length; _i2++) {
+        var _name = _Object$keys2[_i2];
+        var _spec = this.parameters[_name];
+        var target = void 0;
+        if (_spec === undefined) continue;
+
+        if (_spec.group) {
+          if (core_parser_typeof2(options[_spec.group]) !== "object") options[_spec.group] = {};
+          target = options[_spec.group];
+        } else {
+          target = options;
+        }
+
+        if (_spec.dest !== _name) {
+          target[_spec.dest] = options[_name];
+          delete options[_name];
+        }
+      }
+
+      return options;
+    }
+  }, {
+    key: "parse",
+    value: function parse($el, options, multiple, inherit) {
+      if (!$el.jquery) {
+        $el = jquery_js_exposed_default()($el);
+      }
+
+      if (typeof options === "boolean" && multiple === undefined) {
+        // Fix argument order: ``multiple`` passed instead of ``options``.
+        multiple = options;
+        options = {};
+      }
+
+      inherit = inherit !== false;
+      var stack = inherit ? [[this._defaults($el)]] : [[{}]];
+      var $possible_config_providers;
+      var final_length = 1;
+      /*
+       * XXX this is a workaround for:
+       * - https://github.com/Patternslib/Patterns/issues/393
+       *
+       * Prevents the parser to pollute the pat-modal configuration
+       * with data-pat-inject elements define in a `.pat-modal` parent element.
+       *
+       *  Probably this function should be completely revisited, see:
+       * - https://github.com/Patternslib/Patterns/issues/627
+       *
+       */
+
+      if (!inherit || $el.hasClass("pat-modal") && this.attribute === "data-pat-inject") {
+        $possible_config_providers = $el;
+      } else {
+        $possible_config_providers = $el.parents("[" + this.attribute + "]").addBack();
+      }
+
+      var _iterator4 = src_core_parser_createForOfIteratorHelper($possible_config_providers),
+          _step4;
+
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var provider = _step4.value;
+          var frame = void 0;
+          var data = jquery_js_exposed_default()(provider).attr(this.attribute);
+
+          if (!data) {
+            continue;
+          }
+
+          var _parse = this._parse.bind(this);
+
+          if (data.match(/&&/)) {
+            frame = data.split(/\s*&&\s*/).map(_parse);
+          } else {
+            frame = [_parse(data)];
+          }
+
+          final_length = Math.max(frame.length, final_length);
+          stack.push(frame);
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+
+      if (core_parser_typeof2(options) === "object") {
+        if (Array.isArray(options)) {
+          stack.push(options);
+          final_length = Math.max(options.length, final_length);
+        } else stack.push([options]);
+      }
+
+      if (!multiple) {
+        final_length = 1;
+      }
+
+      var results = patternslib_src_core_utils.removeDuplicateObjects(patternslib_src_core_utils.mergeStack(stack, final_length)).map(this._cleanupOptions.bind(this));
+      return multiple ? results : results[0];
+    }
+  }]);
+
+  return ArgumentParser;
+}(); // BBB
+
+
+src_core_parser_ArgumentParser.prototype.add_argument = src_core_parser_ArgumentParser.prototype.addArgument;
+/* harmony default export */ var patternslib_src_core_parser = (src_core_parser_ArgumentParser);
 // CONCATENATED MODULE: ./node_modules/pat-upload/src/pat-upload.js
 function pat_upload_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -40536,7 +40541,7 @@ pat_upload_parser.add_argument("url"); //string: If not used with a form, this o
   }
 }));
 // EXTERNAL MODULE: ./node_modules/patternslib/src/pat/ajax/ajax.js
-var ajax = __webpack_require__(60);
+var ajax = __webpack_require__(61);
 
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/base.js + 1 modules
 var patternslib_src_core_base = __webpack_require__(4);
@@ -40545,7 +40550,7 @@ var patternslib_src_core_base = __webpack_require__(4);
 var node_modules_patternslib_src_core_parser = __webpack_require__(3);
 
 // EXTERNAL MODULE: ./node_modules/underscore/modules/index-all.js + 159 modules
-var index_all = __webpack_require__(10);
+var index_all = __webpack_require__(13);
 
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/utils.js
 var node_modules_patternslib_src_core_utils = __webpack_require__(2);
@@ -40670,6 +40675,9 @@ auto_scale_parser.addArgument("max-height", 1000000);
     return this;
   }
 }));
+// EXTERNAL MODULE: ./node_modules/patternslib/src/core/jquery-ext.js
+var jquery_ext = __webpack_require__(55);
+
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/logging.js
 var patternslib_src_core_logging = __webpack_require__(9);
 
@@ -40796,6 +40804,7 @@ var input_change_events_ = {
 
 
 
+
 var auto_submit_log = patternslib_src_core_logging["a" /* default */].getLogger("autosubmit");
 var auto_submit_parser = new node_modules_patternslib_src_core_parser["a" /* default */]("autosubmit"); // - 400ms -> 400
 // - 400 -> 400
@@ -40900,6 +40909,7 @@ function auto_suggest_asyncGeneratorStep(gen, resolve, reject, _next, _throw, ke
 function auto_suggest_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { auto_suggest_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { auto_suggest_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
  // needed for ``await`` support
+
 
 
 
@@ -41230,7 +41240,7 @@ var scheduled_task = null;
 var registered_event_handler = false;
 /* harmony default export */ var autofocus = (patternslib_src_core_base["a" /* default */].extend({
   name: "autofocus",
-  trigger: ":input.pat-autofocus,:input[autofocus]",
+  trigger: "\n        input.pat-autofocus,\n        input[autofocus],\n        select.pat-autofocus,\n        select[autofocus],\n        textarea.pat-autofocus,\n        textarea[autofocus],\n        button.pat-autofocus,\n        button[autofocus]\n    ",
   init: function init() {
     var _this = this;
 
@@ -41392,6 +41402,7 @@ registry["a" /* default */].register(breadcrumbs_);
 
 
 
+
 var bumper_parser = new node_modules_patternslib_src_core_parser["a" /* default */]("bumper");
 bumper_parser.addArgument("margin", 0);
 bumper_parser.addArgument("selector");
@@ -41533,7 +41544,7 @@ bumper_parser.addArgument("side", "top", ["all", "top", "right", "bottom", "left
   }
 }));
 // EXTERNAL MODULE: ./node_modules/patternslib/src/pat/inject/inject.js
-var inject = __webpack_require__(30);
+var inject = __webpack_require__(31);
 
 // CONCATENATED MODULE: ./node_modules/patternslib/src/pat/modal/modal.js
 
@@ -41951,6 +41962,7 @@ calendar_parser.addAlias("default-view", "initial-view");
   },
   dayNames: ["su", "mo", "tu", "we", "th", "fr", "sa"],
   active_categories: null,
+  parser: calendar_parser,
   init: function init($el, opts) {
     var _this = this;
 
@@ -42819,10 +42831,7 @@ carousel_parser.addArgument("infinite", false);
   }
 }));
 // EXTERNAL MODULE: ./node_modules/patternslib/src/core/dom.js
-var node_modules_patternslib_src_core_dom = __webpack_require__(45);
-
-// EXTERNAL MODULE: ./node_modules/patternslib/src/core/jquery-ext.js
-var patternslib_src_core_jquery_ext = __webpack_require__(77);
+var node_modules_patternslib_src_core_dom = __webpack_require__(25);
 
 // CONCATENATED MODULE: ./node_modules/patternslib/src/pat/checklist/checklist.js
 function checklist_toConsumableArray(arr) { return checklist_arrayWithoutHoles(arr) || checklist_iterableToArray(arr) || checklist_unsupportedIterableToArray(arr) || checklist_nonIterableSpread(); }
@@ -43256,6 +43265,7 @@ collapsible_parser.addArgument("open-trigger");
   name: "collapsible",
   trigger: ".pat-collapsible",
   jquery_plugin: true,
+  parser: collapsible_parser,
   transitions: {
     "none": {
       closed: "hide",
@@ -43496,6 +43506,7 @@ date_picker_parser.addAlias("behaviour", "behavior");
 /* harmony default export */ var date_picker = (patternslib_src_core_base["a" /* default */].extend({
   name: "date-picker",
   trigger: ".pat-date-picker",
+  parser: date_picker_parser,
   init: function init() {
     var _this = this;
 
@@ -44729,6 +44740,14 @@ var image_crop_ = {
 registry["a" /* default */].register(image_crop_);
 /* harmony default export */ var image_crop = (image_crop_);
 // CONCATENATED MODULE: ./node_modules/patternslib/src/pat/legend/legend.js
+function legend_createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = legend_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function legend_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return legend_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return legend_arrayLikeToArray(o, minLen); }
+
+function legend_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+
+
 
 
 var legend = {
@@ -44743,9 +44762,22 @@ var legend = {
     });
   },
   transform: function transform($root) {
-    $root.findInclusive("legend:not(.cant-touch-this)").each(function () {
-      jquery_js_exposed_default()(this).replaceWith("<p class='legend'>" + jquery_js_exposed_default()(this).html() + "</p>");
-    });
+    var root = node_modules_patternslib_src_core_utils["a" /* default */].jqToNode($root);
+    var all = node_modules_patternslib_src_core_dom["a" /* default */].querySelectorAllAndMe(root, "legend:not(.cant-touch-this)");
+
+    var _iterator = legend_createForOfIteratorHelper(all),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var el = _step.value;
+        jquery_js_exposed_default()(el).replaceWith("<p class='legend'>" + jquery_js_exposed_default()(el).html() + "</p>");
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
   }
 };
 registry["a" /* default */].register(legend);
@@ -45396,6 +45428,7 @@ function scroll_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg
 function scroll_asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { scroll_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { scroll_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
  // needed for ``await`` support
+
 
 
 
@@ -47881,291 +47914,7 @@ registry["a" /* default */].init(); // not yet included:
 
 /***/ }),
 
-/***/ 6:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return VERSION; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return root; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArrayProto; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return ObjProto; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return SymbolProto; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return push; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "q", function() { return slice; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "t", function() { return toString; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return hasOwnProperty; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "r", function() { return supportsArrayBuffer; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "s", function() { return supportsDataView; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return nativeIsArray; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return nativeKeys; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return nativeCreate; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return nativeIsView; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return _isNaN; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return _isFinite; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return hasEnumBug; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return nonEnumerableProps; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return MAX_ARRAY_INDEX; });
-// Current version.
-var VERSION = '1.12.0';
-
-// Establish the root object, `window` (`self`) in the browser, `global`
-// on the server, or `this` in some virtual machines. We use `self`
-// instead of `window` for `WebWorker` support.
-var root = typeof self == 'object' && self.self === self && self ||
-          typeof global == 'object' && global.global === global && global ||
-          Function('return this')() ||
-          {};
-
-// Save bytes in the minified (but not gzipped) version:
-var ArrayProto = Array.prototype, ObjProto = Object.prototype;
-var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
-
-// Create quick reference variables for speed access to core prototypes.
-var push = ArrayProto.push,
-    slice = ArrayProto.slice,
-    toString = ObjProto.toString,
-    hasOwnProperty = ObjProto.hasOwnProperty;
-
-// Modern feature detection.
-var supportsArrayBuffer = typeof ArrayBuffer !== 'undefined',
-    supportsDataView = typeof DataView !== 'undefined';
-
-// All **ECMAScript 5+** native function implementations that we hope to use
-// are declared here.
-var nativeIsArray = Array.isArray,
-    nativeKeys = Object.keys,
-    nativeCreate = Object.create,
-    nativeIsView = supportsArrayBuffer && ArrayBuffer.isView;
-
-// Create references to these builtin functions because we override them.
-var _isNaN = isNaN,
-    _isFinite = isFinite;
-
-// Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
-var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
-var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-  'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
-
-// The largest integer that can be represented exactly.
-var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(36)))
-
-/***/ }),
-
-/***/ 60:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _core_logging__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9);
-/* harmony import */ var _core_parser__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3);
-/* harmony import */ var _core_registry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(13);
-/**
- * Patterns ajax - AJAX injection for forms and anchors
- *
- * Copyright 2012-2013 Florian Friesdorf
- * Copyright 2012-2013 Marko Durkovic
- */
-
-
-
-
-var log = _core_logging__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getLogger("pat.ajax"),
-    parser = new _core_parser__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"]("ajax");
-parser.addArgument("url", function ($el) {
-  return ($el.is("a") ? $el.attr("href") : $el.is("form") ? $el.attr("action") : "").split("#")[0];
-});
-jquery__WEBPACK_IMPORTED_MODULE_0___default.a.ajaxSetup({
-  // Disable caching of AJAX responses
-  cache: false
-});
-var xhrCount = {};
-
-xhrCount.get = function (a) {
-  return this[a] !== undefined ? this[a] : 0;
-};
-
-xhrCount.inc = function (a) {
-  this[a] = this.get(a) + 1;
-  return this.get(a);
-};
-
-var _ = {
-  name: "ajax",
-  trigger: ".pat-ajax",
-  parser: parser,
-  init: function init($el) {
-    $el.off(".pat-ajax");
-    $el.filter("a").on("click.pat-ajax", _.onTriggerEvents);
-    $el.filter("form").on("submit.pat-ajax", _.onTriggerEvents).on("click.pat-ajax", "[type=submit]", _.onClickSubmit);
-    $el.filter(":not(form,a)").each(function () {
-      log.warn("Unsupported element:", this);
-    });
-    return $el;
-  },
-  destroy: function destroy($el) {
-    $el.off(".pat-ajax");
-  },
-  onClickSubmit: function onClickSubmit(event) {
-    var $form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).parents("form").first(),
-        name = event.target.name,
-        value = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).val(),
-        data = {};
-
-    if (name) {
-      data[name] = value;
-    }
-
-    $form.data("pat-ajax.clicked-data", data);
-  },
-  onTriggerEvents: function onTriggerEvents(event) {
-    if (event) {
-      event.preventDefault();
-    }
-
-    _.request(jquery__WEBPACK_IMPORTED_MODULE_0___default()(this));
-  },
-  request: function request($el, opts) {
-    return $el.each(function () {
-      _._request(jquery__WEBPACK_IMPORTED_MODULE_0___default()(this), opts);
-    });
-  },
-  _request: function _request($el, opts) {
-    var cfg = _.parser.parse($el, opts),
-        onError = function onError(jqxhr, status, error) {
-      // error can also stem from a javascript
-      // exception, not only errors described in the
-      // jqxhr.
-      log.error("load error for " + cfg.url + ":", error, jqxhr);
-      $el.trigger({
-        type: "pat-ajax-error",
-        jqxhr: jqxhr
-      });
-    },
-        seqNumber = xhrCount.inc(cfg.url),
-        onSuccess = function onSuccess(data, status, jqxhr) {
-      log.debug("success: jqxhr:", jqxhr);
-
-      if (seqNumber === xhrCount.get(cfg.url)) {
-        // if this url is requested multiple time, only return the last result
-        $el.trigger({
-          type: "pat-ajax-success",
-          jqxhr: jqxhr
-        });
-      } else {// ignore
-      }
-    },
-        temp = $el.data("pat-ajax.clicked-data"),
-        clickedData = temp ? jquery__WEBPACK_IMPORTED_MODULE_0___default.a.param(temp) : "",
-        args = {
-      context: $el,
-      data: [$el.serialize(), clickedData].filter(Boolean).join("&"),
-      url: cfg.url,
-      method: $el.attr("method") ? $el.attr("method") : "GET"
-    };
-
-    if ($el.is("form") && $el.attr("method") && $el.attr("method").toUpperCase() == "POST") {
-      var formdata = new FormData($el[0]);
-
-      for (var key in temp) {
-        formdata.append(key, temp[key]);
-      }
-
-      args["method"] = "POST";
-      args["data"] = formdata;
-      args["cache"] = false;
-      args["contentType"] = false;
-      args["processData"] = false;
-      args["type"] = "POST";
-    }
-
-    $el.removeData("pat-ajax.clicked-data");
-    log.debug("request:", args, $el[0]); // Make it happen
-
-    var ajax_deferred = jquery__WEBPACK_IMPORTED_MODULE_0___default.a.ajax(args);
-    if (ajax_deferred) ajax_deferred.done(onSuccess).fail(onError);
-  }
-};
-_core_registry__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].register(_);
-/* harmony default export */ __webpack_exports__["a"] = (_);
-
-/***/ }),
-
-/***/ 7:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return VERSION; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return root; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArrayProto; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return ObjProto; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return SymbolProto; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return push; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "q", function() { return slice; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "t", function() { return toString; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return hasOwnProperty; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "r", function() { return supportsArrayBuffer; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "s", function() { return supportsDataView; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return nativeIsArray; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return nativeKeys; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return nativeCreate; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return nativeIsView; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return _isNaN; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return _isFinite; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return hasEnumBug; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return nonEnumerableProps; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return MAX_ARRAY_INDEX; });
-// Current version.
-var VERSION = '1.12.0';
-
-// Establish the root object, `window` (`self`) in the browser, `global`
-// on the server, or `this` in some virtual machines. We use `self`
-// instead of `window` for `WebWorker` support.
-var root = typeof self == 'object' && self.self === self && self ||
-          typeof global == 'object' && global.global === global && global ||
-          Function('return this')() ||
-          {};
-
-// Save bytes in the minified (but not gzipped) version:
-var ArrayProto = Array.prototype, ObjProto = Object.prototype;
-var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
-
-// Create quick reference variables for speed access to core prototypes.
-var push = ArrayProto.push,
-    slice = ArrayProto.slice,
-    toString = ObjProto.toString,
-    hasOwnProperty = ObjProto.hasOwnProperty;
-
-// Modern feature detection.
-var supportsArrayBuffer = typeof ArrayBuffer !== 'undefined',
-    supportsDataView = typeof DataView !== 'undefined';
-
-// All **ECMAScript 5+** native function implementations that we hope to use
-// are declared here.
-var nativeIsArray = Array.isArray,
-    nativeKeys = Object.keys,
-    nativeCreate = Object.create,
-    nativeIsView = supportsArrayBuffer && ArrayBuffer.isView;
-
-// Create references to these builtin functions because we override them.
-var _isNaN = isNaN,
-    _isFinite = isFinite;
-
-// Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
-var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
-var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-  'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
-
-// The largest integer that can be represented exactly.
-var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(36)))
-
-/***/ }),
-
-/***/ 77:
+/***/ 55:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -48457,6 +48206,290 @@ jquery__WEBPACK_IMPORTED_MODULE_0___default.a.fn.scopedFind = function (selector
 
 /***/ }),
 
+/***/ 6:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return VERSION; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return root; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArrayProto; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return ObjProto; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return SymbolProto; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return push; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "q", function() { return slice; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "t", function() { return toString; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return hasOwnProperty; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "r", function() { return supportsArrayBuffer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "s", function() { return supportsDataView; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return nativeIsArray; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return nativeKeys; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return nativeCreate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return nativeIsView; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return _isNaN; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return _isFinite; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return hasEnumBug; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return nonEnumerableProps; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return MAX_ARRAY_INDEX; });
+// Current version.
+var VERSION = '1.12.0';
+
+// Establish the root object, `window` (`self`) in the browser, `global`
+// on the server, or `this` in some virtual machines. We use `self`
+// instead of `window` for `WebWorker` support.
+var root = typeof self == 'object' && self.self === self && self ||
+          typeof global == 'object' && global.global === global && global ||
+          Function('return this')() ||
+          {};
+
+// Save bytes in the minified (but not gzipped) version:
+var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
+
+// Create quick reference variables for speed access to core prototypes.
+var push = ArrayProto.push,
+    slice = ArrayProto.slice,
+    toString = ObjProto.toString,
+    hasOwnProperty = ObjProto.hasOwnProperty;
+
+// Modern feature detection.
+var supportsArrayBuffer = typeof ArrayBuffer !== 'undefined',
+    supportsDataView = typeof DataView !== 'undefined';
+
+// All **ECMAScript 5+** native function implementations that we hope to use
+// are declared here.
+var nativeIsArray = Array.isArray,
+    nativeKeys = Object.keys,
+    nativeCreate = Object.create,
+    nativeIsView = supportsArrayBuffer && ArrayBuffer.isView;
+
+// Create references to these builtin functions because we override them.
+var _isNaN = isNaN,
+    _isFinite = isFinite;
+
+// Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
+var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
+var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
+  'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+
+// The largest integer that can be represented exactly.
+var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
+
+/***/ }),
+
+/***/ 61:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _core_logging__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9);
+/* harmony import */ var _core_parser__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3);
+/* harmony import */ var _core_registry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(12);
+/**
+ * Patterns ajax - AJAX injection for forms and anchors
+ *
+ * Copyright 2012-2013 Florian Friesdorf
+ * Copyright 2012-2013 Marko Durkovic
+ */
+
+
+
+
+var log = _core_logging__WEBPACK_IMPORTED_MODULE_1__[/* default */ "a"].getLogger("pat.ajax"),
+    parser = new _core_parser__WEBPACK_IMPORTED_MODULE_2__[/* default */ "a"]("ajax");
+parser.addArgument("url", function ($el) {
+  return ($el.is("a") ? $el.attr("href") : $el.is("form") ? $el.attr("action") : "").split("#")[0];
+});
+jquery__WEBPACK_IMPORTED_MODULE_0___default.a.ajaxSetup({
+  // Disable caching of AJAX responses
+  cache: false
+});
+var xhrCount = {};
+
+xhrCount.get = function (a) {
+  return this[a] !== undefined ? this[a] : 0;
+};
+
+xhrCount.inc = function (a) {
+  this[a] = this.get(a) + 1;
+  return this.get(a);
+};
+
+var _ = {
+  name: "ajax",
+  trigger: ".pat-ajax",
+  parser: parser,
+  init: function init($el) {
+    $el.off(".pat-ajax");
+    $el.filter("a").on("click.pat-ajax", _.onTriggerEvents);
+    $el.filter("form").on("submit.pat-ajax", _.onTriggerEvents).on("click.pat-ajax", "[type=submit]", _.onClickSubmit);
+    $el.filter(":not(form,a)").each(function () {
+      log.warn("Unsupported element:", this);
+    });
+    return $el;
+  },
+  destroy: function destroy($el) {
+    $el.off(".pat-ajax");
+  },
+  onClickSubmit: function onClickSubmit(event) {
+    var $form = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).parents("form").first(),
+        name = event.target.name,
+        value = jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).val(),
+        data = {};
+
+    if (name) {
+      data[name] = value;
+    }
+
+    $form.data("pat-ajax.clicked-data", data);
+  },
+  onTriggerEvents: function onTriggerEvents(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
+    _.request(jquery__WEBPACK_IMPORTED_MODULE_0___default()(this));
+  },
+  request: function request($el, opts) {
+    return $el.each(function () {
+      _._request(jquery__WEBPACK_IMPORTED_MODULE_0___default()(this), opts);
+    });
+  },
+  _request: function _request($el, opts) {
+    var cfg = _.parser.parse($el, opts),
+        onError = function onError(jqxhr, status, error) {
+      // error can also stem from a javascript
+      // exception, not only errors described in the
+      // jqxhr.
+      log.error("load error for " + cfg.url + ":", error, jqxhr);
+      $el.trigger({
+        type: "pat-ajax-error",
+        jqxhr: jqxhr
+      });
+    },
+        seqNumber = xhrCount.inc(cfg.url),
+        onSuccess = function onSuccess(data, status, jqxhr) {
+      log.debug("success: jqxhr:", jqxhr);
+
+      if (seqNumber === xhrCount.get(cfg.url)) {
+        // if this url is requested multiple time, only return the last result
+        $el.trigger({
+          type: "pat-ajax-success",
+          jqxhr: jqxhr
+        });
+      } else {// ignore
+      }
+    },
+        temp = $el.data("pat-ajax.clicked-data"),
+        clickedData = temp ? jquery__WEBPACK_IMPORTED_MODULE_0___default.a.param(temp) : "",
+        args = {
+      context: $el,
+      data: [$el.serialize(), clickedData].filter(Boolean).join("&"),
+      url: cfg.url,
+      method: $el.attr("method") ? $el.attr("method") : "GET"
+    };
+
+    if ($el.is("form") && $el.attr("method") && $el.attr("method").toUpperCase() == "POST") {
+      var formdata = new FormData($el[0]);
+
+      for (var key in temp) {
+        formdata.append(key, temp[key]);
+      }
+
+      args["method"] = "POST";
+      args["data"] = formdata;
+      args["cache"] = false;
+      args["contentType"] = false;
+      args["processData"] = false;
+      args["type"] = "POST";
+    }
+
+    $el.removeData("pat-ajax.clicked-data");
+    log.debug("request:", args, $el[0]); // Make it happen
+
+    var ajax_deferred = jquery__WEBPACK_IMPORTED_MODULE_0___default.a.ajax(args);
+    if (ajax_deferred) ajax_deferred.done(onSuccess).fail(onError);
+  }
+};
+_core_registry__WEBPACK_IMPORTED_MODULE_3__[/* default */ "a"].register(_);
+/* harmony default export */ __webpack_exports__["a"] = (_);
+
+/***/ }),
+
+/***/ 7:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return VERSION; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return root; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArrayProto; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return ObjProto; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return SymbolProto; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return push; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "q", function() { return slice; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "t", function() { return toString; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return hasOwnProperty; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "r", function() { return supportsArrayBuffer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "s", function() { return supportsDataView; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return nativeIsArray; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return nativeKeys; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return nativeCreate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return nativeIsView; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return _isNaN; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return _isFinite; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return hasEnumBug; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return nonEnumerableProps; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return MAX_ARRAY_INDEX; });
+// Current version.
+var VERSION = '1.12.0';
+
+// Establish the root object, `window` (`self`) in the browser, `global`
+// on the server, or `this` in some virtual machines. We use `self`
+// instead of `window` for `WebWorker` support.
+var root = typeof self == 'object' && self.self === self && self ||
+          typeof global == 'object' && global.global === global && global ||
+          Function('return this')() ||
+          {};
+
+// Save bytes in the minified (but not gzipped) version:
+var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
+
+// Create quick reference variables for speed access to core prototypes.
+var push = ArrayProto.push,
+    slice = ArrayProto.slice,
+    toString = ObjProto.toString,
+    hasOwnProperty = ObjProto.hasOwnProperty;
+
+// Modern feature detection.
+var supportsArrayBuffer = typeof ArrayBuffer !== 'undefined',
+    supportsDataView = typeof DataView !== 'undefined';
+
+// All **ECMAScript 5+** native function implementations that we hope to use
+// are declared here.
+var nativeIsArray = Array.isArray,
+    nativeKeys = Object.keys,
+    nativeCreate = Object.create,
+    nativeIsView = supportsArrayBuffer && ArrayBuffer.isView;
+
+// Create references to these builtin functions because we override them.
+var _isNaN = isNaN,
+    _isFinite = isFinite;
+
+// Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
+var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
+var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
+  'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+
+// The largest integer that can be represented exactly.
+var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
+
+/***/ }),
+
 /***/ 8:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -48525,7 +48558,7 @@ var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
 // The largest integer that can be represented exactly.
 var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(36)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(37)))
 
 /***/ }),
 
