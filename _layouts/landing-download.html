@@ -1,5 +1,34 @@
 ---
-layout: landing
+layout: generic
 ---
 
-{{ content }}
+<div class="swim-lane type-intro">
+	<div class="pat-container">
+		<div 
+			class="pat-rich long-read">
+			<h1>{{ page.title }}</h1>
+			{% unless page.summary == nil %}
+				<p class="summary">
+					{{ page.summary }}
+				</p>
+			{% endunless %}
+		</div>
+		<div 
+			class="download-block">
+			<p 
+				class="button-bar download-bar">
+				<a 
+					class="pat-button cta"
+					href="https://github.com/Patternslib/Patterns/archive/2.1.2.zip">Download v2.1.2 (latest)</a>
+			</p>
+			<p
+				class="download-byline pat-rich">
+				Look for <a href="/alternate-releases">alternate releases</a>.
+			</p>
+		</div>
+		<div 
+			class="pat-rich long-read">
+			{{ content }}
+		</div>
+	</div>
+</div>

@@ -28,6 +28,10 @@
 				opacity: 0;
 				height: 0;
 			}
+
+			@media screen and (max-height: 710px) {
+				display: none;
+			}
 		}
 
 		p {
