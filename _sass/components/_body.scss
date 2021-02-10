@@ -25,6 +25,10 @@ body {
     line-height: $base-line-height;
     font-size: $base-font-size;
 
+    &.layout-homepage {
+        overflow: hidden;
+    }
+
     &.menu-open {
         overflow: hidden;
     }
