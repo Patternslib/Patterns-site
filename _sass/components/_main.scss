@@ -1,0 +1,73 @@
+#main {
+	transition: all 0.5s !important; // Overrule properties of modal for now.
+	min-height: 100vh;
+	position: relative;
+	z-index: 1;
+	box-shadow: 0 0 40px rgba(0,0,0,0.3);
+	background-color: $colour-base;
+	color: black;
+
+	.layout-homepage & { 			
+		background-color: $colour-homepage;
+		color: white;
+		transform: translateX(100%);
+
+		.pat-rich a:not(.pat-button) {
+			color: white;
+		}
+	}
+
+	.layout-landing-documentation &,
+	.layout-article & { 
+		background-color: $colour-documentation;
+		// color: white;
+
+		.pat-rich a:not(.pat-button) {
+			// color: white;
+		}
+	}
+
+	.layout-landing-showcases &,
+	.layout-showcase & { 	
+		background-color: $colour-showcases;
+
+		.pat-rich a:not(.pat-button) {
+			color: white;
+		}
+	}
+
+	.layout-landing-demos &,
+	.layout-demo & { 		
+		background-color: $colour-demos;
+
+		.pat-rich a:not(.pat-button) {
+			// color: white;
+		}
+	}
+
+	.layout-landing-download &,
+	.layout-download & { 		
+		background-color: $colour-download;
+		color: white;
+
+		.pat-rich a:not(.pat-button) {
+			color: white;
+		}
+	}
+
+	.menu-open & {
+		transform: translateX($osc-width);
+
+		.layout-homepage & {
+			transform: translateX(100%);
+		}
+
+		@include screen-size(small) {
+			transform: translateX(75%);
+
+			.layout-homepage & {
+				transform: translateX(100%);
+			}
+		}
+	}
+}

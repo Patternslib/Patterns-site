@@ -1,0 +1,5 @@
+<a class="global-nav-item pat-inject pat-switch" 
+   id="global-nav-item-{{ include.title | slugify }}"
+   data-pat-inject="history: record"
+   data-pat-switch="selector: body; remove: menu-*; add: menu-off; && selector: body; remove: layout-*; add: layout-landing-{{ include.title | slugify }}"
+   href="/{{ include.title | slugify }}#main-content">{{ include.title }}</a>

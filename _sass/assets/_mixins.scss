@@ -1,0 +1,53 @@
+@charset "UTF-8";
+
+@function blacken($color, $percent) {
+    @return mix(black, $color, $percent);
+}
+
+@function whiten($color, $percent) {
+    @return mix(white, $color, $percent);
+}
+
+@mixin blockquote() {
+
+  // font-family: "Times", Georgia, Times New Roman;
+  font-size: 40px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  margin: 1.5em 0;
+  // float: left;
+  // clear: both;
+  position: relative;
+  border: none;
+  // color: rgba(0,0,0,0.5);
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  // font-family: Georgia, serif;
+  // font-weight: bold;
+  font-style: italic;
+  opacity: 0.6;
+
+  *:last-child {
+    margin: 0;
+  }
+
+  @include screen-size(small) {
+    // padding: 1.5em;
+  }
+
+  @include screen-size(medium-large) { 
+    &:before {
+      content: '“';
+      font-size: 4em;
+      font-weight: bold;
+      font-style: normal;
+      position: absolute;
+      top: 0;
+      left: 0;
+      line-height: 0.85em;
+      // color: rgba(0,0,0,0.2);
+    }
+
+    padding: 0 2.5em;
+  }
+
+}

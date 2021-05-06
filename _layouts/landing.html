@@ -1,0 +1,20 @@
+---
+layout: generic
+---
+
+{% capture this_section %}{{ page.title | slugify }}{% endcapture %}
+
+<div class="swim-lane type-intro">
+	<div class="pat-container">
+		<article class="pat-rich">
+			<h1>{{ page.title }}</h1>
+			{% unless page.summary == nil %}
+				<p class="summary">
+					{{ page.summary }}
+				</p>
+			{% endunless %}
+		</article>
+	</div>
+</div>
+
+{{ content }}

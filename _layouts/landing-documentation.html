@@ -1,0 +1,27 @@
+---
+layout: landing
+---
+
+{% if page.groups %}
+	<div class="pat-container">
+		<div class="wells">
+			{% for group in page.groups %}
+				<div class="pat-well pat-rich">
+					<h2>{{ group.name }}</h2>
+					<p>
+						{{ group.summary }}
+					</p>
+					<ul class="link-list">
+						{% for item in site.documentation %}
+							{% if item.parent == group.name %}
+								<li>
+									<a href="{{ item.url }}">{{ item.title }}</a>
+								</li>
+							{% endif %}
+						{% endfor %}
+					</ul>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+{% endif %}

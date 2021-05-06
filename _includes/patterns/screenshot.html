@@ -1,0 +1,10 @@
+<figure class="pat-screenshot {% if include.url %}browser-window{% endif %}"
+	    data-url="{{ include.url }}">
+  	<object class="pat-auto-scale" 
+            data="/assets/quaive/help/illustrations/{{ include.source }}"
+            id="{{ include.object-id }}">
+  	</object>
+  	{% if include.caption %}
+		<figcaption>{{ include.caption }}</figcaption>
+	{% endif %}
+</figure>

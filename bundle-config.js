@@ -1,74 +1,76 @@
-/* Patterns bundle configuration.
- *
- * This file is used to tell r.js which Patterns to load when it generates a
- * bundle. This is only used when generating a full Patterns bundle, or when
- * you want a simple way to include all patterns in your own project. If you
- * only want to use selected patterns you will need to pull in the patterns
- * directly in your RequireJS configuration.
- */
+/* Patterns bundle configuration. */
+import "./public_path"; // first import
+import "modernizr";
 
-define([
-    "jquery",
-    "pat-registry",
-    "modernizr",
-    // "prefixfree",
-    "pat-ajax",
-    "pat-autofocus",
-    "pat-autoscale",
-    "pat-autosubmit",
-    "pat-autosuggest",
-    "pat-breadcrumbs",
-    "pat-bumper",
-    "pat-calendar",
-    "pat-carousel",
-    "pat-checklist",
-    // "pat-chosen",
-    "pat-clone",
-    "pat-collapsible",
-    "pat-colour-picker",
-    "pat-date-picker",
-    "pat-depends",
-    "pat-equaliser",
-    "pat-expandable",
-    "pat-focus",
-    "pat-form-state",
-    "pat-forward",
-    "pat-gallery",
-    "pat-image-crop",
-    "pat-inject",
-    "pat-input-change-events",
-    "pat-legend",
-    "pat-markdown",
-    "pat-menu",
-    "pat-modal",
-    "pat-navigation",
-    "pat-notification",
-    "pat-masonry",
-    // "pat-placeholder",
-    "pat-scroll",
-    "pat-selectbox",
-    "pat-slides",
-    // "pat-slideshow-builder",
-    "pat-sortable",
-    "pat-stacks",
-    "pat-sticky",
-    "pat-subform",
-    "pat-switch",
-    "pat-syntax-highlight",
-    "pat-tabs",
-    "pat-toggle",
-    "pat-tooltip",
-    "pat-url",
-    "pat-validation",
-    "pat-zoom"
-], function($, registry) {
-    // Since we are in a non-AMD env, register a few useful utilites
-    var window = require("window");
-    window.jQuery = $;
-    require("imports-loader?this=>window!jquery.browser");
+// Core
+import jquery from "jquery";
+import registry from "patternslib/src/core/registry";
 
-    $(function () {
-        registry.init();
-    });
-    return registry;
-});
+// Pattern imports
+import "pat-content-mirror/src/pat-content-mirror";
+import "pat-sortable-table/src/pat-sortable-table";
+import "pat-upload/src/pat-upload";
+import "patternslib/src/pat/ajax/ajax";
+import "patternslib/src/pat/auto-scale/auto-scale";
+import "patternslib/src/pat/auto-submit/auto-submit";
+import "patternslib/src/pat/auto-suggest/auto-suggest";
+import "patternslib/src/pat/autofocus/autofocus";
+import "patternslib/src/pat/breadcrumbs/breadcrumbs";
+import "patternslib/src/pat/bumper/bumper";
+import "patternslib/src/pat/calendar/calendar";
+import "patternslib/src/pat/carousel/carousel";
+import "patternslib/src/pat/checklist/checklist";
+import "patternslib/src/pat/clone/clone";
+import "patternslib/src/pat/collapsible/collapsible";
+import "patternslib/src/pat/colour-picker/colour-picker";
+import "patternslib/src/pat/date-picker/date-picker";
+import "patternslib/src/pat/depends/depends";
+import "patternslib/src/pat/display-time/display-time";
+import "patternslib/src/pat/equaliser/equaliser";
+import "patternslib/src/pat/expandable-tree/expandable-tree";
+import "patternslib/src/pat/focus/focus";
+import "patternslib/src/pat/form-state/form-state";
+import "patternslib/src/pat/forward/forward";
+import "patternslib/src/pat/fullscreen/fullscreen-close";
+import "patternslib/src/pat/fullscreen/fullscreen";
+import "patternslib/src/pat/gallery/gallery";
+import "patternslib/src/pat/image-crop/image-crop";
+import "patternslib/src/pat/inject/inject";
+import "patternslib/src/pat/legend/legend";
+import "patternslib/src/pat/markdown/markdown";
+import "patternslib/src/pat/masonry/masonry";
+import "patternslib/src/pat/menu/menu";
+import "patternslib/src/pat/modal/modal";
+import "patternslib/src/pat/navigation/navigation";
+import "patternslib/src/pat/notification/notification";
+import "patternslib/src/pat/scroll-box/scroll-box";
+import "patternslib/src/pat/scroll/scroll";
+import "patternslib/src/pat/selectbox/selectbox";
+import "patternslib/src/pat/sortable/sortable";
+import "patternslib/src/pat/stacks/stacks";
+import "patternslib/src/pat/sticky/sticky";
+import "patternslib/src/pat/subform/subform";
+import "patternslib/src/pat/switch/switch";
+import "patternslib/src/pat/syntax-highlight/syntax-highlight";
+import "patternslib/src/pat/tabs/tabs";
+import "patternslib/src/pat/toggle/toggle";
+import "patternslib/src/pat/tooltip/tooltip";
+import "patternslib/src/pat/validation/validation";
+
+window.jQuery = jquery;
+registry.init();
+
+
+// not yet included:
+//import "pat-ckeditor/src/ckeditor";
+//import "pat-content-mirror/src/pat-content-mirror";
+//import "pat-doclock/src/pat-doclock";
+//import "pat-redactor/src/pat-redactor";
+//import "pat-shopping-cart/src/pat-shopping-cart";
+//import "pat-sortable-table/src/pat-sortable-table";
+//import "pat-tiptap/src/tiptap";
+//import "pat-upload/src/pat-upload";
+//import "patternslib/src/pat/push/push";
+//import "patternslib/src/pat/slides/slides";
+//import "patternslib/src/pat/zoom/zoom";
+

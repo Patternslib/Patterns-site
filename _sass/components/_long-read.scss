@@ -1,0 +1,18 @@
+.long-read {
+	max-width: 800px;
+	margin: 0 auto;
+	display: block;
+
+	#demo,
+	#documentation {
+		margin-bottom: 40px;
+
+		.pat-button {
+			line-height: 35px;
+
+			&.small {
+				line-height: 23px;
+			}
+		}
+	}
+}

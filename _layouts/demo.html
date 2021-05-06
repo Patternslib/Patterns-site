@@ -1,23 +1,49 @@
 ---
-layout: shell
-state: demo
+layout: generic
 ---
 
-<div class="container">
-	<h1>{{ page.title }}</h1>
-
-	<article>
-	    <a href="/pat-demos/src/pat/{{page.id | remove: '/'}}/documentation.md"
-	        class="pat-inject" data-pat-inject="data-type: markdown; source: ##Description; target: self::element; trigger: autoload">Documentation</a>
-	</article>
-
-	<h2>Demo</h2>
-	<div id="demo" class="pattern-demo">
-	    <a href="/pat-demos/src/pat/{{ page.id | remove: '/'}}/index.html" class="pat-inject" data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
+<div class="pat-container">
+	<div class="pat-toolbar"
+		 id="ueber-toolbar">
+		{% if page.title == 'Contact' or page.title == 'Pricing' %}
+			<a href="/#main-content" 
+			   data-pat-inject="history: record" 
+			   data-pat-switch="selector: body; remove: layout-*; add: layout-homepage"
+			   class="pat-back-button pat-inject pat-switch">Homepage</a>
+		{% else %}
+			<a href="./index#main-content" 
+			   data-pat-inject="history: record" 
+			   data-pat-switch="selector: body; remove: layout-*; add: layout-landing-{{ page.collection }}"
+			   class="pat-back-button pat-inject pat-switch">{{ page.collection | capitalize }}</a>
+		{% endif %}
 	</div>
+	<article class="long-read">
 
-	<article>
-	    <a href="/pat-demos/src/pat/{{page.id }}/documentation.md#documentation"
-	        class="pat-inject" data-pat-inject="data-type: markdown; source: ##Documentation; target: self::element; trigger: autoload">Documentation</a>
+		<div class="pat-rich">
+			<h1>
+				{{ page.title }}
+			</h1>
+
+			{% unless page.description == nil %}
+				<p class="description">
+					{{ page.description }}
+				</p>
+			{% endunless %}
+		</div>
+
+		<div id="demo" 
+		     class="pattern-demo">
+		    <a href="/code/src/pat/{{ page.title | slugify }}/index.html" 
+		       class="pat-inject" 
+		       data-pat-inject="target: #demo; trigger: autoload">Load demo</a>
+		</div>
+
+		<div class="pat-rich">
+		    <a href="/code/src/pat/{{ page.title | slugify }}/documentation.md#documentation"
+		       class="pat-inject" 
+		       data-pat-inject="data-type: markdown; source: ##Documentation; target: self::element; trigger: autoload">Documentation</a>
+		</div>
+
 	</article>
 </div>
+

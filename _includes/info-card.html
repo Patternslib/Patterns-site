@@ -1,0 +1,87 @@
+<div class="info-card h-span-large-{{ card.width-large }} v-span-large-{{ card.height-large }} h-span-medium-{{ card.width-medium }} v-span-medium-{{ card.height-medium }}">
+	<div class="info-card-content {% if card.segments.size > 1 %}pat-carousel{% endif %}"
+		 {% if card.segments.size > 1 %}data-pat-carousel="auto-play: true; auto-play-speed: 5000"{% endif %}>
+		{% for item in card.segments %}
+			{% if item.section %}
+				{% capture this_section %}{{ item.section }}{% endcapture %}
+			{% endif %}
+			{% if item.type == 'nav-card' %}
+				<a href="/{{ item.title | slugify }}/#main-content"
+				   class="info-card-segment pat-inject pat-switch type-{{ item.type }}"
+				   data-pat-inject="history: record"
+				   data-pat-switch="selector: body; remove: menu-*; add: menu-off; && selector: body; remove: layout-*; add: layout-landing-{{ item.title | slugify }}"
+	     		   id="info-card-{{ item.title | slugify }}">
+	     	{% else %}
+	     		<div class="info-card-segment type-{{ item.type }} section-{{ this_section }}"
+	     		     id="info-card-{{ item.title | slugify }}">
+	        {% endif %}
+				{% for article in site[this_section] %}
+					{% if article.title == item.title %}
+						{% assign article_content = article.content | strip_newlines %}
+						{% if article.illustration and item.type contains 'screenshot-card' %}
+							<figure class="info-card-screenshot">
+								{% if article.content == empty or article_content == '' %}
+									<img src="{{ article.illustration }}"
+										 alt="" />
+								{% else %}
+									<a class="pat-inject {% if item.section %}pat-switch{% endif %}"
+									   {% if item.section %}data-pat-switch="selector: body; remove: layout-*; add: layout-landing-{{ item.section }}"{% endif %}
+									   data-pat-inject="scroll: top; history: record"
+									   href="{{ article.url }}#main-content">
+										<img src="{{ article.illustration }}"
+										     alt="" />
+									</a>
+								{% endif %}
+							</figure>
+						{% endif %}
+			        	<div class="info-card-text pat-rich">
+							<h3 class="info-card-title">
+								{{ article.title }}
+							</h3>
+							{% if item.summary == true %}
+								<p class="info-card-summary">
+									{{ article.summary }}
+								</p>
+							{% endif %}
+							{% unless article.content == empty %}
+								{% unless article_content == '' %}
+									{% unless item.type == 'nav-card' %}
+										{% unless item.cta %}
+											<p class="button-bar">
+												<a class="pat-button pat-inject {% if item.section %}pat-switch{% endif %}"
+												   {% if item.section %}data-pat-switch="selector: body; remove: layout-*; add: layout-landing-{{ item.section }}"{% endif %}
+												   data-pat-inject="scroll: top; history: record"
+												   href="{{ article.url }}#main-content">Learn more…</a>
+											</p>
+										{% endunless %}
+									{% endunless %}
+								{% endunless %}
+							{% endunless %}
+							{% if item.cta %}
+								<p class="button-bar">
+									<a class="pat-button"}
+									   href="{{ item.cta_url }}#main-content">{{ item.cta }}</a>
+								</p>
+							{% endif %}
+						</div>
+						{% if article.illustration and item.type == 'showcase-card' %}
+							<figure class="info-card-browser-window pat-screenshot browser-window"
+									data-url="{{ article.title | slugify }}">
+								<img src="{{ article.illustration }}"
+									 alt="" />
+							</figure>
+						{% endif %}
+						{% if item.background %}
+							<figure style="background-image: url({{ item.background }});"
+									class="info-card-background-image">
+								<img src="{{ item.background }}"
+									 alt="" />
+							</figure>
+						{% endif %}
+					{% endif %}
+				{% endfor %}
+			{% if item.type == 'nav-card' %}</a>{% else %}</div>{% endif %}
+		{% endfor %}
+	</div>
+</div>
+

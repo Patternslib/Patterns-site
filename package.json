@@ -1,6 +1,6 @@
 {
   "name": "myproject",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "title": "My Project",
   "description": "My project description.",
   "author": {
@@ -15,24 +15,39 @@
     "url": "https://github.com/url/to/your/project"
   },
   "dependencies": {
-    "patternslib": "https://github.com/Patternslib/Patterns.git"
+    "patternslib": "https://github.com/Patternslib/Patterns.git#971199eb8bffd3fc041c8b66d6ddfebdd8b70f6e",
+    "pat-content-mirror": "git+https://github.com/ploneintranet/pat-content-mirror.git#master",
+    "pat-sortable-table": "git+https://github.com/Patternslib/pat-sortable-table.git#master",
+    "pat-upload": "git+https://github.com/Patternslib/pat-upload.git#master"
   },
   "devDependencies": {
-    "jquery": "1.11.3",
-    "generator-patternslib": "0.2.1",
-    "exports-loader": "",
-    "expose-loader": "",
-    "imports-loader": "",
-    "jasmine-core": "2.5.2",
-    "jasmine-webpack-plugin": "",
-    "script-loader": "",
-    "webpack": "",
-    "webpack-merge": "",
-    "webpack-uglify-js-plugin": "",
-    "wrapper-webpack-plugin": ""
+    "@babel/core": "^7.10.3",
+    "@babel/plugin-proposal-optional-chaining": "^7.11.0",
+    "@babel/preset-env": "^7.9.6",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.2.0",
+    "core-js": "3",
+    "css-loader": "^3.5.3",
+    "duplicate-package-checker-webpack-plugin": "^3.0.0",
+    "expose-loader": "^0.7.5",
+    "imports-loader": "^0.8.0",
+    "raw-loader": "^4.0.1",
+    "regenerator-runtime": "^0.13.5",
+    "style-loader": "^1.2.1",
+    "terser-webpack-plugin": "^2.3.6",
+    "vue-loader": "^15.9.5",
+    "vue-template-compiler": "^2.6.12",
+    "webpack": "^4.43.0",
+    "webpack-bundle-analyzer": "^3.8.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-merge": "^4.2.2",
+    "webpack-modernizr-loader": "^5.0.0",
+    "whybundled": "^1.4.3",
+    "yarn": "^1.22.4"
   },
   "scripts": {
-    "build": "NODE_ENV=production webpack --config webpack.config.js"
+    "build": "webpack --config webpack.config.js --env.NODE_ENV=production"
   },
   "homepage": "https://your.project.homepage.com",
   "docs": "http://your.docs/",

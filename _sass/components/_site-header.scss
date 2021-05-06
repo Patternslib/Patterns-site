@@ -1,93 +1,88 @@
+@charset "UTF-8";
+
+$header-animation-speed: 0.8s !default;
+
 #site-header {
-	display: block;
-	text-align: center;
-	padding: 4% 0 0 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    line-height: 60px;
+    padding-top: 25px;
+    padding-bottom: 25px;
 
-	@include screen-size(small) {
-		padding: 20% 0 15% 0;
-	}
+    #site-logo,
+    #github-logo {
+        position: absolute;
+        right: 32px;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        display: inline-block;
+        text-decoration: none;
+        top: 30px;
+        overflow: hidden;
+        opacity: 0.5;
 
-	color: white;
-	
-	nav {
-		position: relative;
-		z-index: 1;
+        &:hover {
+            opacity: 1;
+        }
 
-		max-width: 1200px;
-		margin: 0 auto;
-	}
-}
+        &:before {
+            font-family: fontello;
+            font-size: 50px;
+            text-align: center;
+            display: block;
+            color: black;
+        }
+    }
 
-#site-header nav a {
-	display: block;
-	text-align: center;
-	font-weight: bold;
+    #site-logo {
+        right: 32px;
 
-	@media only screen and (max-width: 767px) {
-		line-height: 2em;
-		font-size: 1.5em;
-	}
+        &:before {
+            content: '#{$glyph-patterns-logo}';
+        }
+    }
 
-	@media only screen and (min-width: 768px) {
-		display: inline-block;
-		width: 17%;
-		font-size: 0.8em;
-	}
+    #github-logo {
+        right: 105px;
 
-	text-decoration: none;
-	position: relative;
-	transition: all 0.5s;
-	position: relative;
-}
+        &:before {
+            content: '#{$glyph-github-circled}';
+            font-size: 57px;
+        }
+    }
 
-.state-download #site-header nav a.download:after,
-.state-home #site-header nav a.patterns:after,
-.state-documentation #site-header nav a.documentation:after {
-	@media only screen and (min-width: 768px) {
-		width: 5em;
-		height: 5em;
-		border-radius: 50%;
-		display: block;
-		content: ' ';
-		border: 2px solid white;
-		position: absolute;
-		top: 0.75em;
-		left: 50%;
-		margin-left: -2.68em
-	}
-}
+    #menu-toggle {
+        color: black;
+        font-size: 30px;
+        padding: 0 70px;
+        transition-duration: $header-animation-speed;
+        transition-property: transform, color;
+        transform: scale(0.7);
+        transform-origin: 0 center;
+        float: left;
+        opacity: 0.5;
+        color: rgba(0,0,0,0);
 
-.state-home #site-header nav a.patterns,
-.state-documentation #site-header nav a.documentation,
-.state-download #site-header nav a.download {
-	@media only screen and (min-width: 768px) {
-		transform: scale(1.5);
-	}
-}
+        @include screen-size(small) {
+            padding: 0 40px;
+        }
 
-#site-header nav a:before {
-	font-family: fontello;
+        .menu-open &,
+        &:hover {
+            opacity: 1;
+        }
 
-	@media only screen and (min-width: 768px) {
-		display: block;
-		text-align: center;
-		font-size: 4em;
-	}
-	@media only screen and (max-width: 767px) {
-		display: inline-block;
-		margin-right: 0.3em;
-		font-size: 1em;
-	}
-}
+        &:before {
+            content: '#{$glyph-icon-menu}';
+            font-family: fontello;
+            display: inline-block;
+            margin-right: 0.6em;
+            color: black;
+        }
+    }
 
-#site-header nav a.patterns:before {
-	content: "\e1000";
-}
-
-#site-header nav a.download:before {
-	content: "\e1002";
-}
-
-#site-header nav a.documentation:before {
-	content: "\e1001";
 }

@@ -1,1 +1,0 @@
-Patterns library was initiated and conceptualised by <a href="http://www.cornae.com">Cornelis Kolbach</a>. Notable contributors include: <a href="http://github.com/chaoflow">Florian Friesdorf</a>, <a href="http://www.simplon.biz">Wichert Akkerman</a>, Humberto Sermeño, Marko Đurković.

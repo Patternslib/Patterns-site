@@ -1,0 +1,223 @@
+$table-cell-padding-top: 10px !default;
+$table-cell-padding-right: 15px !default;
+$table-cell-padding-bottom: 10px !default;
+$table-cell-padding-left: 15px !default;
+$table-line-height: 1.5 !default;
+$bullet-space-rich: 40px !default;
+
+.pat-rich {
+	line-height: 1.6;
+	font-size: 22px;
+
+	h1,h2,p,ul,ol,table,dl,pre,.screenshot, figure {
+		margin-bottom: 1.2em;
+	}
+
+	table {
+		border-bottom: 2px solid #fff;
+	    padding: 5px 10px 5px 10px;
+	    border-collapse: collapse;
+	    vertical-align: top;
+	    width: 100%;
+	    table-layout: fixed;
+
+       caption {
+	        padding-left: 0;
+	        margin: 1em 0;
+	        color: black;
+	        line-height: 1.5;
+	        text-align: left;
+	        font-weight: bold;
+	    }
+
+	    tbody {
+	        td:not(.separation-cell),
+	        th:not(.separation-cell) {
+	            @include screen-size(medium-large) { 
+	                vertical-align: top;
+	            }
+
+	            .table-body-title {
+	                display: block;
+	                padding-top: 1.5em;
+	                // color: $colour-orange;
+	                font-weight: bold;
+	                font-size: 1.125em;
+	                line-height: 1.4444;
+	            }
+	        }
+
+	        tr.header-row {
+	            th,
+	            td {
+	                &:after {
+	                    display: none;
+	                }     
+
+	                background: transparent;           
+
+	                .table-body-title {
+	                    padding-top: 1.5em;
+
+	                    a {
+	                        text-overflow: ellipsis;
+	                        overflow: hidden;
+	                    }
+	                }
+	            }
+	        }
+
+	        tr.header-row:first-child {
+	            .header-cell {
+	                .table-body-title {
+	                    padding-top: 0.5em;
+	                }
+	            }
+	        }
+
+	        .separation-cell {
+	            vertical-align: bottom;
+	            padding-top: 1.5em;
+	        }
+
+	        tr.header-row + .separation-row {
+	            .separation-cell {
+	                padding-top: 0;
+	            }
+	        }
+	    }
+    }
+
+    thead {
+        th {
+            vertical-align: bottom;
+            text-align: center;
+            // color: $colour-moss-green;
+            hyphens: none;
+        }
+    }
+
+    tr {
+        width: 100%;
+
+        td,
+        th {
+            padding-top: $table-cell-padding-top;
+            padding-right: $table-cell-padding-right;
+            padding-bottom: $table-cell-padding-bottom;
+            padding-left: $table-cell-padding-left;
+            border-collapse: collapse;
+            vertical-align: top;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            background-color: #f3f3f3;
+
+            @include screen-size(small) {
+                -moz-hyphens: auto;
+                -webkit-hyphens: auto;
+                hyphens: auto;
+
+                padding: 5px 10px 5px 10px;
+            }
+        }
+
+        td {
+            &.no-width {
+                width: auto;
+                min-width: auto;
+                max-width: none;
+            }
+        }
+	}
+
+	blockquote {
+		padding-left: 1em;
+		margin: 2.6em 0;
+		border-left: 0.2em solid rgba(0,0,0,0.3);
+	}
+
+	.discrete {
+		font-size: 0.8em;
+		opacity: 0.6;
+	}
+
+	ul {
+		li {
+			 margin-left: 0;
+			 padding-left: $bullet-space-rich;
+
+			 &:before {
+			 	content: "•";
+			 	float: left;
+				margin-left: -1 * $bullet-space-rich;
+			 }
+		}
+
+	}
+
+	ol {
+		li {
+			margin-left: $bullet-space-rich;
+			list-style: decimal;
+		}
+
+		&.roman {
+			list-style: upper-roman;
+		}
+	}
+
+	h1 {
+		font-size: 70px;
+		line-height: 90px;
+		margin: 0 0 50px 0;
+		font-weight: 200;
+		letter-spacing: 2px;
+
+		@include screen-size(small) {
+			font-size: 40px;
+			margin: 0 0 20px 0;
+		}
+	}
+
+	h2 {
+		line-height: 1.3;
+		font-size: 1.2em;
+		// color: black;
+		margin: 0 0 1em 0;
+	}
+
+	h3 {
+		font-weight: bold;
+		font-size: 1em;
+		line-height: 1.3;
+		// color: black;
+	}
+
+	h4 {
+		font-weight: bold;
+		font-size: 1em;
+		color: rgba(0,0,0,0.5)
+	}
+
+	img {
+		max-width: 85%;
+		display: block;
+		margin: 50px auto;
+	}
+
+	blockquote {
+		@include blockquote;
+	}
+	
+	.summary {
+		font-size: 40px;
+		line-height: 1.4;
+		font-weight: 200;
+		margin: 0 0 50px 0;
+
+		@include screen-size(small) {
+			font-size: 30px;
+
+		}
+	}
+}

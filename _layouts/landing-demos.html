@@ -1,0 +1,23 @@
+---
+layout: landing
+---
+
+<div class="swim-lane type-patterns">
+	<div class="pat-container">
+		{% for item in site.demos %}
+			{% if item.layout == 'demo' %}
+			    <a href="{{ item.url }}#main-content" 
+			       data-pat-inject="history: record"
+			       title="{{ item.description }}" 
+			       class="pattern-tile pat-inject cat-{{ item.category }}">
+					<figure>
+						<img src="/assets/placeholders/placeholder-1x1.png"
+						     style="background-image: url(/media/icons/{{ item.title | slugify }}.svg)" 
+						     alt="" />
+						<figcaption>{{ item.title }}</figcaption>
+					</figure>
+			    </a>
+			{% endif %}
+		{% endfor %}
+	</div>
+</div>

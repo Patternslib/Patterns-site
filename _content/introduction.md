@@ -1,7 +1,0 @@
-## Working with Patterns goes like this: 
-
-1. The designer creates an HTML5 prototype. By including Patterns library, they can use a series of rich interaction patterns by applying dedicated classes and data-attributes instead of writing JavaScript. The prototype contains examples of all important page types with working interaction patterns such as form elements, modal panels, and AJAX injections.
-2. Now the designer can **validate and iterate** a rich prototype with both the business stakeholders and the developers. All possibilities and impossibilities will become apparent before anything is built. This will prevent a lot of change requests and headaches during the development phase.
-3. The designer hands the prototype over to the developers who copy most of the HTML over into their own templates. By doing that, all the interaction patterns already work as prototyped by the designer. In some cases, the developers can write some extra JavaScript, or apply some patterns on their own, as a prototype is never fully complete.
-
-For changes to an existing design, the process will look more or less the same, except everything will likely happen in shorter iterations and more in parallel.

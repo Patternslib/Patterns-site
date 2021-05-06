@@ -1,0 +1,76 @@
+#osc {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: $colour-osc url(/assets/style/blackboard.svg) no-repeat center;
+	color: white;
+	width: $osc-width;
+	z-index: 0;
+	transition: all 0.5s;
+	background-size: 1200px;
+
+	.layout-homepage & {
+		width: 100%;
+		background-size: 1800px;
+	}
+
+	.summary {
+		
+		p {
+			margin: 0 -50px 0;
+			transition: all 0.5s;
+			height: 190px;
+			pointer-events: none;
+			font-weight: 200;
+
+			body:not(.layout-homepage) & {
+				opacity: 0;
+				height: 0;
+			}
+
+			@media screen and (max-height: 710px) {
+				display: none;
+			}
+
+			@include screen-size(small) {
+				display: none;
+			}
+		}
+
+		p {
+			text-align: center;
+			font-size: 30px;
+		}
+
+		.logo {
+			margin-bottom: 30px;
+
+			figcaption {
+				text-align: center;
+				font-size: 50px;
+				padding: 10px 0;
+				font-weight: 200;
+				letter-spacing: 1px;
+			}
+
+			svg {
+				display: block;
+				width: 150px;
+				margin: 0 auto;
+
+				* {
+					fill: white;
+				}
+			}
+		}
+	}
+
+	@include screen-size(small) {
+		width: 75%;
+
+		.layout-homepage & {
+			width: 100%;
+		}
+	}
+}

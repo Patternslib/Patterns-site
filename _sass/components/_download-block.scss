@@ -1,0 +1,37 @@
+@charset "UTF-8";
+
+.download-block {
+
+	p {
+		margin-bottom: 40px;
+		text-align: center;
+
+		a {
+			color: white;
+		}
+	}
+
+	.button-bar {
+
+		.pat-button {
+			@include screen-size(medium-large) {
+				font-size: 50px;
+				line-height: 50px;
+				padding: 15px 50px;
+
+				&:before {
+					content: '#{$glyph-icon-download}';
+					font-family: fontello;
+					margin-right: 15px;
+					display: inline-block;
+				}
+			}
+			
+			background-color: rgba(black, 0.3);
+
+			&:hover {
+				background-color: rgba(black, 0.4);
+			}
+		}
+	}
+}

@@ -1,4 +1,12 @@
+@charset "UTF-8";
+
+$bullet-space: 40px !default;
+
 .link-list {
+	-moz-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+
 	@include screen-size(large) {
 		&.col-2 {
 			column-count: 2;
@@ -32,11 +40,30 @@
 			overflow: hidden;
 		}
 	}
+
+	.aside-block & {
+		@include screen-size(medium-large) {
+			font-size: 0.8em;
+		}
+
+		margin-bottom: 1em;
+		margin-left: 25px;
+	}
+
+	&.compact {
+		li {
+			margin: 0;
+			padding-bottom: 0.2em;
+
+			ul {
+				padding: 0 0 0.5em 0;
+			}
+		}
+	}
 	
 	li {
-		margin: 0 0 .5em;
-		padding: 0;
-		padding-left: 2em;
+		margin: 0;
+		padding: 0 0 0 $bullet-space;
 
 		-webkit-column-break-inside: avoid;
           page-break-inside: avoid;
@@ -46,12 +73,11 @@
 		.group-title {
 			display: block;
 			padding: 0;
-			margin-left: 0;
 			text-decoration: none;
+			color: black;
+			margin-left: 0;
 
-			&:hover {
-				text-decoration: underline;
-			}
+			position: relative; // Fix for missing icons of first item in second column and on in Firefox.
 
 			.-ms- & {
 				text-decoration: none;
@@ -59,63 +85,26 @@
 
 			&:before {
 				font-family: fontello;
-				margin-left: -1.8em;
-				margin-top: 0.38em;
+				margin-left: -1 * $bullet-space;
+				margin-top: 0.25em;
 				font-weight: normal;
 				float: left;
 				text-decoration: none;
 
-				width: 1em;
-				margin-right: .2em;
-				text-align: center;
+				width: $bullet-space;
+				// margin-right: .2em;
+				text-align: left;
 				speak: none;
 
 				display: inline-block;
 				line-height: 1em;
+
+				position: absolute; // Fix for missing icons of first item in second column and on in Firefox.
 			}
 
 			&:not([class*="icon-"]) {
 				&:before {
 					content: '#{$glyph-angle-right}';
-				}
-			}
-
-			&.document {
-				&:before {
-					content: '#{$glyph-doc-text-inv}';
-				}
-			}
-
-			&.website {
-				&:before {
-					content: '#{$glyph-globe}';
-				}
-			}
-		}
-
-		ul {
-			font-size: 0.8em;
-			margin: 0;
-			line-height: 1.2;
-
-			li {
-				margin: 0;
-				padding: 0;
-
-				a {
-					padding: 0 0 0 0.8em;
-					white-space: nowrap;
-					overflow: hidden;
-					text-overflow: ellipsis;
-
-					&:before {
-						margin-left: -0.8em;
-						margin-top: 0;
-						font-weight: normal;
-						float: left;
-						content: '#{$glyph-angle-right}';
-						font-family: fontello;
-					}
 				}
 			}
 		}
