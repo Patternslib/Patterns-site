@@ -32,6 +32,10 @@
 			@media screen and (max-height: 710px) {
 				display: none;
 			}
+
+			@include screen-size(small) {
+				display: none;
+			}
 		}
 
 		p {

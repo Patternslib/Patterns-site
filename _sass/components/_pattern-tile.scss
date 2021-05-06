@@ -12,7 +12,7 @@
 	}
 
 	@include screen-size(small) {
-		width: 33.333332%;
+		width: 50%;
 	}
 
 	&.cat-behavioural img {
@@ -57,5 +57,9 @@
 		text-align: center;
 		color: black;
 		margin: 0 -20px;
+
+		@include screen-size(small) {
+			font-size: 20px;
+		}
 	}
 }

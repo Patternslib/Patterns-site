@@ -23496,7 +23496,7 @@ class ArgumentParser {
 
     for (const provider of $possible_config_providers) {
       let frame;
-      const data = jquery__WEBPACK_IMPORTED_MODULE_0___default()(provider).attr(this.attribute);
+      const data = (jquery__WEBPACK_IMPORTED_MODULE_0___default()(provider).attr(this.attribute) || "").trim();
 
       if (!data) {
         continue;
@@ -26390,9 +26390,9 @@ try {
 
 const calendar_log = logging["a" /* default */].getLogger("calendar");
 const calendar_parser = new parser["a" /* default */]("calendar");
-calendar_parser.addArgument("calendar-controls", ""); // Calendar controls must have "id" attr set
+calendar_parser.addArgument("calendar-controls", null); // Calendar controls must have "id" attr set
 
-calendar_parser.addArgument("category-controls", "");
+calendar_parser.addArgument("category-controls", null);
 calendar_parser.addArgument("column-day", "dddd M/d");
 calendar_parser.addArgument("column-month", "ddd");
 calendar_parser.addArgument("column-week", "ddd M/d");
@@ -26455,43 +26455,42 @@ calendar_parser.addAlias("default-view", "initial-view");
   active_categories: null,
   parser: calendar_parser,
 
-  async init($el, opts) {
-    var _this$el_timezone;
+  async init() {
+    var _this$storage, _this$storage$get, _this$storage2, _this$storage2$get, _this$el_timezone;
 
-    const el = this.el;
+    this.options = core_store.updateOptions(this.el, calendar_parser.parse(this.el, this.options));
     const Calendar = (await Promise.all(/* import() */[__webpack_require__.e(1), __webpack_require__.e(170)]).then(__webpack_require__.bind(null, 770))).Calendar;
     const fcDayGrid = (await Promise.all(/* import() */[__webpack_require__.e(1), __webpack_require__.e(3)]).then(__webpack_require__.bind(null, 718))).default;
-    const fcInteraction = (await Promise.all(/* import() */[__webpack_require__.e(1), __webpack_require__.e(171)]).then(__webpack_require__.bind(null, 746))).default; // prettier-ignore
-
+    const fcInteraction = (await Promise.all(/* import() */[__webpack_require__.e(1), __webpack_require__.e(171)]).then(__webpack_require__.bind(null, 746))).default;
     const fcList = (await Promise.all(/* import() */[__webpack_require__.e(1), __webpack_require__.e(18)]).then(__webpack_require__.bind(null, 747))).default;
     const fcLuxon = (await Promise.all(/* import() */[__webpack_require__.e(1), __webpack_require__.e(21)]).then(__webpack_require__.bind(null, 748))).default;
     const fcTimeGrid = (await Promise.all(/* import() */[__webpack_require__.e(1), __webpack_require__.e(3), __webpack_require__.e(19)]).then(__webpack_require__.bind(null, 749))).default; // Save some UI elements for reuse.
 
-    this.el_jump_next = el.querySelector(".jump-next");
-    this.el_jump_prev = el.querySelector(".jump-prev");
-    this.el_jump_today = el.querySelector(".jump-today");
-    this.el_view_month = el.querySelector(".view-month");
-    this.el_view_week = el.querySelector(".view-week");
-    this.el_view_day = el.querySelector(".view-day");
-    this.el_view_list_year = el.querySelector(".view-listYear");
-    this.el_view_list_month = el.querySelector(".view-listMonth");
-    this.el_view_list_week = el.querySelector(".view-listWeek");
-    this.el_view_list_day = el.querySelector(".view-listDay");
-    this.el_timezone = el.querySelector("select[name='timezone']");
-    this.el_title = el.querySelector(".cal-title");
-    const config = {};
-    opts = this.options = core_store.updateOptions(el, calendar_parser.parse(el, opts));
+    const calendar_controls = this.options.calendarControls ? document.querySelector(this.options.calendarControls) : this.el;
+    this.el_jump_next = calendar_controls.querySelector(".jump-next");
+    this.el_jump_prev = calendar_controls.querySelector(".jump-prev");
+    this.el_jump_today = calendar_controls.querySelector(".jump-today");
+    this.el_view_month = calendar_controls.querySelector(".view-month");
+    this.el_view_week = calendar_controls.querySelector(".view-week");
+    this.el_view_day = calendar_controls.querySelector(".view-day");
+    this.el_view_list_year = calendar_controls.querySelector(".view-listYear");
+    this.el_view_list_month = calendar_controls.querySelector(".view-listMonth");
+    this.el_view_list_week = calendar_controls.querySelector(".view-listWeek");
+    this.el_view_list_day = calendar_controls.querySelector(".view-listDay");
+    this.el_timezone = calendar_controls.querySelector("select[name='timezone']");
+    this.el_title = calendar_controls.querySelector(".cal-title");
     const storage_prefix = `${this.name}-${window.location.pathname}`;
-    const storage = this.storage = opts.store === "none" ? null : core_store[opts.store](storage_prefix);
+    this.storage = this.options.store === "none" ? null : core_store[this.options.store](storage_prefix);
     const query_string = new URLSearchParams(window.location.search);
+    const config = {};
     config.headerToolbar = false;
-    config.initialDate = query_string.get("date") || storage && storage.get("date") || opts.initial.date;
-    config.initialView = query_string.get("view") || storage && storage.get("view") || opts.initial.view;
+    config.initialDate = query_string.get("date") || ((_this$storage = this.storage) === null || _this$storage === void 0 ? void 0 : (_this$storage$get = _this$storage.get) === null || _this$storage$get === void 0 ? void 0 : _this$storage$get.call(_this$storage, "date")) || this.options.initial.date;
+    config.initialView = query_string.get("view") || ((_this$storage2 = this.storage) === null || _this$storage2 === void 0 ? void 0 : (_this$storage2$get = _this$storage2.get) === null || _this$storage2$get === void 0 ? void 0 : _this$storage2$get.call(_this$storage2, "view")) || this.options.initial.view;
     config.initialView = this.viewMap[config.initialView] || config.initialView;
-    config.editable = opts.editable || false;
+    config.editable = this.options.editable || false;
     config.plugins = [fcDayGrid, fcInteraction, fcList, fcLuxon, fcTimeGrid];
-    config.eventColor = opts.eventColor;
-    let lang = opts.lang || document.querySelector("html").getAttribute("lang") || "en"; // we don't support any country-specific language variants, always use first 2 letters
+    config.eventColor = this.options.eventColor;
+    let lang = this.options.lang || document.querySelector("html").getAttribute("lang") || "en"; // we don't support any country-specific language variants, always use first 2 letters
 
     lang = lang.substr(0, 2).toLowerCase();
 
@@ -26501,26 +26500,26 @@ calendar_parser.addAlias("default-view", "initial-view");
       console.log("loaded cal locale for " + lang);
     }
 
-    if (opts.first.day !== null) {
-      config.firstDay = opts.first.day;
+    if (this.options.first.day !== null) {
+      config.firstDay = this.options.first.day;
 
-      if (this.dayNames.indexOf(opts.first.day) >= 0) {
+      if (this.dayNames.indexOf(this.options.first.day) >= 0) {
         // Set firstDay as string
-        config.firstDay = this.dayNames.indexOf(opts.first.day);
+        config.firstDay = this.dayNames.indexOf(this.options.first.day);
       }
     }
 
-    let timezone = ((_this$el_timezone = this.el_timezone) === null || _this$el_timezone === void 0 ? void 0 : _this$el_timezone.value) || opts.timezone || null;
+    let timezone = ((_this$el_timezone = this.el_timezone) === null || _this$el_timezone === void 0 ? void 0 : _this$el_timezone.value) || this.options.timezone || null;
 
     if (timezone) {
       config.timeZone = timezone;
     }
 
-    const sources = [...(opts.event.sources || [])];
+    const sources = [...(this.options.event.sources || [])];
 
-    if (opts.url && !sources.includes(opts.url)) {
+    if (this.options.url && !sources.includes(this.options.url)) {
       // add, but do not re-add same source twice.
-      sources.push(opts.url);
+      sources.push(this.options.url);
     }
 
     config.eventSources = [];
@@ -26543,14 +26542,14 @@ calendar_parser.addAlias("default-view", "initial-view");
 
     const cal_el = document.createElement("div");
     cal_el.setAttribute("class", "pat-calendar__fc");
-    el.appendChild(cal_el);
+    this.el.appendChild(cal_el);
 
-    if (opts.addUrl) {
+    if (this.options.addUrl) {
       config.dateClick = this.addNewEvent.bind(this); // Create a element for modals/injections
 
       this.mod_el = document.createElement("section");
       this.mod_el.setAttribute("class", "pat-calendar__modal");
-      el.appendChild(this.mod_el);
+      this.el.appendChild(this.mod_el);
     }
 
     let calendar = this.calendar = new Calendar(cal_el, config);
