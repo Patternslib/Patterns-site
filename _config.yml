@@ -1,8 +1,9 @@
 title: Patterns
 author: Cornelis G. A. Kolbach
 summary: Patternslib is a free toolkit that aims to bring web design and development closer together.
-bundle_url: https://cdn.jsdelivr.net/npm/@patternslib/patternslib@9.8.0/dist/bundle.min.js
-patternslib_version: 9.8.0
+# bundle_url and patternslib_version are set in _config-patternslib.yml
+#bundle_url:
+#patternslib_version:
 baseurl: /
 domain: www.patternslib.com
 media: /media

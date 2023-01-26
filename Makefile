@@ -21,13 +21,21 @@ help:
 
 .PHONY: jekyll-build
 jekyll-build:: stamp-bundler
-	$(BUNDLE) exec jekyll build
+	$(BUNDLE) exec jekyll build --config=_config.yml,_config-patternslib.yml
 
 .PHONY: jekyll-serve
 jekyll-serve:: stamp-bundler   ## run jekyll, serve and watch
-	$(BUNDLE) exec jekyll serve
+	$(BUNDLE) exec jekyll serve --config=_config.yml,_config-patternslib.yml
 
 .PHONY: jekyll-serve-blank
 jekyll-serve-blank:: stamp-bundler  ## run jekyll, serve and watch (ignoring the baseurl and host settings)
-	$(BUNDLE) exec jekyll serve  --baseurl "" --host "0.0.0.0"
+	$(BUNDLE) exec jekyll serve  --baseurl "" --host "0.0.0.0" --config=_config.yml,_config-patternslib.yml
+
+.PHONY: update-patternslib
+update-patternslib:
+	$(eval PATTERNSLIB_VERSION := $(shell curl https://api.github.com/repos/patternslib/Patterns/releases/latest -s | jq .tag_name -r))
+	@printf "bundle_url: https://cdn.jsdelivr.net/npm/@patternslib/patternslib@$(PATTERNSLIB_VERSION)/dist/bundle.min.js\npatternslib_version: $(PATTERNSLIB_VERSION)\n" > _config-patternslib.yml
+	@cat _config-patternslib.yml
+	@echo # add a newline to output.
+	-@git commit _config-patternslib.yml -m"Update Patternslib to $(PATTERNSLIB_VERSION)"
 
