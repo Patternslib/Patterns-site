@@ -2,8 +2,8 @@ title: Patterns
 author: Cornelis G. A. Kolbach
 summary: Patternslib is a free toolkit that aims to bring web design and development closer together.
 # bundle_url and patternslib_version are automatically set by the Makefile target `make update-patternslib`.
-bundle_url: https://cdn.jsdelivr.net/npm/@patternslib/patternslib@9.8.3/dist/bundle.min.js
-patternslib_version: 9.8.3
+bundle_url: https://cdn.jsdelivr.net/npm/@patternslib/patternslib@9.9.0/dist/bundle.min.js
+patternslib_version: 9.9.0
 baseurl: /
 domain: www.patternslib.com
 media: /media
